@@ -202,13 +202,9 @@ corresponding Unix manual entries for more information on calls.");
 #define fsync _commit
 #else
 /* Unix functions that the configure script doesn't check for */
-#ifndef __VXWORKS__
-#ifndef __VMS			// Revisit (TBD; BRC). Taken out for now to eliminate compielr warnings (BRC).
+#if !(defined(__VXWORKS__) || defined(__VMS))
 #define HAVE_EXECV      1
-#endif
-#ifndef __VMS
 #define HAVE_FORK       1
-#endif
 #if defined(__USLC__) && defined(__SCO_VERSION__)       /* SCO UDK Compiler */
 #define HAVE_FORK1      1
 #endif
@@ -12284,7 +12280,7 @@ static PyStructSequence_Desc TerminalSize_desc = {
     2,
 };
 
-#if defined(TERMSIZE_USE_CONIO) || defined(TERMSIZE_USE_IOCTL)
+#if defined(TERMSIZE_USE_CONIO) || defined(TERMSIZE_USE_IOCTL) || defined(__VMS)
 /* AC 3.5: fd should accept None */
 PyDoc_STRVAR(termsize__doc__,
     "Return the size of the terminal window as (columns, lines).\n"        \
