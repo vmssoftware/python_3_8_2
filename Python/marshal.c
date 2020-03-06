@@ -12,7 +12,11 @@
 #include "longintrepr.h"
 #include "code.h"
 #include "marshal.h"
+#ifdef __VMS
+#include "Modules/hashtable.h"
+#else
 #include "../Modules/hashtable.h"
+#endif
 
 /*[clinic input]
 module marshal

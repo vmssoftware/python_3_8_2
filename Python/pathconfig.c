@@ -769,11 +769,12 @@ _PyPathConfig_ComputeSysPath0(const PyWideStringList *argv, PyObject **path0_p)
     return 1;
 }
 
-
+#ifndef WCSTOK
 #ifdef MS_WINDOWS
-#define WCSTOK wcstok_s
+#  define WCSTOK wcstok_s
 #else
-#define WCSTOK wcstok
+#  define WCSTOK wcstok
+#endif
 #endif
 
 /* Search for a prefix value in an environment file (pyvenv.cfg).

@@ -65,4 +65,14 @@ struct _dictkeysobject {
        see the DK_ENTRIES() macro */
 };
 
+struct _dictkeysobject_8 {
+    Py_ssize_t dk_refcnt;
+    Py_ssize_t dk_size;
+    dict_lookup_func dk_lookup;
+    Py_ssize_t dk_usable;
+    Py_ssize_t dk_nentries;
+    char dk_indices[8];
+};
+
+
 #endif

@@ -806,7 +806,11 @@ time_strftime(PyObject *self, PyObject *args)
         errno = 0;
 #endif
         _Py_BEGIN_SUPPRESS_IPH
+#ifdef __VMS
+        buflen = format_time(outbuf, i, (const char*)fmt, &buf);
+#else
         buflen = format_time(outbuf, i, fmt, &buf);
+#endif
         _Py_END_SUPPRESS_IPH
 #if defined _MSC_VER && _MSC_VER >= 1400 && defined(__STDC_SECURE_LIB__)
         /* VisualStudio .NET 2005 does this properly */

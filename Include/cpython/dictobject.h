@@ -7,6 +7,7 @@ extern "C" {
 #endif
 
 typedef struct _dictkeysobject PyDictKeysObject;
+typedef struct _dictkeysobject_8 PyDictKeysObject_8;
 
 /* The ma_values pointer is NULL for a combined table
  * or points to an array of PyObject* for a split table

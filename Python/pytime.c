@@ -876,7 +876,49 @@ pymonotonic(_PyTime_t *tp, _Py_clock_info_t *info, int raise)
         info->monotonic = 1;
         info->adjustable = 0;
     }
+#elif defined(__VMS)
 
+    struct timespec ts;
+    // start VMS specific code
+
+#include <unixlib.h>
+#include <starlet.h>
+
+    // Note that we're assuming CLOCK_REALTIME on VMS has the same resolution as our CLOCK_MONOTONIC fiddle...
+
+    unsigned long long t;
+    if (sys$gettim(&t, 1) != SS$_NORMAL) {
+        if (raise) {
+            PyErr_SetFromErrno(PyExc_OSError);
+            return -1;
+        }
+        return -1;
+    }
+    ts.tv_nsec = t % 10000000; 	// 100 nanoseconds increments
+    ts.tv_sec = decc$fix_time(&t);
+    if (ts.tv_sec == (unsigned int)-1) {
+        if (raise) {
+            PyErr_SetFromErrno(PyExc_OSError);
+            return -1;
+        }
+        return -1;
+    }
+    // end VMS specific code
+    assert(info == NULL || raise);
+    if (info) {
+        struct timespec res;
+        info->monotonic = 1;
+        info->implementation = "sys$gettim";
+        info->adjustable = 0;
+        if (clock_getres(CLOCK_REALTIME, &res) != 0) {
+            PyErr_SetFromErrno(PyExc_OSError);
+            return -1;
+        }
+        info->resolution = res.tv_sec + res.tv_nsec * 1e-9;
+    }
+    if (pytime_fromtimespec(tp, &ts, raise) < 0) {
+        return -1;
+    }
 #else
     struct timespec ts;
 #ifdef CLOCK_HIGHRES

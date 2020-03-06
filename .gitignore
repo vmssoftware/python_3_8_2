@@ -1,0 +1,8 @@
+.vscode
+*.o
+*.pyc
+*.gcda
+*.so
+*.zip
+_testembed
+libpython3.8.a

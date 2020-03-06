@@ -10,6 +10,11 @@
 
 
 
+#ifdef __VMS
+#include <tcp.h>
+#include <unistd.h>
+#endif
+
 #ifdef __APPLE__
    /*
     * Step 1 of support for weak-linking a number of symbols existing on
@@ -169,9 +174,11 @@ corresponding Unix manual entries for more information on calls.");
 #  if defined(HAVE_TERMIOS_H)
 #    include <termios.h>
 #  endif
+#ifndef __VMS
 #  if defined(TIOCGWINSZ)
 #    define TERMSIZE_USE_IOCTL
 #  endif
+#endif
 #endif /* MS_WINDOWS */
 
 /* Various compilers have only certain posix functions */
@@ -195,7 +202,7 @@ corresponding Unix manual entries for more information on calls.");
 #define fsync _commit
 #else
 /* Unix functions that the configure script doesn't check for */
-#ifndef __VXWORKS__
+#if !(defined(__VXWORKS__) || defined(__VMS))
 #define HAVE_EXECV      1
 #define HAVE_FORK       1
 #if defined(__USLC__) && defined(__SCO_VERSION__)       /* SCO UDK Compiler */
@@ -212,7 +219,9 @@ corresponding Unix manual entries for more information on calls.");
 #define HAVE_PIPE       1
 #define HAVE_SYSTEM     1
 #define HAVE_WAIT       1
+#ifndef __VMS
 #define HAVE_TTYNAME    1
+#endif
 #endif  /* _MSC_VER */
 #endif  /* ! __WATCOMC__ || __QNX__ */
 
@@ -3491,8 +3500,11 @@ posix_getcwd(int use_bytes)
             break;
         }
         buf = newbuf;
-
+#ifdef __VMS
+        cwd = getcwd(buf, buflen, 0);
+#else
         cwd = getcwd(buf, buflen);
+#endif
     } while (cwd == NULL && errno == ERANGE);
     Py_END_ALLOW_THREADS
 
@@ -4599,6 +4611,16 @@ os_uname_impl(PyObject *module)
     value = PyStructSequence_New(UnameResultType);
     if (value == NULL)
         return NULL;
+
+#ifdef __VMS
+    char *t = u.machine;
+    while (*t) {
+       if (! isalnum(*t) ) {
+           *t = '_';
+       }
+       ++t;
+    }
+#endif
 
 #define SET(i, field) \
     { \
@@ -12237,7 +12259,7 @@ static PyStructSequence_Desc TerminalSize_desc = {
     2,
 };
 
-#if defined(TERMSIZE_USE_CONIO) || defined(TERMSIZE_USE_IOCTL)
+#if defined(TERMSIZE_USE_CONIO) || defined(TERMSIZE_USE_IOCTL) || defined(__VMS)
 /* AC 3.5: fd should accept None */
 PyDoc_STRVAR(termsize__doc__,
     "Return the size of the terminal window as (columns, lines).\n"        \
@@ -12272,6 +12294,10 @@ get_terminal_size(PyObject *self, PyObject *args)
     if (!PyArg_ParseTuple(args, "|i", &fd))
         return NULL;
 
+#ifdef __VMS		/* Hardcoded for now */
+    lines = 80;
+    columns = 24;
+#else
 #ifdef TERMSIZE_USE_IOCTL
     {
         struct winsize w;
@@ -12310,6 +12336,7 @@ get_terminal_size(PyObject *self, PyObject *args)
         lines = csbi.srWindow.Bottom - csbi.srWindow.Top + 1;
     }
 #endif /* TERMSIZE_USE_CONIO */
+#endif
 
     termsize = PyStructSequence_New(TerminalSizeType);
     if (termsize == NULL)
@@ -13853,7 +13880,7 @@ static PyMethodDef posix_methods[] = {
     OS_REMOVEXATTR_METHODDEF
     OS_LISTXATTR_METHODDEF
 
-#if defined(TERMSIZE_USE_CONIO) || defined(TERMSIZE_USE_IOCTL)
+#if defined(TERMSIZE_USE_CONIO) || defined(TERMSIZE_USE_IOCTL) || defined(__VMS)
     {"get_terminal_size", get_terminal_size, METH_VARARGS, termsize__doc__},
 #endif
     OS_CPU_COUNT_METHODDEF

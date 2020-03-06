@@ -2,14 +2,14 @@
     "project": {
         "break": "C",
         "builders": "*.com,*.mms,*.opt",
-        "exclude": "**/{.vscode}/**,**/.git/**,*gitignore*,*.zip,*.lis,*.map,*.obj,*.exe,**/Mac/**,**/PC/**,**/PCbuild/**",
+        "exclude": "**/{.vscode}/**,**/.git/**,*gitignore*,*.zip,*.lis,*.map,*.obj,*.exe,*.o,*.so,*.gcda,*.pyc,**/Mac/**,**/PC/**,**/PCbuild/**",
         "headers": "*.h,*.inc",
         "listing": "*.lis,*.map",
         "outdir": "out",
-        "projectName": "Python",
+        "projectName": "Python3",
         "projectType": "executable",
         "resource": "**/Doc/**,**/Grammar/**,**/Include/**,**/Lib/**,**/m4/**,**/Modules/**,**/Objects/**,**/Parser/**,**/Programs/**,**/Python/**,**/Tools/**,*.py",
-        "root": "Python_3_8_1",
+        "root": "/wrk_disk/vorfolomeev/Python3",
         "source": "*.c",
         "addLibraries": "",
         "addIncludes": ""
@@ -17,7 +17,7 @@
     "synchronize": {
         "downloadNewFiles": "skip",
         "keepAlive": false,
-        "preferZip": true,
+        "preferZip": false,
         "forceLocalTime": true,
         "purge": true,
         "setTimeAttempts": 3
@@ -25,15 +25,15 @@
     "builds": {
         "configurations": [
             {
-                "label": "DEBUG",
-                "description": "DEBUG",
-                "command": "build_mms.com",
-                "parameter": "DEBUG"
+                "label": "libPython",
+                "description": "Python library",
+                "command": "libpython.mms",
+                "parameter": ""
             },
             {
                 "label": "RELEASE",
                 "description": "RELEASE",
-                "command": "build_mms.com",
+                "command": "",
                 "parameter": "RELEASE"
             }
         ]

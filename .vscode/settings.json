@@ -1,4 +1,14 @@
 {
     "restructuredtext.confPath": "${workspaceFolder}\\Doc",
-    "vmssoftware.project-dep.buildName": "DEBUG"
+    "vmssoftware.project-dep.buildName": "libPython",
+    "files.associations": {
+        "*.sco": "vms-cobol",
+        "bytes_methods.h": "c",
+        "pycore_object.h": "c",
+        "pycore_pystate.h": "c",
+        "frameobject.h": "c",
+        "*.macros": "c",
+        "pycore_fileutils.h": "c",
+        "wchar": "c"
+    }
 }

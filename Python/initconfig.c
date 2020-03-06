@@ -2036,11 +2036,12 @@ config_parse_cmdline(PyConfig *config, PyWideStringList *warnoptions,
     return _PyStatus_OK();
 }
 
-
+#ifndef WCSTOK
 #ifdef MS_WINDOWS
 #  define WCSTOK wcstok_s
 #else
 #  define WCSTOK wcstok
+#endif
 #endif
 
 /* Get warning options from PYTHONWARNINGS environment variable. */
