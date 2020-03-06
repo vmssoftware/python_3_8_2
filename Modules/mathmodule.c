@@ -62,6 +62,23 @@ module math
 [clinic start generated code]*/
 /*[clinic end generated code: output=da39a3ee5e6b4b0d input=76bc7002685dd942]*/
 
+#ifdef __VMS
+static double
+round(double x)
+{
+    double f;
+
+    if (x > 0.0) {
+        f = floor(x);
+        x = f + (x - f >= 0.5);
+    }
+    else if (x < 0.0) {
+        f = ceil(x);
+        x = f - (f - x >= 0.5);
+    }
+    return x;
+}
+#endif
 
 /*
    sin(pi*x), giving accurate results for all finite x (especially x

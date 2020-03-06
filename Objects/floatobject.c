@@ -26,6 +26,25 @@ class float "PyObject *" "&PyFloat_Type"
 static int numfree = 0;
 static PyFloatObject *free_list = NULL;
 
+#ifdef __VMS
+static double
+round(double x)
+{
+    double f;
+
+    if (x > 0.0) {
+        f = floor(x);
+        x = f + (x - f >= 0.5);
+    }
+    else if (x < 0.0) {
+        f = ceil(x);
+        x = f - (f - x >= 0.5);
+    }
+    return x;
+}
+#endif
+
+
 double
 PyFloat_GetMax(void)
 {

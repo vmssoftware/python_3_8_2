@@ -606,8 +606,10 @@ sub_size_t(mpd_size_t a, mpd_size_t b)
     return a - b;
 }
 
+#ifndef __VMS		/* Need to revisit (BRC 14-Jan-2016) */
 #if MPD_SIZE_MAX != MPD_UINT_MAX
   #error "adapt mul_size_t() and mulmod_size_t()"
+#endif
 #endif
 
 static inline mpd_size_t

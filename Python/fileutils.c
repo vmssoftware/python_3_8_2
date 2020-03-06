@@ -1,3 +1,7 @@
+#ifdef __VMS
+#include <tcp.h>
+#include <unistd.h>
+#endif
 #include "Python.h"
 #include "pycore_fileutils.h"
 #include "osdefs.h"
@@ -1095,7 +1099,7 @@ set_inheritable(int fd, int inheritable, int raise, int *atomic_flag_works)
     HANDLE handle;
     DWORD flags;
 #else
-#if defined(HAVE_SYS_IOCTL_H) && defined(FIOCLEX) && defined(FIONCLEX)
+#if defined(HAVE_SYS_IOCTL_H) && defined(FIOCLEX) && defined(FIONCLEX) && !defined(__VMS)
     static int ioctl_works = -1;
     int request;
     int err;
@@ -1150,7 +1154,7 @@ set_inheritable(int fd, int inheritable, int raise, int *atomic_flag_works)
 
 #else
 
-#if defined(HAVE_SYS_IOCTL_H) && defined(FIOCLEX) && defined(FIONCLEX)
+#if defined(HAVE_SYS_IOCTL_H) && defined(FIOCLEX) && defined(FIONCLEX) && !defined(__VMS)
     if (ioctl_works != 0 && raise != 0) {
         /* fast-path: ioctl() only requires one syscall */
         /* caveat: raise=0 is an indicator that we must be async-signal-safe
@@ -1761,9 +1765,13 @@ _Py_wgetcwd(wchar_t *buf, size_t buflen)
     char fname[MAXPATHLEN];
     wchar_t *wname;
     size_t len;
-
+#ifdef __VMS
+    if (getcwd(fname, Py_ARRAY_LENGTH(fname), 0) == NULL)
+        return NULL;
+#else
     if (getcwd(fname, Py_ARRAY_LENGTH(fname)) == NULL)
         return NULL;
+#endif
     wname = Py_DecodeLocale(fname, &len);
     if (wname == NULL)
         return NULL;
@@ -1877,7 +1885,7 @@ _Py_get_blocking(int fd)
 int
 _Py_set_blocking(int fd, int blocking)
 {
-#if defined(HAVE_SYS_IOCTL_H) && defined(FIONBIO)
+#if defined(HAVE_SYS_IOCTL_H) && defined(FIONBIO) || defined(__VMS)
     int arg = !blocking;
     if (ioctl(fd, FIONBIO, &arg) < 0)
         goto error;

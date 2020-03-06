@@ -175,8 +175,13 @@ typedef int64_t mpd_ssize_t;
 #define MPD_MAXIMPORT 105263157894736842L /* ceil((2*MPD_MAX_PREC)/MPD_RDIGITS) */
 
 /* conversion specifiers */
+#ifdef __VMS
+#define PRI_mpd_uint_t "llu"
+#define PRI_mpd_ssize_t "lld"
+#else
 #define PRI_mpd_uint_t PRIu64
 #define PRI_mpd_ssize_t PRIi64
+#endif
 /* END CONFIG_64 */
 
 
@@ -219,8 +224,13 @@ typedef int32_t mpd_ssize_t;
 #define MPD_MAXIMPORT 94444445L      /* ceil((2*MPD_MAX_PREC)/MPD_RDIGITS) */
 
 /* conversion specifiers */
+#ifdef __VMS
+#define PRI_mpd_uint_t "lu"
+#define PRI_mpd_ssize_t "ld"
+#else
 #define PRI_mpd_uint_t PRIu32
 #define PRI_mpd_ssize_t PRIi32
+#endif
 /* END CONFIG_32 */
 
 #else
@@ -228,9 +238,10 @@ typedef int32_t mpd_ssize_t;
 #endif
 /* END CONFIG */
 
-
+#ifndef __VMS		/* This will end badly and needs to be revisted (BRC 14-Jan-2016) */
 #if MPD_SIZE_MAX != MPD_UINT_MAX
   #error "unsupported platform: need mpd_size_t == mpd_uint_t"
+#endif
 #endif
 
 

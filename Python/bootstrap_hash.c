@@ -31,6 +31,33 @@ int _Py_HashSecret_Initialized = 0;
 static int _Py_HashSecret_Initialized = 0;
 #endif
 
+#ifdef __VMS
+//
+// Credits:
+// ========
+//	License: Creative Commons CC0
+//		http://creativecommons.org/publicdomain/zero/1.0/legalcode
+//	Author:	James Sainsbury
+//		toves@sdf.lonestar.org
+//
+static
+int getentropy (unsigned char entropy[], size_t entropy_size)
+{
+	unsigned short	seed[3];
+	int	i	= 0;
+	int	step	= sizeof(RAND_MAX); // Xrand48 return 32 bit "longs"
+	long	r	= jrand48(seed);
+	while ((i+step) < entropy_size) {
+		memcpy (&entropy[i], &r, step);
+		long	r	= jrand48(seed);
+		i	+= step;
+	}
+	memcpy (&entropy[i], &r, (entropy_size - i));
+	return	0;
+}
+#endif
+
+
 #ifdef MS_WINDOWS
 static HCRYPTPROV hCryptProv = 0;
 

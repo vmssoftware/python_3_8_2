@@ -60,7 +60,9 @@
 
 /* Namespace external symbols to allow multiple libexpat version to
    co-exist. */
+#ifndef __VMS
 #include "pyexpatns.h"
+#endif
 
 #ifndef XMLCALL
 #  if defined(_MSC_VER)

@@ -49,6 +49,18 @@
 
 #define POSIX_CALL(call)   do { if ((call) == -1) goto error; } while (0)
 
+#ifdef __VMS
+#include <lib$routines.h>
+#include <descrip.h>
+#include <efndef.h>
+#include <clidef.h>
+#include <unixio.h>
+
+#ifndef OKAY
+#define OKAY(STATUS) (((STATUS) & 1) != 0)
+#endif
+#endif
+
 
 /* If gc was disabled, call gc.enable().  Return 0 on success. */
 static int
@@ -382,7 +394,7 @@ _close_open_fds_maybe_unsafe(long start_fd, PyObject* py_fds_to_keep)
 
 #endif  /* else NOT (defined(__linux__) && defined(HAVE_SYS_SYSCALL_H)) */
 
-
+#ifndef __VMS
 /*
  * This function is code executed in the child process immediately after fork
  * to set things up and call exec().
@@ -551,7 +563,112 @@ error:
         _Py_write_noraise(errpipe_write, err_msg, strlen(err_msg));
     }
 }
+#else
+/* VMS */
+extern int decc$to_vms(const char *, int (*)(char *, int, void *), int, int, ...);
+extern int decc$$translate();
 
+
+static int cb_to_vms(char *name, int flag, void *ud)
+{
+    char **tmp = (char **) ud;
+    assert((*tmp = strdup(name)));
+    return (1);
+}
+
+static pid_t
+child_exec(char *const argv[],
+           int p2cread,
+           int c2pwrite)
+{
+	char str[1024];
+
+	struct dsc$descriptor_s dsc = {0, DSC$K_DTYPE_T, DSC$K_CLASS_S, 0};
+	unsigned long status;
+	int i = 0;
+	int j = 0;
+	int flags = CLI$M_NOWAIT;
+
+	char i_file[PATH_MAX + 1] = "";
+	char o_file[PATH_MAX + 1] = "";
+
+	char *tmp;
+
+	struct dsc$descriptor_s i_dsc, *i_ptr;
+	struct dsc$descriptor_s o_dsc, *o_ptr;
+	pid_t pid = -1;
+	unsigned char efn = EFN$C_ENF;
+
+	if (p2cread != -1) {
+	   getname(p2cread, i_file, 1);
+
+	   i_dsc.dsc$w_length = strlen(i_file);
+           i_dsc.dsc$b_dtype = DSC$K_DTYPE_T;
+           i_dsc.dsc$b_class = DSC$K_CLASS_S;
+	   i_dsc.dsc$a_pointer = (char *) i_file;
+	   i_ptr = &i_dsc;
+
+	} else {
+	   i_ptr = NULL;
+	}
+
+	if (c2pwrite != -1) {
+     	   getname(c2pwrite, o_file, 1);
+
+	   o_dsc.dsc$w_length = strlen(o_file);
+           o_dsc.dsc$b_dtype = DSC$K_DTYPE_T;
+           o_dsc.dsc$b_class = DSC$K_CLASS_S;
+	   o_dsc.dsc$a_pointer = (char *) o_file;
+	   o_ptr = &o_dsc;
+	} else {
+	   o_ptr = NULL;
+	}
+
+	str[0] = '\0';
+
+	i = 0;
+	while (argv[i]) {
+	   if (strcmp(argv[i], "/bin/sh") == 0) {
+	      i++;
+	      if (argv[i] && (strcmp(argv[i], "-c") == 0)) {
+	         i++;
+	      }
+	   } else {
+	      if (j == 0) {
+	         if (strchr(argv[i], '/')) {
+                    char *path = NULL;
+                    decc$to_vms(argv[i], cb_to_vms, 0, 0, &path);
+	            if (path !=NULL) {
+		       strcat(str, "mcr ");
+	               strcat(str, path);
+	               free(path);
+	            } else {
+	               strcat(str, argv[i]);
+	            }
+	         } else {
+	            strcat(str, argv[i]);
+	         }
+	      } else {
+	         strcat(str, argv[i]);
+	      }
+	      strcat(str, " ");
+	      i++;
+	      j++;
+	   }
+	}
+
+	dsc.dsc$w_length = strlen(str);
+	dsc.dsc$a_pointer = (char *) str;
+
+	status = lib$spawn(&dsc, i_ptr, o_ptr, &flags, NULL, &pid, NULL, &efn);
+	if (! OKAY(status)) {
+           decc$$translate(status);
+	   pid = -1;
+	}
+
+	return (pid);
+}
+#endif
 
 static PyObject *
 subprocess_fork_exec(PyObject* self, PyObject *args)
@@ -690,6 +807,9 @@ subprocess_fork_exec(PyObject* self, PyObject *args)
         need_after_fork = 1;
     }
 
+#ifdef __VMS
+        pid = child_exec(argv, p2cread, c2pwrite);
+#else
     pid = fork();
     if (pid == 0) {
         /* Child process */
@@ -715,6 +835,7 @@ subprocess_fork_exec(PyObject* self, PyObject *args)
         _exit(255);
         return NULL;  /* Dead code to avoid a potential compiler warning. */
     }
+#endif
     /* Parent (original) process */
     if (pid == -1) {
         /* Capture errno for the exception. */

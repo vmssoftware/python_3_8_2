@@ -100,6 +100,14 @@ Local naming conventions:
 #endif
 
 #define PY_SSIZE_T_CLEAN
+#ifdef __VMS
+#include <tcp.h>
+#include <socket.h>
+#include <ioctl.h>
+#ifndef socklen_t
+#define socklen_t unsigned
+#endif
+#endif
 #include "Python.h"
 #include "structmember.h"
 
@@ -702,10 +710,16 @@ internal_setblocking(PySocketSockObject *s, int block)
 
     Py_BEGIN_ALLOW_THREADS
 #ifndef MS_WINDOWS
-#if (defined(HAVE_SYS_IOCTL_H) && defined(FIONBIO))
+#if (defined(HAVE_SYS_IOCTL_H) && defined(FIONBIO)) || defined(__VMS)
     block = !block;
+#ifdef __VMS
+    ioctl(s->sock_fd, FIONBIO, (char *)&block);
+    if (ioctl(s->sock_fd, FIONBIO, (char *)&block) == -1)
+        goto done;
+#else
     if (ioctl(s->sock_fd, FIONBIO, (unsigned int *)&block) == -1)
         goto done;
+#endif
 #else
     delay_flag = fcntl(s->sock_fd, F_GETFL, 0);
     if (delay_flag == -1)

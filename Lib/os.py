@@ -26,6 +26,9 @@ import abc
 import sys
 import stat as st
 
+if sys.platform == 'OpenVMS':
+    import _decc
+
 from _collections_abc import _check_methods
 
 _names = sys.builtin_module_names
@@ -767,7 +770,12 @@ def getenv(key, default=None):
     """Get an environment variable, return None if it doesn't exist.
     The optional second argument can specify an alternate default.
     key, default and the result are str."""
-    return environ.get(key, default)
+    if sys.platform == 'OpenVMS':
+        v = environ.get(key, None)
+        if v == None:
+            return _decc.getenv(key, default)
+    else:
+        return environ.get(key, default)
 
 supports_bytes_environ = (name != 'nt')
 __all__.extend(("getenv", "supports_bytes_environ"))

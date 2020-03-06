@@ -109,7 +109,7 @@ enum opcode {
     /* Protocol 5 */
     BYTEARRAY8       = '\x96',
     NEXT_BUFFER      = '\x97',
-    READONLY_BUFFER  = '\x98'
+    ro_BUFFER  = '\x98'
 };
 
 enum {
@@ -6917,7 +6917,7 @@ load(UnpicklerObject *self)
         OP_ARG(BINBYTES8, load_counted_binbytes, 8)
         OP(BYTEARRAY8, load_counted_bytearray)
         OP(NEXT_BUFFER, load_next_buffer)
-        OP(READONLY_BUFFER, load_readonly_buffer)
+        OP(ro_BUFFER, load_ro_buffer)
         OP_ARG(SHORT_BINSTRING, load_counted_binstring, 1)
         OP_ARG(BINSTRING, load_counted_binstring, 4)
         OP(STRING, load_string)

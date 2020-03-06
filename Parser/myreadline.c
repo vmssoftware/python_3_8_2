@@ -315,6 +315,9 @@ PyOS_StdioReadline(FILE *sys_stdin, FILE *sys_stdout, const char *prompt)
 
 char *(*PyOS_ReadlineFunctionPointer)(FILE *, FILE *, const char *) = NULL;
 
+#ifdef __VMS
+extern char* vms__StdioReadline(FILE *, FILE *, const char *);
+#endif
 
 /* Interface used by tokenizer.c and bltinmodule.c */
 
@@ -332,7 +335,11 @@ PyOS_Readline(FILE *sys_stdin, FILE *sys_stdout, const char *prompt)
 
 
     if (PyOS_ReadlineFunctionPointer == NULL) {
+#ifdef __VMS
+        PyOS_ReadlineFunctionPointer = vms__StdioReadline;
+#else
         PyOS_ReadlineFunctionPointer = PyOS_StdioReadline;
+#endif
     }
 
     if (_PyOS_ReadlineLock == NULL) {

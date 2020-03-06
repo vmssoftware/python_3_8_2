@@ -3,6 +3,10 @@
 
 #define PY_SSIZE_T_CLEAN
 
+#ifdef __VMS
+#include <tcp.h>
+#endif
+
 #include "Python.h"
 
 #ifdef HAVE_SYS_FILE_H
@@ -157,6 +161,9 @@ fcntl_ioctl_impl(PyObject *module, int fd, unsigned int code,
                  PyObject *ob_arg, int mutate_arg)
 /*[clinic end generated code: output=7f7f5840c65991be input=ede70c433cccbbb2]*/
 {
+#ifdef __VMS
+#pragma message disable (MAYLOSEDATA2, CVTDIFTYPES) 	/* This could end badly */
+#endif
 #define IOCTL_BUFSZ 1024
     /* We use the unsigned non-checked 'I' format for the 'code' parameter
        because the system expects it to be a 32bit bit field value
@@ -274,6 +281,9 @@ fcntl_ioctl_impl(PyObject *module, int fd, unsigned int code,
         return NULL;
     }
     return PyLong_FromLong((long)ret);
+#ifdef __VMS
+#pragma message enable (MAYLOSEDATA2, CVTDIFTYPES)
+#endif
 #undef IOCTL_BUFSZ
 }
 

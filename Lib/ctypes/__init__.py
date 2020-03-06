@@ -457,6 +457,9 @@ if _os.name == "nt":
     pythonapi = PyDLL("python dll", None, _sys.dllhandle)
 elif _sys.platform == "cygwin":
     pythonapi = PyDLL("libpython%d.%d.dll" % _sys.version_info[:2])
+elif _sys.platform == "OpenVMS":
+    # __VMS
+    pythonapi = PyDLL("python$shr")
 else:
     pythonapi = PyDLL(None)
 

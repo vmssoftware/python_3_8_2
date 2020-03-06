@@ -77,14 +77,14 @@ mkpwent(struct passwd *p)
 #define SETS(i,val) sets(v, i, val)
 
     SETS(setIndex++, p->pw_name);
-#if defined(HAVE_STRUCT_PASSWD_PW_PASSWD) && !defined(__ANDROID__)
+#if defined(HAVE_STRUCT_PASSWD_PW_PASSWD) && !defined(__ANDROID__) && !defined(__VMS)
     SETS(setIndex++, p->pw_passwd);
 #else
     SETS(setIndex++, "");
 #endif
     PyStructSequence_SET_ITEM(v, setIndex++, _PyLong_FromUid(p->pw_uid));
     PyStructSequence_SET_ITEM(v, setIndex++, _PyLong_FromGid(p->pw_gid));
-#if defined(HAVE_STRUCT_PASSWD_PW_GECOS)
+#if defined(HAVE_STRUCT_PASSWD_PW_GECOS) && !defined(__VMS)
     SETS(setIndex++, p->pw_gecos);
 #else
     SETS(setIndex++, "");

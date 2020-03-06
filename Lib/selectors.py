@@ -580,13 +580,16 @@ if hasattr(select, 'kqueue'):
 # Choose the best implementation, roughly:
 #    epoll|kqueue|devpoll > poll > select.
 # select() also can't accept a FD > FD_SETSIZE (usually around 1024)
-if 'KqueueSelector' in globals():
-    DefaultSelector = KqueueSelector
-elif 'EpollSelector' in globals():
-    DefaultSelector = EpollSelector
-elif 'DevpollSelector' in globals():
-    DefaultSelector = DevpollSelector
-elif 'PollSelector' in globals():
-    DefaultSelector = PollSelector
-else:
+if sys.platform == "OpenVMS":
     DefaultSelector = SelectSelector
+else:
+    if 'KqueueSelector' in globals():
+        DefaultSelector = KqueueSelector
+    elif 'EpollSelector' in globals():
+        DefaultSelector = EpollSelector
+    elif 'DevpollSelector' in globals():
+        DefaultSelector = DevpollSelector
+    elif 'PollSelector' in globals():
+        DefaultSelector = PollSelector
+    else:
+        DefaultSelector = SelectSelector

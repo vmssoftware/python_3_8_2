@@ -53,6 +53,7 @@ import warnings
 import contextlib
 from time import monotonic as _time
 
+_openvms = (sys.platform == "OpenVMS")
 
 __all__ = ["Popen", "PIPE", "STDOUT", "call", "check_call", "getstatusoutput",
            "getoutput", "check_output", "run", "CalledProcessError", "DEVNULL",
@@ -212,10 +213,13 @@ else:
     # poll/select have the advantage of not requiring any extra file
     # descriptor, contrarily to epoll/kqueue (also, they require a single
     # syscall).
-    if hasattr(selectors, 'PollSelector'):
-        _PopenSelector = selectors.PollSelector
-    else:
+    if _openvms:
         _PopenSelector = selectors.SelectSelector
+    else:
+        if hasattr(selectors, 'PollSelector'):
+            _PopenSelector = selectors.PollSelector
+        else:
+            _PopenSelector = selectors.SelectSelector
 
 
 if _mswindows:
@@ -755,6 +759,10 @@ class Popen(object):
         if _mswindows:
             if preexec_fn is not None:
                 raise ValueError("preexec_fn is not supported on Windows "
+                                 "platforms")
+        elif _openvms:
+            if preexec_fn is not None:
+                raise ValueError("preexec_fn is not supported on OpenVMS "
                                  "platforms")
         else:
             # POSIX
