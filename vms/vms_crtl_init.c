@@ -67,4 +67,4 @@ void (* const iniarray[])() = {set_coe, } ;	/* Set our contribution to the LIB$I
 #pragma extern_model restore
 
 int LIB$INITIALIZE();
-globaldef int (*lib_init_ref)() = LIB$INITIALIZE;
+/* globaldef */ int (*lib_init_ref)() = LIB$INITIALIZE;

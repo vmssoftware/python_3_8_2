@@ -66,7 +66,11 @@ mkgrent(struct group *p)
 
 #define SET(i,val) PyStructSequence_SET_ITEM(v, i, val)
     SET(setIndex++, PyUnicode_DecodeFSDefault(p->gr_name));
+#ifdef __VMS
+    if (false)  // VMS doesn't have GRP::group::gr_passwd
+#else
     if (p->gr_passwd)
+#endif
             SET(setIndex++, PyUnicode_DecodeFSDefault(p->gr_passwd));
     else {
             SET(setIndex++, Py_None);

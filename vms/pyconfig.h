@@ -1,3 +1,5 @@
+#include "vms/py_vms.h"
+
 /* pyconfig.h Created from Python 3.5 for VMS source */
 
 
@@ -429,7 +431,7 @@
 #define HAVE_GETC_UNLOCKED 1
 
 /* Define to 1 if you have the `getentropy' function. */
-#undef HAVE_GETENTROPY
+#define HAVE_GETENTROPY 1
 
 /* Define to 1 if you have the `getgrgid_r' function. */
 #undef HAVE_GETGRGID_R

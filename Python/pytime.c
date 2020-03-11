@@ -895,14 +895,15 @@ pymonotonic(_PyTime_t *tp, _Py_clock_info_t *info, int raise)
         return -1;
     }
     ts.tv_nsec = t % 10000000; 	// 100 nanoseconds increments
-    ts.tv_sec = decc$fix_time(&t);
-    if (ts.tv_sec == (unsigned int)-1) {
-        if (raise) {
-            PyErr_SetFromErrno(PyExc_OSError);
-            return -1;
-        }
-        return -1;
-    }
+    // we don't have to call decc$fix_time() when second parameter of sys$gettim() is 1
+    ts.tv_sec = t / 10000000;   //decc$fix_time(&t);
+    // if (ts.tv_sec == (unsigned int)-1) {
+    //     if (raise) {
+    //         PyErr_SetFromErrno(PyExc_OSError);
+    //         return -1;
+    //     }
+    //     return -1;
+    // }
     // end VMS specific code
     assert(info == NULL || raise);
     if (info) {

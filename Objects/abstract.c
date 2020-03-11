@@ -643,7 +643,7 @@ PyBuffer_FillContiguousStrides(int nd, Py_ssize_t *shape,
 
 int
 PyBuffer_FillInfo(Py_buffer *view, PyObject *obj, void *buf, Py_ssize_t len,
-                  int readonly, int flags)
+                  int read_only, int flags)
 {
     if (view == NULL) {
         PyErr_SetString(PyExc_BufferError,
@@ -652,7 +652,7 @@ PyBuffer_FillInfo(Py_buffer *view, PyObject *obj, void *buf, Py_ssize_t len,
     }
 
     if (((flags & PyBUF_WRITABLE) == PyBUF_WRITABLE) &&
-        (readonly == 1)) {
+        (read_only == 1)) {
         PyErr_SetString(PyExc_BufferError,
                         "Object is not writable.");
         return -1;
@@ -663,7 +663,7 @@ PyBuffer_FillInfo(Py_buffer *view, PyObject *obj, void *buf, Py_ssize_t len,
         Py_INCREF(obj);
     view->buf = buf;
     view->len = len;
-    view->readonly = readonly;
+    view->read_only = read_only;
     view->itemsize = 1;
     view->format = NULL;
     if ((flags & PyBUF_FORMAT) == PyBUF_FORMAT)

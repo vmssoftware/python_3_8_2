@@ -1,4 +1,4 @@
-! MMS/EXT/DESCR=libpython3.mms/MACRO=("OUTDIR=OUT","CONFIG=DEBUG")
+! MMS/EXT/DESCR=Python3.mms/MACRO=("OUTDIR=OUT","CONFIG=DEBUG")
 
 .FIRST
     CURRENT_DIR = F$ENVIRONMENT("DEFAULT")
@@ -33,7 +33,7 @@ CONFIG = DEBUG
 ! debug
 OPT_Q = /DEBUG/NOOPTIMIZE/LIST=$(MMS$TARGET_NAME)
 OPT_DEF = _DEBUG
-LINKFLAGS = /DEBUG/MAP='CURRENT_DIR_BEGIN'[$(OUT_DIR)]$(NOTDIR $(MMS$TARGET_NAME))
+LINKFLAGS = /DEBUG
 .ELSE
 ! release
 OPT_Q = /NODEBUG/OPTIMIZE/NOLIST
@@ -44,9 +44,16 @@ LINKFLAGS = /NODEBUG
 OUT_DIR = $(OUTDIR).$(CONFIG)
 OBJ_DIR = $(OUT_DIR).OBJ
 
-DYNLOADFILE = dynload_shlib
+LINKFLAGS = $(LINKFLAGS)/MAP='CURRENT_DIR_BEGIN'[$(OUT_DIR)]$(NOTDIR $(MMS$TARGET_NAME))
 
-PY_CFLAGS_Q = $(OPT_Q)/STANDARD=LATEST/NAMES=(as_is,shortened)/UNDEFINE="__HIDE_FORBIDDEN_NAMES"/WARNINGS=DISABLE=(NONSTANDCAST,NOTINCRTL,MIXFUNCVOID,QUESTCOMPARE,QUESTCOMPARE1)
+DYNLOADFILE = dynload_shlib
+ABIFLAGS = m
+PLATFORM = OpenVMS
+SOABI = cpython-38m-ia64-openvms
+
+!PY_CFLAGS_Q = $(OPT_Q)/STANDARD=LATEST/NAMES=(AS_IS,SHORTENED)/UNDEFINE="__HIDE_FORBIDDEN_NAMES"/WARNINGS=DISABLE=(NONSTANDCAST,NOTINCRTL,MIXFUNCVOID,QUESTCOMPARE,QUESTCOMPARE1)
+PY_CFLAGS_Q = $(OPT_Q)/NAMES=(AS_IS,SHORTENED)/WARNINGS=DISABLE=(NONSTANDCAST,NOTINCRTL,MIXFUNCVOID,QUESTCOMPARE,QUESTCOMPARE1)
+!PY_CFLAGS_Q = $(OPT_Q)/STANDARD=LATEST/NAMES=SHORTENED/UNDEFINE="__HIDE_FORBIDDEN_NAMES"/WARNINGS=DISABLE=(NONSTANDCAST,NOTINCRTL,MIXFUNCVOID,QUESTCOMPARE,QUESTCOMPARE1)
 PY_CFLAGS_DEF = $(OPT_DEF),_USE_STD_STAT
 PY_CFLAGS_INC = [],[.Include],[.Include.internal],oss$root:[include]
 
@@ -56,19 +63,16 @@ PY_CORE_CFLAGS = $(PY_CFLAGS_Q)/DEFINE=("Py_BUILD_CORE",$(PY_CFLAGS_DEF))/INCLUD
 GETPATH_DEF = PYTHONPATH="""""",PREFIX="""/usr/local""",EXEC_PREFIX="""/usr/local""",VERSION="""3.8""",VPATH=""""""
 PY_CORE_CFLAGS_GETPATH = $(PY_CFLAGS_Q)/DEFINE=("Py_BUILD_CORE",$(GETPATH_DEF),$(PY_CFLAGS_DEF))/INCLUDE_DIRECTORY=($(PY_CFLAGS_INC))
 
-PLATFORM_VMS = open-vms
-SUFFIX_VMS = cpython-38-$(PLATFORM_VMS)
-
-SOABI_DEF = SOABI="""$(SUFFIX_VMS)"""
+SOABI_DEF = SOABI="""$(SOABI)"""
 PY_CORE_CFLAGS_SHLIB = $(PY_CFLAGS_Q)/DEFINE=("Py_BUILD_CORE",$(SOABI_DEF),$(PY_CFLAGS_DEF))/INCLUDE_DIRECTORY=($(PY_CFLAGS_INC))
 
 HPUX_DEF = SHLIB_EXT=""".EXE"""
 PY_CORE_CFLAGS_HPUX = $(PY_CFLAGS_Q)/DEFINE=("Py_BUILD_CORE",$(HPUX_DEF),$(PY_CFLAGS_DEF))/INCLUDE_DIRECTORY=($(PY_CFLAGS_INC))
 
-SYSMODULE_DEF = ABIFLAGS="""""",MULTIARCH="""$(SUFFIX_VMS)"""
+SYSMODULE_DEF = ABIFLAGS="""$(ABIFLAGS)""",MULTIARCH="""$(SOABI)"""
 PY_CORE_CFLAGS_SYSMODULE = $(PY_CFLAGS_Q)/DEFINE=("Py_BUILD_CORE",$(SYSMODULE_DEF),$(PY_CFLAGS_DEF))/INCLUDE_DIRECTORY=($(PY_CFLAGS_INC))
 
-GETPLATFORM_DEF = PLATFORM="""$(PLATFORM_VMS)"""
+GETPLATFORM_DEF = PLATFORM="""$(PLATFORM)"""
 PY_CORE_CFLAGS_GETPLATFORM = $(PY_CFLAGS_Q)/DEFINE=("Py_BUILD_CORE",$(GETPLATFORM_DEF),$(PY_CFLAGS_DEF))/INCLUDE_DIRECTORY=($(PY_CFLAGS_INC))
 
 IO_INC = [.Modules._io]
@@ -78,7 +82,7 @@ PY_BUILTIN_MODULE_CFLAGS_IO = $(PY_CFLAGS_Q)/DEFINE=("Py_BUILD_CORE_BUILTIN",$(P
 .SUFFIXES .EXE .OLB .OBJ .C
 
 .C.OBJ
-    pipe create/dir $(DIR $(MMS$TARGET)) | copy SYS$INPUT nl:
+    @ pipe create/dir $(DIR $(MMS$TARGET)) | copy SYS$INPUT nl:
     $(CC) $(PY_CORE_CFLAGS) /OBJECT=$(MMS$TARGET) $(MMS$SOURCE)
 
 .OBJ.OLB
@@ -86,8 +90,11 @@ PY_BUILTIN_MODULE_CFLAGS_IO = $(PY_CFLAGS_Q)/DEFINE=("Py_BUILD_CORE_BUILTIN",$(P
         THEN $(LIBR)/CREATE $(MMS$TARGET)
     $(LIBR) $(MMS$TARGET) $(MMS$SOURCE)
 
-TARGET : [.$(OUT_DIR)]libpython3.olb
+TARGET : [.$(OUT_DIR)]python3.exe
     ! done
+
+CLEAN :
+    del/tree [.$(OUT_DIR)...]*.*;*
 
 pyconfig.h : [.vms]pyconfig.h
     copy [.vms]pyconfig.h []
@@ -221,6 +228,7 @@ PYTHON_HEADERS = -
 [.Include]warnings.h -
 [.Include]weakrefobject.h -
 pyconfig.h -
+[.vms]py_vms.h -
 $(PARSER_HEADERS) -
 [.Include]Python-ast.h -
 [.Include.cpython]abstract.h -
@@ -438,9 +446,6 @@ DTRACE_DEPS = -
 [.$(OBJ_DIR).Python]sysmodule.obj -
 [.$(OBJ_DIR).Modules]gcmodule.obj
 
-[.$(OUT_DIR)]libpython3.olb : [.$(OUT_DIR)]libpython3.olb($(LIBRARY_OBJS))
-    continue
-
 [.$(OBJ_DIR).Modules]_math.obj : [.Modules]_math.c [.Modules]_math.h $(PYTHON_HEADERS)
 [.$(OBJ_DIR).Modules]config.obj : [.Modules]config.c $(PYTHON_HEADERS)
 [.$(OBJ_DIR).Modules]gcmodule.obj : [.Modules]gcmodule.c $(PYTHON_HEADERS)
@@ -551,6 +556,7 @@ DTRACE_DEPS = -
 [.$(OBJ_DIR).Python]symtable.obj : [.Python]symtable.c [.Include]graminit.h [.Include]Python-ast.h $(PYTHON_HEADERS)
 [.$(OBJ_DIR).Python]thread.obj : [.Python]thread.c [.Python]thread_nt.h [.Python]thread_pthread.h [.Python]condvar.h $(PYTHON_HEADERS)
 [.$(OBJ_DIR).Python]traceback.obj : [.Python]traceback.c $(PYTHON_HEADERS)
+[.$(OBJ_DIR).vms]vms_crtl_init.obj : [.vms]vms_crtl_init.c
 
 [.$(OBJ_DIR).Objects]interpreteridobject.obj : [.Objects]interpreteridobject.c $(PYTHON_HEADERS) [.vms]format_macros.h
     pipe create/dir $(DIR $(MMS$TARGET)) | copy SYS$INPUT nl:
@@ -730,4 +736,13 @@ DTRACE_DEPS = -
 ! [.$(OUT_DIR).Modules]_tracemalloc$(EXT_SUFFIX) :  [.$(OBJ_DIR).Modules]_tracemalloc.o Modules/hashtable.o; $(BLDSHARED)  Modules/_tracemalloc.o Modules/hashtable.o   -o Modules/_tracemalloc$(EXT_SUFFIX)
 ! [.$(OUT_DIR).Modules]_symtable$(EXT_SUFFIX) :  [.$(OBJ_DIR).Modules]symtablemodule.o; $(BLDSHARED)  Modules/symtablemodule.o   -o Modules/_symtable$(EXT_SUFFIX)
 ! [.$(OUT_DIR).Modules]xxsubtype$(EXT_SUFFIX) :  [.$(OBJ_DIR).Modules]xxsubtype.o; $(BLDSHARED)  Modules/xxsubtype.o   -o Modules/xxsubtype$(EXT_SUFFIX)
+
+[.$(OUT_DIR)]python3.exe : [.$(OBJ_DIR).Programs]python.obj,[.$(OBJ_DIR).vms]vms_crtl_init.obj,[.$(OUT_DIR)]libpython3.olb
+    SET DEFAULT [.$(OBJ_DIR)]
+    !$(LINK)$(LINKFLAGS)/THREADS/EXECUTABLE='CURRENT_DIR_BEGIN'[$(OUT_DIR)]$(NOTDIR $(MMS$TARGET_NAME)).EXE 'CURRENT_DIR_BEGIN'[opt]$(NOTDIR $(MMS$TARGET_NAME)).opt/OPT
+    $(LINK)$(LINKFLAGS)/EXECUTABLE='CURRENT_DIR_BEGIN'[$(OUT_DIR)]$(NOTDIR $(MMS$TARGET_NAME)).EXE 'CURRENT_DIR_BEGIN'[opt]$(NOTDIR $(MMS$TARGET_NAME)).opt/OPT
+    SET DEFAULT 'CURRENT_DIR'
+
+[.$(OUT_DIR)]libpython3.olb : [.$(OUT_DIR)]libpython3.olb($(LIBRARY_OBJS))
+    continue
 

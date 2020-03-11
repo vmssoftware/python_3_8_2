@@ -43,7 +43,7 @@ typedef struct bufferinfo {
     Py_ssize_t len;
     Py_ssize_t itemsize;  /* This is Py_ssize_t so it can be
                              pointed to by strides in simple case.*/
-    int readonly;
+    int read_only;
     int ndim;
     char *format;
     Py_ssize_t *shape;

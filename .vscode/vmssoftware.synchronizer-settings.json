@@ -27,14 +27,8 @@
             {
                 "label": "libPython",
                 "description": "Python library",
-                "command": "libpython.mms",
+                "command": "Python3.mms",
                 "parameter": ""
-            },
-            {
-                "label": "RELEASE",
-                "description": "RELEASE",
-                "command": "",
-                "parameter": "RELEASE"
             }
         ]
     }
