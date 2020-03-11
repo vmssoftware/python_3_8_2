@@ -293,6 +293,7 @@ POBJS = -
 
 PARSER_OBJS = $(POBJS) -
 [.$(OBJ_DIR).Parser]myreadline.obj -
+[.$(OBJ_DIR).vms]stdioreadline.obj -
 [.$(OBJ_DIR).Parser]parsetok.obj -
 [.$(OBJ_DIR).Parser]tokenizer.obj
 
@@ -557,6 +558,7 @@ DTRACE_DEPS = -
 [.$(OBJ_DIR).Python]thread.obj : [.Python]thread.c [.Python]thread_nt.h [.Python]thread_pthread.h [.Python]condvar.h $(PYTHON_HEADERS)
 [.$(OBJ_DIR).Python]traceback.obj : [.Python]traceback.c $(PYTHON_HEADERS)
 [.$(OBJ_DIR).vms]vms_crtl_init.obj : [.vms]vms_crtl_init.c
+[.$(OBJ_DIR).vms]stdioreadline.obj : [.vms]stdioreadline.c
 
 [.$(OBJ_DIR).Objects]interpreteridobject.obj : [.Objects]interpreteridobject.c $(PYTHON_HEADERS) [.vms]format_macros.h
     pipe create/dir $(DIR $(MMS$TARGET)) | copy SYS$INPUT nl:
