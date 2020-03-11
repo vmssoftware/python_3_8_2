@@ -604,7 +604,7 @@ def _syscmd_uname(option, default=''):
 
     """ Interface to the system's uname command.
     """
-    if sys.platform in ('dos', 'win32', 'win16'):
+    if sys.platform in ('dos', 'win32', 'win16', 'OpenVMS'):
         # XXX Others too ?
         return default
 
@@ -843,15 +843,12 @@ def uname():
             version = ''
         # Get processor information
         try:
-            import vms_lib
+            import vms.lib
+            import vms.syidef
         except ImportError:
             pass
         else:
-            csid, cpu_number = vms_lib.getsyi('SYI$_CPU', 0)
-            if (cpu_number >= 128):
-                processor = 'Alpha'
-            else:
-                processor = 'VAX'
+            sts, processor, csid = vms.lib.getsyi(vms.syidef.SYI__ARCH_NAME, None)
     if not processor:
         # Get processor information from the uname system command
         processor = _syscmd_uname('-p', '')

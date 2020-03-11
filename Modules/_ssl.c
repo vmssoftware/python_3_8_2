@@ -16,6 +16,9 @@
 
 #define PY_SSIZE_T_CLEAN
 
+#ifdef __VMS
+#include <tcp.h>
+#endif
 #include "Python.h"
 
 #include "pythread.h"
@@ -54,6 +57,10 @@ static PySocketModule_APIObject PySocketModule;
 #endif
 
 /* Include OpenSSL header files */
+#ifdef __VMS
+#pragma names save
+#pragma names uppercase
+#endif
 #include "openssl/rsa.h"
 #include "openssl/crypto.h"
 #include "openssl/x509.h"
@@ -64,6 +71,9 @@ static PySocketModule_APIObject PySocketModule;
 #include "openssl/rand.h"
 #include "openssl/bio.h"
 #include "openssl/dh.h"
+#ifdef __VMS
+#pragma names restore
+#endif
 
 #ifndef HAVE_X509_VERIFY_PARAM_SET1_HOST
 #  ifdef LIBRESSL_VERSION_NUMBER

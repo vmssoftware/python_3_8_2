@@ -20,11 +20,18 @@
 
 
 /* EVP is the preferred interface to hashing in OpenSSL */
+#ifdef __VMS
+#pragma names save
+#pragma names uppercase
+#endif
 #include <openssl/evp.h>
 #include <openssl/hmac.h>
 /* We use the object interface to discover what hashes OpenSSL supports. */
 #include <openssl/objects.h>
 #include "openssl/err.h"
+#ifdef __VMS
+#pragma names restore
+#endif
 
 #if (OPENSSL_VERSION_NUMBER < 0x10100000L) || defined(LIBRESSL_VERSION_NUMBER)
 /* OpenSSL < 1.1.0 */

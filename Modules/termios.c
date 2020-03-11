@@ -15,6 +15,11 @@
 #endif
 
 #include <termios.h>
+#ifdef __VMS
+typedef unsigned char  u_char;
+typedef unsigned short u_short;
+typedef unsigned long  u_long;
+#endif
 #include <sys/ioctl.h>
 
 /* HP-UX requires that this be included to pick up MDCD, MCTS, MDSR,
@@ -213,6 +218,10 @@ has a system dependent meaning.");
 static PyObject *
 termios_tcsendbreak(PyObject *self, PyObject *args)
 {
+#ifdef __VMS
+    errno = ENOSYS;
+    return PyErr_SetFromErrno(TermiosError);
+#else
     int fd, duration;
 
     if (!PyArg_ParseTuple(args, "O&i:tcsendbreak",
@@ -222,6 +231,7 @@ termios_tcsendbreak(PyObject *self, PyObject *args)
         return PyErr_SetFromErrno(TermiosError);
 
     Py_RETURN_NONE;
+#endif
 }
 
 PyDoc_STRVAR(termios_tcdrain__doc__,
@@ -232,6 +242,10 @@ Wait until all output written to file descriptor fd has been transmitted.");
 static PyObject *
 termios_tcdrain(PyObject *self, PyObject *args)
 {
+#ifdef __VMS
+    errno = ENOSYS;
+    return PyErr_SetFromErrno(TermiosError);
+#else
     int fd;
 
     if (!PyArg_ParseTuple(args, "O&:tcdrain",
@@ -241,6 +255,7 @@ termios_tcdrain(PyObject *self, PyObject *args)
         return PyErr_SetFromErrno(TermiosError);
 
     Py_RETURN_NONE;
+#endif
 }
 
 PyDoc_STRVAR(termios_tcflush__doc__,
@@ -254,6 +269,10 @@ both queues. ");
 static PyObject *
 termios_tcflush(PyObject *self, PyObject *args)
 {
+#ifdef __VMS
+    errno = ENOSYS;
+    return PyErr_SetFromErrno(TermiosError);
+#else
     int fd, queue;
 
     if (!PyArg_ParseTuple(args, "O&i:tcflush",
@@ -263,6 +282,7 @@ termios_tcflush(PyObject *self, PyObject *args)
         return PyErr_SetFromErrno(TermiosError);
 
     Py_RETURN_NONE;
+#endif
 }
 
 PyDoc_STRVAR(termios_tcflow__doc__,
@@ -276,6 +296,10 @@ or termios.TCION to restart input.");
 static PyObject *
 termios_tcflow(PyObject *self, PyObject *args)
 {
+#ifdef __VMS
+    errno = ENOSYS;
+    return PyErr_SetFromErrno(TermiosError);
+#else
     int fd, action;
 
     if (!PyArg_ParseTuple(args, "O&i:tcflow",
@@ -285,6 +309,7 @@ termios_tcflow(PyObject *self, PyObject *args)
         return PyErr_SetFromErrno(TermiosError);
 
     Py_RETURN_NONE;
+#endif
 }
 
 static PyMethodDef termios_methods[] =
@@ -733,7 +758,9 @@ static struct constant {
     {"TCFLSH", TCFLSH},
 #endif
 #ifdef TCGETA
+#ifndef __VMS
     {"TCGETA", TCGETA},
+#endif
 #endif
 #ifdef TCGETS
     {"TCGETS", TCGETS},
@@ -745,13 +772,19 @@ static struct constant {
     {"TCSBRKP", TCSBRKP},
 #endif
 #ifdef TCSETA
+#ifndef __VMS
     {"TCSETA", TCSETA},
 #endif
+#endif
 #ifdef TCSETAF
+#ifndef __VMS
     {"TCSETAF", TCSETAF},
 #endif
+#endif
 #ifdef TCSETAW
+#ifndef __VMS
     {"TCSETAW", TCSETAW},
+#endif
 #endif
 #ifdef TCSETS
     {"TCSETS", TCSETS},

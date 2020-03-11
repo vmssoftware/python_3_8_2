@@ -37,12 +37,16 @@ const char *_PyImport_DynLoadFiletab[] = {
 #ifdef __CYGWIN__
     ".dll",
 #else  /* !__CYGWIN__ */
+#ifdef __VMS
+    ".exe",
+#else
     "." SOABI ".so",
 #ifdef ALT_SOABI
     "." ALT_SOABI ".so",
 #endif
     ".abi" PYTHON_ABI_STRING ".so",
     ".so",
+#endif
 #endif  /* __CYGWIN__ */
     NULL,
 };

@@ -807,7 +807,7 @@ time_strftime(PyObject *self, PyObject *args)
 #endif
         _Py_BEGIN_SUPPRESS_IPH
 #ifdef __VMS
-        buflen = format_time(outbuf, i, (const char*)fmt, &buf);
+        buflen = format_time(outbuf, i, (const char *) fmt, &buf);
 #else
         buflen = format_time(outbuf, i, fmt, &buf);
 #endif

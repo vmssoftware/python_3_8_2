@@ -213,6 +213,7 @@ syslog_closelog(PyObject *self, PyObject *unused)
     Py_RETURN_NONE;
 }
 
+#ifndef __VMS
 static PyObject *
 syslog_setlogmask(PyObject *self, PyObject *args)
 {
@@ -226,6 +227,7 @@ syslog_setlogmask(PyObject *self, PyObject *args)
     omaskpri = setlogmask(maskpri);
     return PyLong_FromLong(omaskpri);
 }
+#endif
 
 static PyObject *
 syslog_log_mask(PyObject *self, PyObject *args)
@@ -255,7 +257,9 @@ static PyMethodDef syslog_methods[] = {
     {"openlog",         (PyCFunction)(void(*)(void)) syslog_openlog,           METH_VARARGS | METH_KEYWORDS},
     {"closelog",        syslog_closelog,        METH_NOARGS},
     {"syslog",          syslog_syslog,          METH_VARARGS},
+#ifndef __VMS
     {"setlogmask",      syslog_setlogmask,      METH_VARARGS},
+#endif
     {"LOG_MASK",        syslog_log_mask,        METH_VARARGS},
     {"LOG_UPTO",        syslog_log_upto,        METH_VARARGS},
     {NULL,              NULL,                   0}

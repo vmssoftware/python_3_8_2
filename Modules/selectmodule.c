@@ -3,6 +3,9 @@
    Under Win32, select only exists for sockets, and sockets may
    have any value except INVALID_SOCKET.
 */
+#ifdef __VMS
+#define FD_SETSIZE 4096
+#endif
 
 #if defined(HAVE_POLL_H) && !defined(_GNU_SOURCE)
 #define _GNU_SOURCE

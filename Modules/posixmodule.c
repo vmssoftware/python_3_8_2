@@ -10,11 +10,6 @@
 
 
 
-#ifdef __VMS
-#include <tcp.h>
-#include <unistd.h>
-#endif
-
 #ifdef __APPLE__
    /*
     * Step 1 of support for weak-linking a number of symbols existing on
@@ -28,6 +23,11 @@
 #endif /* __APPLE__ */
 
 #define PY_SSIZE_T_CLEAN
+
+#ifdef __VMS
+#include <tcp.h>
+#include <unistd.h>
+#endif
 
 #include "Python.h"
 #ifdef MS_WINDOWS
@@ -3500,6 +3500,7 @@ posix_getcwd(int use_bytes)
             break;
         }
         buf = newbuf;
+
 #ifdef __VMS
         cwd = getcwd(buf, buflen, 0);
 #else
@@ -4601,6 +4602,9 @@ os_uname_impl(PyObject *module)
     struct utsname u;
     int res;
     PyObject *value;
+#ifdef __VMS
+    char *t;
+#endif
 
     Py_BEGIN_ALLOW_THREADS
     res = uname(&u);
@@ -4611,14 +4615,12 @@ os_uname_impl(PyObject *module)
     value = PyStructSequence_New(UnameResultType);
     if (value == NULL)
         return NULL;
-
+    
 #ifdef __VMS
-    char *t = u.machine;
+    t = u.machine;
     while (*t) {
-       if (! isalnum(*t) ) {
-           *t = '_';
-       }
-       ++t;
+       if (! isalnum(*t) && (*t != '_')) *t = '_';
+       t++;
     }
 #endif
 
@@ -4706,8 +4708,13 @@ typedef struct {
         time = timet; \
     } \
 
-
+#ifdef __VMS
+#pragma message disable (EXPANDEDDEFINED)
+#endif
 #if defined(HAVE_FUTIMESAT) || defined(HAVE_UTIMENSAT)
+#ifdef __VMS
+#pragma message enable (EXPANDEDDEFINED)
+#endif
 
 static int
 utime_dir_fd(utime_t *ut, int dir_fd, const char *path, int follow_symlinks)
@@ -4985,6 +4992,9 @@ os_utime_impl(PyObject *module, path_t *path, PyObject *times, PyObject *ns,
     else
 #endif
 
+#ifdef __VMS
+#pragma message disable (EXPANDEDDEFINED)
+#endif
 #if defined(HAVE_FUTIMESAT) || defined(HAVE_UTIMENSAT)
     if ((dir_fd != DEFAULT_DIR_FD) || (!follow_symlinks))
         result = utime_dir_fd(&utime, dir_fd, path->narrow, follow_symlinks);
@@ -4995,6 +5005,9 @@ os_utime_impl(PyObject *module, path_t *path, PyObject *times, PyObject *ns,
     if (path->fd != -1)
         result = utime_fd(&utime, path->fd);
     else
+#endif
+#ifdef __VMS
+#pragma message enable (EXPANDEDDEFINED)
 #endif
 
     result = utime_default(&utime, path->narrow);
@@ -9397,6 +9410,9 @@ os_pipe_impl(PyObject *module)
 #else
     int res;
 #endif
+#ifdef __VMS
+    int one = 1;
+#endif
 
 #ifdef MS_WINDOWS
     attr.nLength = sizeof(attr);
@@ -9431,7 +9447,12 @@ os_pipe_impl(PyObject *module)
     {
 #endif
         Py_BEGIN_ALLOW_THREADS
+#ifdef __VMS
+	/* >>> BRC 26-Jul-2018 */
+	res = socketpair(AF_UNIX, SOCK_STREAM, 0, fds);
+#else
         res = pipe(fds);
+#endif
         Py_END_ALLOW_THREADS
 
         if (res == 0) {
