@@ -45,6 +45,7 @@ extern PyObject* PyInit_faulthandler(void);
 extern PyObject* PyInit__tracemalloc(void);
 extern PyObject* PyInit__symtable(void);
 extern PyObject* PyInit_xxsubtype(void);
+/* extern PyObject* PyInit__decc(void); */
 
 /* -- ADDMODULE MARKER 1 -- */
 
@@ -103,6 +104,9 @@ struct _inittab _PyImport_Inittab[] = {
 
     /* This lives in Objects/unicodeobject.c */
     {"_string", PyInit__string},
+
+    /* This lives in Modules/vms/decc_wrap.c
+    {"_decc", PyInit__decc},                 */
 
     /* Sentinel */
     {0, 0}

@@ -433,6 +433,8 @@ MODOBJS = -
 [.$(OBJ_DIR).Modules]_tracemalloc.obj -
 [.$(OBJ_DIR).Modules]hashtable.obj -
 [.$(OBJ_DIR).Modules]symtablemodule.obj -
+- ![.$(OBJ_DIR).Modules.vms.decc]decc.obj -
+- ![.$(OBJ_DIR).Modules.vms.decc]decc_wrap.obj -
 [.$(OBJ_DIR).Modules]xxsubtype.obj
 
 LIBRARY_OBJS_OMIT_FROZEN = -
@@ -751,8 +753,8 @@ DTRACE_DEPS = -
     LINK$(LINKFLAGS)/SHARE='CURRENT_DIR_BEGIN'[$(OUT_DIR).$(DYNLOAD_DIR)]$(NOTDIR $(MMS$TARGET_NAME)).EXE 'CURRENT_DIR_BEGIN'[opt]$(NOTDIR $(MMS$TARGET_NAME)).opt/OPT
     SET DEFAULT 'CURRENT_DIR'
 
-[.$(OUT_DIR).Modules]posix$(EXT_SUFFIX) : [.$(OBJ_DIR).Modules]posixmodule.o
-    $(BLDSHARED)  Modules/posixmodule.o   -o Modules/posix$(EXT_SUFFIX)
+! [.$(OUT_DIR).$(DYNLOAD_DIR)]posix$(EXT_SUFFIX) : [.$(OBJ_DIR).Modules]posixmodule.o
+!     $(BLDSHARED)  Modules/posixmodule.o   -o Modules/posix$(EXT_SUFFIX)
 ! [.$(OUT_DIR).Modules]errno$(EXT_SUFFIX) :  [.$(OBJ_DIR).Modules]errnomodule.o; $(BLDSHARED)  Modules/errnomodule.o   -o Modules/errno$(EXT_SUFFIX)
 ! [.$(OUT_DIR).Modules]pwd$(EXT_SUFFIX) :  [.$(OBJ_DIR).Modules]pwdmodule.o; $(BLDSHARED)  Modules/pwdmodule.o   -o Modules/pwd$(EXT_SUFFIX)
 ! [.$(OUT_DIR).Modules]_sre$(EXT_SUFFIX) :  [.$(OBJ_DIR).Modules]_sre.o; $(BLDSHARED)  Modules/_sre.o   -o Modules/_sre$(EXT_SUFFIX)
