@@ -1,0 +1,7 @@
+[.modules.vms.decc]decc_wrap.obj
+[.modules.vms.decc]decc.obj
+sys$library:pthread$rtl.exe/share
+sys$disk:[-]python$shr.exe/share
+GSMATCH=LEQUAL,1,0
+CASE_SENSITIVE=YES
+SYMBOL_VECTOR=(PyInit__decc=PROCEDURE)

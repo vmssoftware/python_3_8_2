@@ -1633,8 +1633,9 @@ init_timezone(PyObject *m)
     /* Sanity check, don't check for the validity of timezones.
        In practice, it should be more in range -12 hours .. +14 hours. */
 #define MAX_TIMEZONE (48 * 3600)
-    if (janzone_t < -MAX_TIMEZONE || janzone_t > MAX_TIMEZONE
-        || julyzone_t < -MAX_TIMEZONE || julyzone_t > MAX_TIMEZONE)
+    // __VMS has unsigned time_t
+    if ((long)janzone_t < -MAX_TIMEZONE || (long)janzone_t > MAX_TIMEZONE
+        || (long)julyzone_t < -MAX_TIMEZONE || (long)julyzone_t > MAX_TIMEZONE)
     {
         PyErr_SetString(PyExc_RuntimeError, "invalid GMT offset");
         return -1;

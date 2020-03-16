@@ -36,6 +36,7 @@ OPT_DEF = _DEBUG
 OUT_DIR = $(OUTDIR).$(CONFIG)
 OBJ_DIR = $(OUT_DIR).OBJ
 LINKFLAGS = /DEBUG/MAP='CURRENT_DIR_BEGIN'[$(OUT_DIR)]$(NOTDIR $(MMS$TARGET_NAME))
+PYTHON$SHR_OPT = PYTHON$SHR_DBG
 .ELSE
 ! release
 OPT_Q = /NODEBUG/OPTIMIZE/NOLIST
@@ -43,8 +44,10 @@ OPT_DEF = _NDEBUG
 OUT_DIR = $(OUTDIR).$(CONFIG)
 OBJ_DIR = $(OUT_DIR).OBJ
 LINKFLAGS = /NODEBUG/NOMAP
+PYTHON$SHR_OPT = PYTHON$SHR
 .ENDIF
 
+DYNLOAD_DIR = lib-dynload
 
 DYNLOADFILE = dynload_shlib
 ABIFLAGS = m
@@ -76,6 +79,8 @@ PY_CORE_CFLAGS_GETPLATFORM = $(PY_CFLAGS_Q)/DEFINE=("Py_BUILD_CORE",$(GETPLATFOR
 IO_INC = [.Modules._io]
 PY_BUILTIN_MODULE_CFLAGS_IO = $(PY_CFLAGS_Q)/DEFINE=("Py_BUILD_CORE_BUILTIN",$(PY_CFLAGS_DEF))/INCLUDE_DIRECTORY=($(PY_CFLAGS_INC),$(IO_INC))
 
+PY_OSF_CFLAGS = $(PY_CFLAGS_Q)/DEFINE=(_OSF_SOURCE,$(PY_CFLAGS_DEF))/INCLUDE_DIRECTORY=($(PY_CFLAGS_INC))
+
 .SUFFIXES
 .SUFFIXES .EXE .OLB .OBJ .C
 
@@ -88,7 +93,10 @@ PY_BUILTIN_MODULE_CFLAGS_IO = $(PY_CFLAGS_Q)/DEFINE=("Py_BUILD_CORE_BUILTIN",$(P
         THEN $(LIBR)/CREATE $(MMS$TARGET)
     $(LIBR) $(MMS$TARGET) $(MMS$SOURCE)
 
-TARGET : [.$(OUT_DIR)]python3.exe
+LIBDYNLOAD = -
+[.$(OUT_DIR).lib-dynload]_decc.exe
+
+TARGET : [.$(OUT_DIR)]python3.exe $(LIBDYNLOAD)
     ! done
 
 CLEAN :
@@ -714,7 +722,37 @@ DTRACE_DEPS = -
     pipe create/dir $(DIR $(MMS$TARGET)) | copy SYS$INPUT nl:
     $(CC) $(PY_BUILTIN_MODULE_CFLAGS) /OBJECT=$(MMS$TARGET) $(MMS$SOURCE)
 
-! [.$(OUT_DIR).Modules]posix$(EXT_SUFFIX) :  [.$(OBJ_DIR).Modules]posixmodule.o; $(BLDSHARED)  Modules/posixmodule.o   -o Modules/posix$(EXT_SUFFIX)
+[.$(OUT_DIR)]python$shr.exe : [.$(OUT_DIR)]libpython3.olb
+    SET DEFAULT [.$(OUT_DIR)]
+    LINK$(LINKFLAGS)/SHARE=$(NOTDIR $(MMS$TARGET_NAME)).EXE 'CURRENT_DIR_BEGIN'[opt]$(PYTHON$SHR_OPT).opt/OPT
+    SET DEFAULT 'CURRENT_DIR'
+
+[.$(OUT_DIR)]python3.exe : [.$(OBJ_DIR).Programs]python.obj,[.$(OBJ_DIR).vms]vms_crtl_init.obj,[.$(OUT_DIR)]python$shr.exe
+    SET DEFAULT [.$(OBJ_DIR)]
+    !$(LINK)$(LINKFLAGS)/THREADS/EXECUTABLE='CURRENT_DIR_BEGIN'[$(OUT_DIR)]$(NOTDIR $(MMS$TARGET_NAME)).EXE 'CURRENT_DIR_BEGIN'[opt]$(NOTDIR $(MMS$TARGET_NAME)).opt/OPT
+    $(LINK)$(LINKFLAGS)/EXECUTABLE='CURRENT_DIR_BEGIN'[$(OUT_DIR)]$(NOTDIR $(MMS$TARGET_NAME)).EXE 'CURRENT_DIR_BEGIN'[opt]$(NOTDIR $(MMS$TARGET_NAME)).opt/OPT
+    SET DEFAULT 'CURRENT_DIR'
+
+[.$(OUT_DIR)]libpython3.olb : [.$(OUT_DIR)]libpython3.olb($(LIBRARY_OBJS))
+    continue
+
+[.$(OBJ_DIR).modules.vms.decc]decc_wrap.obj : [.modules.vms.decc]decc_wrap.c
+    pipe create/dir $(DIR $(MMS$TARGET)) | copy SYS$INPUT nl:
+    $(CC)$(PY_OSF_CFLAGS)/OBJECT=$(MMS$TARGET) $(MMS$SOURCE)
+
+[.$(OBJ_DIR).modules.vms.decc]decc.obj : [.modules.vms.decc]decc.c
+    pipe create/dir $(DIR $(MMS$TARGET)) | copy SYS$INPUT nl:
+    $(CC)$(PY_OSF_CFLAGS)/OBJECT=$(MMS$TARGET) $(MMS$SOURCE)
+
+[.$(OUT_DIR).$(DYNLOAD_DIR)]_decc.exe : [.$(OBJ_DIR).modules.vms.decc]decc_wrap.obj,-
+[.$(OBJ_DIR).modules.vms.decc]decc.obj
+    pipe create/dir $(DIR $(MMS$TARGET)) | copy SYS$INPUT nl:
+    SET DEFAULT [.$(OBJ_DIR)]
+    LINK$(LINKFLAGS)/SHARE='CURRENT_DIR_BEGIN'[$(OUT_DIR).$(DYNLOAD_DIR)]$(NOTDIR $(MMS$TARGET_NAME)).EXE 'CURRENT_DIR_BEGIN'[opt]$(NOTDIR $(MMS$TARGET_NAME)).opt/OPT
+    SET DEFAULT 'CURRENT_DIR'
+
+[.$(OUT_DIR).Modules]posix$(EXT_SUFFIX) : [.$(OBJ_DIR).Modules]posixmodule.o
+    $(BLDSHARED)  Modules/posixmodule.o   -o Modules/posix$(EXT_SUFFIX)
 ! [.$(OUT_DIR).Modules]errno$(EXT_SUFFIX) :  [.$(OBJ_DIR).Modules]errnomodule.o; $(BLDSHARED)  Modules/errnomodule.o   -o Modules/errno$(EXT_SUFFIX)
 ! [.$(OUT_DIR).Modules]pwd$(EXT_SUFFIX) :  [.$(OBJ_DIR).Modules]pwdmodule.o; $(BLDSHARED)  Modules/pwdmodule.o   -o Modules/pwd$(EXT_SUFFIX)
 ! [.$(OUT_DIR).Modules]_sre$(EXT_SUFFIX) :  [.$(OBJ_DIR).Modules]_sre.o; $(BLDSHARED)  Modules/_sre.o   -o Modules/_sre$(EXT_SUFFIX)
@@ -736,13 +774,4 @@ DTRACE_DEPS = -
 ! [.$(OUT_DIR).Modules]_tracemalloc$(EXT_SUFFIX) :  [.$(OBJ_DIR).Modules]_tracemalloc.o Modules/hashtable.o; $(BLDSHARED)  Modules/_tracemalloc.o Modules/hashtable.o   -o Modules/_tracemalloc$(EXT_SUFFIX)
 ! [.$(OUT_DIR).Modules]_symtable$(EXT_SUFFIX) :  [.$(OBJ_DIR).Modules]symtablemodule.o; $(BLDSHARED)  Modules/symtablemodule.o   -o Modules/_symtable$(EXT_SUFFIX)
 ! [.$(OUT_DIR).Modules]xxsubtype$(EXT_SUFFIX) :  [.$(OBJ_DIR).Modules]xxsubtype.o; $(BLDSHARED)  Modules/xxsubtype.o   -o Modules/xxsubtype$(EXT_SUFFIX)
-
-[.$(OUT_DIR)]python3.exe : [.$(OBJ_DIR).Programs]python.obj,[.$(OBJ_DIR).vms]vms_crtl_init.obj,[.$(OUT_DIR)]libpython3.olb
-    SET DEFAULT [.$(OBJ_DIR)]
-    !$(LINK)$(LINKFLAGS)/THREADS/EXECUTABLE='CURRENT_DIR_BEGIN'[$(OUT_DIR)]$(NOTDIR $(MMS$TARGET_NAME)).EXE 'CURRENT_DIR_BEGIN'[opt]$(NOTDIR $(MMS$TARGET_NAME)).opt/OPT
-    $(LINK)$(LINKFLAGS)/EXECUTABLE='CURRENT_DIR_BEGIN'[$(OUT_DIR)]$(NOTDIR $(MMS$TARGET_NAME)).EXE 'CURRENT_DIR_BEGIN'[opt]$(NOTDIR $(MMS$TARGET_NAME)).opt/OPT
-    SET DEFAULT 'CURRENT_DIR'
-
-[.$(OUT_DIR)]libpython3.olb : [.$(OUT_DIR)]libpython3.olb($(LIBRARY_OBJS))
-    continue
 

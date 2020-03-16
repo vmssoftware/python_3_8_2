@@ -26,9 +26,6 @@ import abc
 import sys
 import stat as st
 
-if sys.platform == 'OpenVMS':
-    import _decc
-
 from _collections_abc import _check_methods
 
 _names = sys.builtin_module_names
@@ -773,7 +770,9 @@ def getenv(key, default=None):
     if sys.platform == 'OpenVMS':
         v = environ.get(key, None)
         if v == None:
-            return _decc.getenv(key, default)
+            import _decc
+            v = _decc.getenv(key, default)
+        return v
     else:
         return environ.get(key, default)
 
