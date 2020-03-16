@@ -57,6 +57,7 @@ SOABI = cpython-38m-ia64-openvms
 PY_CFLAGS_Q = $(OPT_Q)/NAMES=(AS_IS,SHORTENED)/WARNINGS=DISABLE=(NONSTANDCAST,NOTINCRTL,MIXFUNCVOID,QUESTCOMPARE,QUESTCOMPARE1)
 PY_CFLAGS_DEF = $(OPT_DEF),_USE_STD_STAT
 PY_CFLAGS_INC = [],[.Include],[.Include.internal],oss$root:[include]
+PY_CFLAGS = $(PY_CFLAGS_Q)/DEFINE=($(PY_CFLAGS_DEF))/INCLUDE_DIRECTORY=($(PY_CFLAGS_INC))
 
 PY_BUILTIN_MODULE_CFLAGS = $(PY_CFLAGS_Q)/DEFINE=("Py_BUILD_CORE_BUILTIN",$(PY_CFLAGS_DEF))/INCLUDE_DIRECTORY=($(PY_CFLAGS_INC))
 PY_CORE_CFLAGS = $(PY_CFLAGS_Q)/DEFINE=("Py_BUILD_CORE",$(PY_CFLAGS_DEF))/INCLUDE_DIRECTORY=($(PY_CFLAGS_INC))
@@ -94,7 +95,8 @@ PY_OSF_CFLAGS = $(PY_CFLAGS_Q)/DEFINE=(_OSF_SOURCE,$(PY_CFLAGS_DEF))/INCLUDE_DIR
     $(LIBR) $(MMS$TARGET) $(MMS$SOURCE)
 
 LIBDYNLOAD = -
-[.$(OUT_DIR).lib-dynload]_decc.exe
+[.$(OUT_DIR).$(DYNLOAD_DIR)]_decc.exe -
+[.$(OUT_DIR).$(DYNLOAD_DIR)]_struct.exe
 
 TARGET : [.$(OUT_DIR)]python3.exe $(LIBDYNLOAD)
     ! done
@@ -726,7 +728,7 @@ DTRACE_DEPS = -
 
 [.$(OUT_DIR)]python$shr.exe : [.$(OUT_DIR)]libpython3.olb
     SET DEFAULT [.$(OUT_DIR)]
-    LINK$(LINKFLAGS)/SHARE=$(NOTDIR $(MMS$TARGET_NAME)).EXE 'CURRENT_DIR_BEGIN'[opt]$(PYTHON$SHR_OPT).opt/OPT
+    $(LINK)$(LINKFLAGS)/SHARE=$(NOTDIR $(MMS$TARGET_NAME)).EXE 'CURRENT_DIR_BEGIN'[opt]$(PYTHON$SHR_OPT).opt/OPT
     SET DEFAULT 'CURRENT_DIR'
 
 [.$(OUT_DIR)]python3.exe : [.$(OBJ_DIR).Programs]python.obj,[.$(OBJ_DIR).vms]vms_crtl_init.obj,[.$(OUT_DIR)]python$shr.exe
@@ -737,6 +739,8 @@ DTRACE_DEPS = -
 
 [.$(OUT_DIR)]libpython3.olb : [.$(OUT_DIR)]libpython3.olb($(LIBRARY_OBJS))
     continue
+
+! _decc
 
 [.$(OBJ_DIR).modules.vms.decc]decc_wrap.obj : [.modules.vms.decc]decc_wrap.c
     pipe create/dir $(DIR $(MMS$TARGET)) | copy SYS$INPUT nl:
@@ -750,8 +754,37 @@ DTRACE_DEPS = -
 [.$(OBJ_DIR).modules.vms.decc]decc.obj
     pipe create/dir $(DIR $(MMS$TARGET)) | copy SYS$INPUT nl:
     SET DEFAULT [.$(OBJ_DIR)]
-    LINK$(LINKFLAGS)/SHARE='CURRENT_DIR_BEGIN'[$(OUT_DIR).$(DYNLOAD_DIR)]$(NOTDIR $(MMS$TARGET_NAME)).EXE 'CURRENT_DIR_BEGIN'[opt]$(NOTDIR $(MMS$TARGET_NAME)).opt/OPT
+    $(LINK)$(LINKFLAGS)/SHARE='CURRENT_DIR_BEGIN'[$(OUT_DIR).$(DYNLOAD_DIR)]$(NOTDIR $(MMS$TARGET_NAME)).EXE 'CURRENT_DIR_BEGIN'[opt]$(NOTDIR $(MMS$TARGET_NAME)).opt/OPT
     SET DEFAULT 'CURRENT_DIR'
+
+! _struct
+
+[.$(OBJ_DIR).Modules]_struct.obj : [.Modules]_struct.c
+    pipe create/dir $(DIR $(MMS$TARGET)) | copy SYS$INPUT nl:
+    $(CC)$(PY_CFLAGS) /OBJECT=$(MMS$TARGET) $(MMS$SOURCE)
+
+[.$(OUT_DIR).$(DYNLOAD_DIR)]_struct.exe : [.$(OBJ_DIR).Modules]_struct.obj
+    pipe create/dir $(DIR $(MMS$TARGET)) | copy SYS$INPUT nl:
+    SET DEFAULT [.$(OBJ_DIR)]
+    $(LINK)$(LINKFLAGS)/SHARE='CURRENT_DIR_BEGIN'[$(OUT_DIR).$(DYNLOAD_DIR)]$(NOTDIR $(MMS$TARGET_NAME)).EXE 'CURRENT_DIR_BEGIN'[opt]$(NOTDIR $(MMS$TARGET_NAME)).opt/OPT
+    SET DEFAULT 'CURRENT_DIR'
+
+! _freeze_importlib
+[.$(OUT_DIR).Programs]_freeze_importlib.exe : [.$(OBJ_DIR).Programs]_freeze_importlib.obj $(LIBRARY_OBJS_OMIT_FROZEN)
+    pipe create/dir $(DIR $(MMS$TARGET)) | copy SYS$INPUT nl:
+    SET DEFAULT [.$(OBJ_DIR)]
+    $(LINK)/NODEBUG/NOMAP/EXEC='CURRENT_DIR_BEGIN'[$(OUT_DIR).Programs]$(NOTDIR $(MMS$TARGET_NAME)).EXE 'CURRENT_DIR_BEGIN'[opt]$(NOTDIR $(MMS$TARGET_NAME)).opt/OPT
+    SET DEFAULT 'CURRENT_DIR'
+
+[.Python]importlib_external.h : [.Lib.importlib]_bootstrap_external.py [.$(OUT_DIR).Programs]_freeze_importlib.exe
+    mcr [.$(OUT_DIR).Programs]_freeze_importlib.exe importlib._bootstrap_external Lib/importlib/_bootstrap_external.py Python/importlib_external.h
+
+[.Python]importlib.h : [.Lib.importlib]_bootstrap.py [.$(OUT_DIR).Programs]_freeze_importlib.exe
+    mcr [.$(OUT_DIR).Programs]_freeze_importlib.exe importlib._bootstrap Lib/importlib/_bootstrap.py Python/importlib.h
+
+[.Python]importlib_zipimport.h : [.Lib]zipimport.py [.$(OUT_DIR).Programs]_freeze_importlib.exe
+    mcr [.$(OUT_DIR).Programs]_freeze_importlib.exe zipimport Lib/zipimport.py Python/importlib_zipimport.h
+
 
 ! [.$(OUT_DIR).$(DYNLOAD_DIR)]posix$(EXT_SUFFIX) : [.$(OBJ_DIR).Modules]posixmodule.o
 !     $(BLDSHARED)  Modules/posixmodule.o   -o Modules/posix$(EXT_SUFFIX)
