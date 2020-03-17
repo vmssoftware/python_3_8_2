@@ -741,7 +741,6 @@ DTRACE_DEPS = -
     continue
 
 ! _decc
-
 [.$(OBJ_DIR).modules.vms.decc]decc_wrap.obj : [.modules.vms.decc]decc_wrap.c
     pipe create/dir $(DIR $(MMS$TARGET)) | copy SYS$INPUT nl:
     $(CC)$(PY_OSF_CFLAGS)/OBJECT=$(MMS$TARGET) $(MMS$SOURCE)
@@ -758,16 +757,15 @@ DTRACE_DEPS = -
     SET DEFAULT 'CURRENT_DIR'
 
 ! _struct
+! [.$(OBJ_DIR).Modules]_struct.obj : [.Modules]_struct.c
+!     pipe create/dir $(DIR $(MMS$TARGET)) | copy SYS$INPUT nl:
+!     $(CC)$(PY_CFLAGS) /OBJECT=$(MMS$TARGET) $(MMS$SOURCE)
 
-[.$(OBJ_DIR).Modules]_struct.obj : [.Modules]_struct.c
-    pipe create/dir $(DIR $(MMS$TARGET)) | copy SYS$INPUT nl:
-    $(CC)$(PY_CFLAGS) /OBJECT=$(MMS$TARGET) $(MMS$SOURCE)
-
-[.$(OUT_DIR).$(DYNLOAD_DIR)]_struct.exe : [.$(OBJ_DIR).Modules]_struct.obj
-    pipe create/dir $(DIR $(MMS$TARGET)) | copy SYS$INPUT nl:
-    SET DEFAULT [.$(OBJ_DIR)]
-    $(LINK)$(LINKFLAGS)/SHARE='CURRENT_DIR_BEGIN'[$(OUT_DIR).$(DYNLOAD_DIR)]$(NOTDIR $(MMS$TARGET_NAME)).EXE 'CURRENT_DIR_BEGIN'[opt]$(NOTDIR $(MMS$TARGET_NAME)).opt/OPT
-    SET DEFAULT 'CURRENT_DIR'
+! [.$(OUT_DIR).$(DYNLOAD_DIR)]_struct.exe : [.$(OBJ_DIR).Modules]_struct.obj
+!     pipe create/dir $(DIR $(MMS$TARGET)) | copy SYS$INPUT nl:
+!     SET DEFAULT [.$(OBJ_DIR)]
+!     $(LINK)$(LINKFLAGS)/SHARE='CURRENT_DIR_BEGIN'[$(OUT_DIR).$(DYNLOAD_DIR)]$(NOTDIR $(MMS$TARGET_NAME)).EXE 'CURRENT_DIR_BEGIN'[opt]$(NOTDIR $(MMS$TARGET_NAME)).opt/OPT
+!     SET DEFAULT 'CURRENT_DIR'
 
 ! _freeze_importlib
 [.$(OUT_DIR).Programs]_freeze_importlib.exe : [.$(OBJ_DIR).Programs]_freeze_importlib.obj $(LIBRARY_OBJS_OMIT_FROZEN)

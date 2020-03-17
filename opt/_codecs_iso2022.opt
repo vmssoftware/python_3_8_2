@@ -1,0 +1,5 @@
+[.Modules.cjkcodecs]_codecs_iso2022.obj
+sys$library:pthread$rtl.exe/share
+sys$disk:[-]python$shr.exe/share
+CASE_SENSITIVE=YES
+SYMBOL_VECTOR=(PyInit__codecs_iso2022=PROCEDURE)

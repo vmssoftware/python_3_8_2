@@ -1,0 +1,7 @@
+[.Modules]_bz2module.obj
+oss$root:[lib]libbz2_32.olb/lib
+sys$library:pthread$rtl.exe/share
+sys$disk:[-]python$shr.exe/share
+GSMATCH=LEQUAL,1,0
+CASE_SENSITIVE=YES
+SYMBOL_VECTOR=(PyInit__bz2=PROCEDURE)

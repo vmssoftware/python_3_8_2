@@ -1,0 +1,6 @@
+[.Modules]parsermodule.obj
+sys$library:pthread$rtl.exe/share
+sys$disk:[-]python$shr.exe/share
+GSMATCH=LEQUAL,1,0
+CASE_SENSITIVE=YES
+SYMBOL_VECTOR=(PyInit_parser=PROCEDURE)

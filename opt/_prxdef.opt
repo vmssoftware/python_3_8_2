@@ -1,0 +1,6 @@
+[.modules.vms.prxdef]prxdef_wrap.obj
+sys$library:pthread$rtl.exe/share
+sys$disk:[-]python$shr.exe/share
+GSMATCH=LEQUAL,1,0
+CASE_SENSITIVE=YES
+SYMBOL_VECTOR=(PyInit__prxdef=PROCEDURE)

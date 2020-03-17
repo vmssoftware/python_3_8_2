@@ -1,0 +1,15 @@
+[.modules._sqlite]cache.obj
+[.modules._sqlite]connection.obj
+[.modules._sqlite]cursor.obj
+[.modules._sqlite]microprotocols.obj
+[.modules._sqlite]module.obj
+[.modules._sqlite]prepare_protocol.obj
+[.modules._sqlite]row.obj
+[.modules._sqlite]statement.obj
+[.modules._sqlite]util.obj
+oss$root:[lib]libsqlite32.olb/lib
+sys$library:pthread$rtl.exe/share
+sys$disk:[-]python$shr.exe/share
+GSMATCH=LEQUAL,1,0
+CASE_SENSITIVE=YES
+SYMBOL_VECTOR=(PyInit__sqlite3=PROCEDURE)
