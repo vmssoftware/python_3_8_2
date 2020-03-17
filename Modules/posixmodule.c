@@ -1453,6 +1453,41 @@ convertenviron(void)
         Py_DECREF(k);
         Py_DECREF(v);
     }
+#ifdef __VMS
+    static const char* prefillNames[] = {
+        "PYTHONCASEOK",
+        NULL
+        };
+    const char**ppName = prefillNames;  
+    for (; *ppName != NULL; ppName++) {
+        PyObject *k;
+        PyObject *v;
+        const char *pEnvValue = getenv(*ppName);
+        if (pEnvValue == NULL)
+            continue;
+        k = PyBytes_FromString(*ppName);
+        if (k == NULL) {
+            Py_DECREF(d);
+            return NULL;
+        }
+        v = PyBytes_FromString(pEnvValue);
+        if (v == NULL) {
+            Py_DECREF(k);
+            Py_DECREF(d);
+            return NULL;
+        }
+        if (PyDict_GetItemWithError(d, k) == NULL) {
+            if (PyErr_Occurred() || PyDict_SetItem(d, k, v) != 0) {
+                Py_DECREF(v);
+                Py_DECREF(k);
+                Py_DECREF(d);
+                return NULL;
+            }
+        }
+        Py_DECREF(k);
+        Py_DECREF(v);
+    }
+#endif
     return d;
 }
 
