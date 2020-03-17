@@ -1,6 +1,6 @@
 [.Modules]_gdbmmodule.obj
 oss$root:[lib]libgdbm32.olb/lib
 sys$library:pthread$rtl.exe/share
-sys$disk:[-]python$shr.exe/share
+python$build_out:[000000]python$shr.exe/share
 CASE_SENSITIVE=YES
 SYMBOL_VECTOR=(PyInit__gdbm=PROCEDURE)

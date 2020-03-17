@@ -1,18 +1,5 @@
 ! MMS/EXT/DESCR=Python3.mms/MACRO=("OUTDIR=OUT","CONFIG=DEBUG")
 
-.FIRST
-    CURRENT_DIR = F$ENVIRONMENT("DEFAULT")
-    CURRENT_DIR_BEGIN = F$ENVIRONMENT("DEFAULT")-"]"+".]"
-    ! defines for nested includes, like: 
-    ! #include "clinic/transmogrify.h.h"
-    define clinic [.Objects.clinic],[.Python.clinic],[.Modules.clinic],[.Modules._io.clinic],[.Modules.cjkcodecs.clinic],[.Objects.stringlib.clinic]
-    define stringlib [.Objects.stringlib]
-    define modules [.Modules]
-    define readline oss$root:[include.readline]
-    define lzma oss$root:[include.lzma]
-    define cpython [.Include.cpython]
-    define internal [.Include.internal]
-
 ! define output folder
 .IF OUTDIR
 ! defined - ok
@@ -35,7 +22,7 @@ OPT_Q = /DEBUG/NOOPTIMIZE/LIST=$(MMS$TARGET_NAME)
 OPT_DEF = _DEBUG
 OUT_DIR = $(OUTDIR).$(CONFIG)
 OBJ_DIR = $(OUT_DIR).OBJ
-LINKFLAGS = /DEBUG/MAP='CURRENT_DIR_BEGIN'[$(OUT_DIR)]$(NOTDIR $(MMS$TARGET_NAME))
+LINKFLAGS = /DEBUG/MAP=[.$(OUT_DIR)]$(NOTDIR $(MMS$TARGET_NAME))
 PYTHON$SHR_OPT = PYTHON$SHR_DBG
 .ELSE
 ! release
@@ -82,8 +69,23 @@ PY_BUILTIN_MODULE_CFLAGS_IO = $(PY_CFLAGS_Q)/DEFINE=("Py_BUILD_CORE_BUILTIN",$(P
 
 PY_OSF_CFLAGS = $(PY_CFLAGS_Q)/DEFINE=(_OSF_SOURCE,$(PY_CFLAGS_DEF))/INCLUDE_DIRECTORY=($(PY_CFLAGS_INC))
 
+.FIRST
+    ! defines for nested includes, like: 
+    ! #include "clinic/transmogrify.h.h"
+    define clinic [.Objects.clinic],[.Python.clinic],[.Modules.clinic],[.Modules._io.clinic],[.Modules.cjkcodecs.clinic],[.Objects.stringlib.clinic]
+    define stringlib [.Objects.stringlib]
+    define modules [.Modules]
+    define readline oss$root:[include.readline]
+    define lzma oss$root:[include.lzma]
+    define cpython [.Include.cpython]
+    define internal [.Include.internal]
+    BUILD_OUT_DIR = F$ENVIRONMENT("DEFAULT")-"]"+".$(OUT_DIR).]"
+    BUILD_OBJ_DIR = F$ENVIRONMENT("DEFAULT")-"]"+".$(OBJ_DIR).]"
+    define /trans=concealed python$build_out 'BUILD_OUT_DIR'
+    define /trans=concealed python$build_obj 'BUILD_OBJ_DIR'
+
 .SUFFIXES
-.SUFFIXES .EXE .OLB .OBJ .C
+.SUFFIXES .EXE .OLB .OBJ .OBM .C
 
 .C.OBJ
     @ pipe create/dir $(DIR $(MMS$TARGET)) | copy SYS$INPUT nl:
@@ -94,9 +96,23 @@ PY_OSF_CFLAGS = $(PY_CFLAGS_Q)/DEFINE=(_OSF_SOURCE,$(PY_CFLAGS_DEF))/INCLUDE_DIR
         THEN $(LIBR)/CREATE $(MMS$TARGET)
     $(LIBR) $(MMS$TARGET) $(MMS$SOURCE)
 
+! modules hack
+.C.OBM
+    ! .C to .OBM
+    @ pipe create/dir $(DIR $(MMS$TARGET)) | copy SYS$INPUT nl:
+    $(CC) $(PY_CFLAGS) /OBJECT=$(MMS$TARGET) $(MMS$SOURCE)
+
+.OBM.EXE
+    ! .OBM to .EXE
+    @ pipe create/dir $(DIR $(MMS$TARGET)) | copy SYS$INPUT nl:
+    $(LINK)$(LINKFLAGS)/SHARE=python$build_out:[$(DYNLOAD_DIR)]$(NOTDIR $(MMS$TARGET_NAME)).EXE $(MMS$SOURCE),[.opt]$(NOTDIR $(MMS$TARGET_NAME)).opt/OPT
+
+
 LIBDYNLOAD = -
-[.$(OUT_DIR).$(DYNLOAD_DIR)]_decc.exe -
-[.$(OUT_DIR).$(DYNLOAD_DIR)]_struct.exe
+[.$(OUT_DIR).$(DYNLOAD_DIR)]array.exe -
+[.$(OUT_DIR).$(DYNLOAD_DIR)]_struct.exe -
+[.$(OUT_DIR).$(DYNLOAD_DIR)]_contextvars.exe -
+[.$(OUT_DIR).$(DYNLOAD_DIR)]_decc.exe
 
 TARGET : [.$(OUT_DIR)]python3.exe $(LIBDYNLOAD)
     ! done
@@ -727,52 +743,55 @@ DTRACE_DEPS = -
     $(CC) $(PY_BUILTIN_MODULE_CFLAGS) /OBJECT=$(MMS$TARGET) $(MMS$SOURCE)
 
 [.$(OUT_DIR)]python$shr.exe : [.$(OUT_DIR)]libpython3.olb
-    SET DEFAULT [.$(OUT_DIR)]
-    $(LINK)$(LINKFLAGS)/SHARE=$(NOTDIR $(MMS$TARGET_NAME)).EXE 'CURRENT_DIR_BEGIN'[opt]$(PYTHON$SHR_OPT).opt/OPT
-    SET DEFAULT 'CURRENT_DIR'
+    $(LINK)$(LINKFLAGS)/SHARE=python$build_out:[000000]$(NOTDIR $(MMS$TARGET_NAME)).EXE [.opt]$(PYTHON$SHR_OPT).opt/OPT
 
 [.$(OUT_DIR)]python3.exe : [.$(OBJ_DIR).Programs]python.obj,[.$(OBJ_DIR).vms]vms_crtl_init.obj,[.$(OUT_DIR)]python$shr.exe
-    SET DEFAULT [.$(OBJ_DIR)]
-    !$(LINK)$(LINKFLAGS)/THREADS/EXECUTABLE='CURRENT_DIR_BEGIN'[$(OUT_DIR)]$(NOTDIR $(MMS$TARGET_NAME)).EXE 'CURRENT_DIR_BEGIN'[opt]$(NOTDIR $(MMS$TARGET_NAME)).opt/OPT
-    $(LINK)$(LINKFLAGS)/EXECUTABLE='CURRENT_DIR_BEGIN'[$(OUT_DIR)]$(NOTDIR $(MMS$TARGET_NAME)).EXE 'CURRENT_DIR_BEGIN'[opt]$(NOTDIR $(MMS$TARGET_NAME)).opt/OPT
-    SET DEFAULT 'CURRENT_DIR'
+   @ pipe create/dir $(DIR $(MMS$TARGET)) | copy SYS$INPUT nl:
+    $(LINK)$(LINKFLAGS)/EXECUTABLE=python$build_out:[000000]$(NOTDIR $(MMS$TARGET_NAME)).EXE [.$(OBJ_DIR).vms]vms_crtl_init.obj,[.$(OBJ_DIR).Programs]python.obj,[.opt]$(NOTDIR $(MMS$TARGET_NAME)).opt/OPT
+    ! [.$(OUT_DIR)]python3.exe is built => python$build_out:[000000]$(NOTDIR $(MMS$TARGET_NAME)).EXE
 
 [.$(OUT_DIR)]libpython3.olb : [.$(OUT_DIR)]libpython3.olb($(LIBRARY_OBJS))
     continue
 
 ! _decc
-[.$(OBJ_DIR).modules.vms.decc]decc_wrap.obj : [.modules.vms.decc]decc_wrap.c
-    pipe create/dir $(DIR $(MMS$TARGET)) | copy SYS$INPUT nl:
-    $(CC)$(PY_OSF_CFLAGS)/OBJECT=$(MMS$TARGET) $(MMS$SOURCE)
-
-[.$(OBJ_DIR).modules.vms.decc]decc.obj : [.modules.vms.decc]decc.c
-    pipe create/dir $(DIR $(MMS$TARGET)) | copy SYS$INPUT nl:
-    $(CC)$(PY_OSF_CFLAGS)/OBJECT=$(MMS$TARGET) $(MMS$SOURCE)
-
-[.$(OUT_DIR).$(DYNLOAD_DIR)]_decc.exe : [.$(OBJ_DIR).modules.vms.decc]decc_wrap.obj,-
-[.$(OBJ_DIR).modules.vms.decc]decc.obj
-    pipe create/dir $(DIR $(MMS$TARGET)) | copy SYS$INPUT nl:
-    SET DEFAULT [.$(OBJ_DIR)]
-    $(LINK)$(LINKFLAGS)/SHARE='CURRENT_DIR_BEGIN'[$(OUT_DIR).$(DYNLOAD_DIR)]$(NOTDIR $(MMS$TARGET_NAME)).EXE 'CURRENT_DIR_BEGIN'[opt]$(NOTDIR $(MMS$TARGET_NAME)).opt/OPT
-    SET DEFAULT 'CURRENT_DIR'
+[.$(OBJ_DIR).Modules.vms.decc]decc_wrap.obm : [.Modules.vms.decc]decc_wrap.c
+[.$(OBJ_DIR).Modules.vms.decc]decc.obm : [.Modules.vms.decc]decc.c
+[.$(OUT_DIR).$(DYNLOAD_DIR)]_decc.exe : [.$(OBJ_DIR).Modules.vms.decc]decc_wrap.obm,[.$(OBJ_DIR).Modules.vms.decc]decc.obm
+    @ pipe create/dir $(DIR $(MMS$TARGET)) | copy SYS$INPUT nl:
+    $(LINK)$(LINKFLAGS)/SHARE=python$build_out:[$(DYNLOAD_DIR)]$(NOTDIR $(MMS$TARGET_NAME)).EXE $(MMS$SOURCE_LIST),[.opt]$(NOTDIR $(MMS$TARGET_NAME)).opt/OPT
 
 ! _struct
-! [.$(OBJ_DIR).Modules]_struct.obj : [.Modules]_struct.c
-!     pipe create/dir $(DIR $(MMS$TARGET)) | copy SYS$INPUT nl:
-!     $(CC)$(PY_CFLAGS) /OBJECT=$(MMS$TARGET) $(MMS$SOURCE)
+[.$(OBJ_DIR).Modules]_struct.obm : [.Modules]_struct.c
+[.$(OUT_DIR).$(DYNLOAD_DIR)]_struct.exe : [.$(OBJ_DIR).Modules]_struct.obm
 
-! [.$(OUT_DIR).$(DYNLOAD_DIR)]_struct.exe : [.$(OBJ_DIR).Modules]_struct.obj
-!     pipe create/dir $(DIR $(MMS$TARGET)) | copy SYS$INPUT nl:
-!     SET DEFAULT [.$(OBJ_DIR)]
-!     $(LINK)$(LINKFLAGS)/SHARE='CURRENT_DIR_BEGIN'[$(OUT_DIR).$(DYNLOAD_DIR)]$(NOTDIR $(MMS$TARGET_NAME)).EXE 'CURRENT_DIR_BEGIN'[opt]$(NOTDIR $(MMS$TARGET_NAME)).opt/OPT
-!     SET DEFAULT 'CURRENT_DIR'
+! array
+[.$(OBJ_DIR).Modules]arraymodule.obm : [.Modules]arraymodule.c
+[.$(OUT_DIR).$(DYNLOAD_DIR)]array.exe : [.$(OBJ_DIR).Modules]arraymodule.obm
+    @ pipe create/dir $(DIR $(MMS$TARGET)) | copy SYS$INPUT nl:
+    $(LINK)$(LINKFLAGS)/SHARE=python$build_out:[$(DYNLOAD_DIR)]$(NOTDIR $(MMS$TARGET_NAME)).EXE $(MMS$SOURCE),[.opt]$(NOTDIR $(MMS$TARGET_NAME)).opt/OPT
+
+! _contextvars
+[.$(OBJ_DIR).Modules]_contextvarsmodule.obm : [.Modules]_contextvarsmodule.c
+[.$(OUT_DIR).$(DYNLOAD_DIR)]_contextvars.exe : [.$(OBJ_DIR).Modules]_contextvarsmodule.obm
+    @ pipe create/dir $(DIR $(MMS$TARGET)) | copy SYS$INPUT nl:
+    $(LINK)$(LINKFLAGS)/SHARE=python$build_out:[$(DYNLOAD_DIR)]$(NOTDIR $(MMS$TARGET_NAME)).EXE $(MMS$SOURCE),[.opt]$(NOTDIR $(MMS$TARGET_NAME)).opt/OPT
+
+!! modulename modulesource
+! [.$(OBJ_DIR).Modules]modulesource.obm : [.Modules]modulesource.c
+! [.$(OUT_DIR).$(DYNLOAD_DIR)]modulename.exe : [.$(OBJ_DIR).Modules]modulesource.obm
+!     @ pipe create/dir $(DIR $(MMS$TARGET)) | copy SYS$INPUT nl:
+!     $(LINK)$(LINKFLAGS)/SHARE=python$build_out:[$(DYNLOAD_DIR)]$(NOTDIR $(MMS$TARGET_NAME)).EXE $(MMS$SOURCE),[.opt]$(NOTDIR $(MMS$TARGET_NAME)).opt/OPT
+
+!! modulename modulesource
+! [.$(OBJ_DIR).Modules]modulesource.obm : [.Modules]modulesource.c
+! [.$(OUT_DIR).$(DYNLOAD_DIR)]modulename.exe : [.$(OBJ_DIR).Modules]modulesource.obm
+!     @ pipe create/dir $(DIR $(MMS$TARGET)) | copy SYS$INPUT nl:
+!     $(LINK)$(LINKFLAGS)/SHARE=python$build_out:[$(DYNLOAD_DIR)]$(NOTDIR $(MMS$TARGET_NAME)).EXE $(MMS$SOURCE),[.opt]$(NOTDIR $(MMS$TARGET_NAME)).opt/OPT
 
 ! _freeze_importlib
 [.$(OUT_DIR).Programs]_freeze_importlib.exe : [.$(OBJ_DIR).Programs]_freeze_importlib.obj $(LIBRARY_OBJS_OMIT_FROZEN)
     pipe create/dir $(DIR $(MMS$TARGET)) | copy SYS$INPUT nl:
-    SET DEFAULT [.$(OBJ_DIR)]
-    $(LINK)/NODEBUG/NOMAP/EXEC='CURRENT_DIR_BEGIN'[$(OUT_DIR).Programs]$(NOTDIR $(MMS$TARGET_NAME)).EXE 'CURRENT_DIR_BEGIN'[opt]$(NOTDIR $(MMS$TARGET_NAME)).opt/OPT
-    SET DEFAULT 'CURRENT_DIR'
+    $(LINK)/NODEBUG/NOMAP/EXEC=python$build_out:[Programs]$(NOTDIR $(MMS$TARGET_NAME)).EXE [.opt]$(NOTDIR $(MMS$TARGET_NAME)).opt/OPT
 
 [.Python]importlib_external.h : [.Lib.importlib]_bootstrap_external.py [.$(OUT_DIR).Programs]_freeze_importlib.exe
     mcr [.$(OUT_DIR).Programs]_freeze_importlib.exe importlib._bootstrap_external Lib/importlib/_bootstrap_external.py Python/importlib_external.h

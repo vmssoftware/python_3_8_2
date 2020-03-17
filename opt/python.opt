@@ -1,3 +1,3 @@
 [.Programs]python.obj,[.vms]vms_crtl_init.obj
-sys$disk:[-]python$shr.exe/share
+python$build_out:[000000]python$shr.exe/share
 sys$library:pthread$rtl.exe/share

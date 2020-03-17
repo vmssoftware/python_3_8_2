@@ -2,7 +2,7 @@
 ssl1$root:[lib]ssl1$libssl32.olb/lib
 ssl1$root:[lib]ssl1$libcrypto32.olb/lib
 sys$library:pthread$rtl.exe/share
-sys$disk:[-]python$shr.exe/share
+python$build_out:[000000]python$shr.exe/share
 GSMATCH=LEQUAL,1,0
 CASE_SENSITIVE=YES
 SYMBOL_VECTOR=(PyInit__hashlib=PROCEDURE)

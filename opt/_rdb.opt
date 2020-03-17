@@ -2,7 +2,7 @@
 [.modules.rdb]rdb_wrap.obj
 [.modules.rdb]sql.obj
 sys$library:pthread$rtl.exe/share
-sys$disk:[-]python$shr.exe/share
+python$build_out:[000000]python$shr.exe/share
 sql$user/lib
 GSMATCH=LEQUAL,1,0
 CASE_SENSITIVE=YES
