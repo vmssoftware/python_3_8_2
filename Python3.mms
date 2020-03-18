@@ -46,7 +46,9 @@ PY_CFLAGS_DEF = $(OPT_DEF),_USE_STD_STAT
 PY_CFLAGS_INC = [],[.Include],[.Include.internal],oss$root:[include]
 PY_CFLAGS = $(PY_CFLAGS_Q)/DEFINE=($(PY_CFLAGS_DEF))/INCLUDE_DIRECTORY=($(PY_CFLAGS_INC))
 
-PY_BUILTIN_MODULE_CFLAGS = $(PY_CFLAGS_Q)/DEFINE=("Py_BUILD_CORE_BUILTIN",$(PY_CFLAGS_DEF))/INCLUDE_DIRECTORY=($(PY_CFLAGS_INC))
+PY_CORE_MODULE_CFLAGS = $(PY_CFLAGS_Q)/DEFINE=("Py_BUILD_CORE_MODULE",$(PY_CFLAGS_DEF))/INCLUDE_DIRECTORY=($(PY_CFLAGS_INC))
+
+PY_CORE_BUILTIN_CFLAGS = $(PY_CFLAGS_Q)/DEFINE=("Py_BUILD_CORE_BUILTIN",$(PY_CFLAGS_DEF))/INCLUDE_DIRECTORY=($(PY_CFLAGS_INC))
 PY_CORE_CFLAGS = $(PY_CFLAGS_Q)/DEFINE=("Py_BUILD_CORE",$(PY_CFLAGS_DEF))/INCLUDE_DIRECTORY=($(PY_CFLAGS_INC))
 
 GETPATH_DEF = PYTHONPATH="""""",PREFIX="""/usr/local""",EXEC_PREFIX="""/usr/local""",VERSION="""3.8""",VPATH=""""""
@@ -65,7 +67,7 @@ GETPLATFORM_DEF = PLATFORM="""$(PLATFORM)"""
 PY_CORE_CFLAGS_GETPLATFORM = $(PY_CFLAGS_Q)/DEFINE=("Py_BUILD_CORE",$(GETPLATFORM_DEF),$(PY_CFLAGS_DEF))/INCLUDE_DIRECTORY=($(PY_CFLAGS_INC))
 
 IO_INC = [.Modules._io]
-PY_BUILTIN_MODULE_CFLAGS_IO = $(PY_CFLAGS_Q)/DEFINE=("Py_BUILD_CORE_BUILTIN",$(PY_CFLAGS_DEF))/INCLUDE_DIRECTORY=($(PY_CFLAGS_INC),$(IO_INC))
+PY_CORE_BUILTIN_CFLAGS_IO = $(PY_CFLAGS_Q)/DEFINE=("Py_BUILD_CORE_BUILTIN",$(PY_CFLAGS_DEF))/INCLUDE_DIRECTORY=($(PY_CFLAGS_INC),$(IO_INC))
 
 PY_OSF_CFLAGS = $(PY_CFLAGS_Q)/DEFINE=(_OSF_SOURCE,$(PY_CFLAGS_DEF))/INCLUDE_DIRECTORY=($(PY_CFLAGS_INC))
 
@@ -112,6 +114,13 @@ LIBDYNLOAD = -
 [.$(OUT_DIR).$(DYNLOAD_DIR)]array.exe -
 [.$(OUT_DIR).$(DYNLOAD_DIR)]_struct.exe -
 [.$(OUT_DIR).$(DYNLOAD_DIR)]_contextvars.exe -
+[.$(OUT_DIR).$(DYNLOAD_DIR)]math.exe -
+[.$(OUT_DIR).$(DYNLOAD_DIR)]cmath.exe -
+[.$(OUT_DIR).$(DYNLOAD_DIR)]_datetime.exe -
+[.$(OUT_DIR).$(DYNLOAD_DIR)]_random.exe -
+[.$(OUT_DIR).$(DYNLOAD_DIR)]_bisect.exe -
+[.$(OUT_DIR).$(DYNLOAD_DIR)]_heapq.exe -
+[.$(OUT_DIR).$(DYNLOAD_DIR)]_pickle.exe -
 [.$(OUT_DIR).$(DYNLOAD_DIR)]_decc.exe
 
 TARGET : [.$(OUT_DIR)]python3.exe $(LIBDYNLOAD)
@@ -622,125 +631,125 @@ DTRACE_DEPS = -
     pipe create/dir $(DIR $(MMS$TARGET)) | copy SYS$INPUT nl:
     $(CC) $(PY_CORE_CFLAGS_GETPLATFORM) /OBJECT=$(MMS$TARGET) $(MMS$SOURCE)
 
-! PY_BUILTIN_MODULE_CFLAGS
+! PY_CORE_BUILTIN_CFLAGS
 
 [.$(OBJ_DIR).Modules]posixmodule.obj : [.Modules]posixmodule.c [.Modules]posixmodule.h $(PYTHON_HEADERS)
     pipe create/dir $(DIR $(MMS$TARGET)) | copy SYS$INPUT nl:
-    $(CC) $(PY_BUILTIN_MODULE_CFLAGS) /OBJECT=$(MMS$TARGET) $(MMS$SOURCE)
+    $(CC) $(PY_CORE_BUILTIN_CFLAGS) /OBJECT=$(MMS$TARGET) $(MMS$SOURCE)
 
 [.$(OBJ_DIR).Modules]errnomodule.obj : [.Modules]errnomodule.c $(PYTHON_HEADERS)
     pipe create/dir $(DIR $(MMS$TARGET)) | copy SYS$INPUT nl:
-    $(CC) $(PY_BUILTIN_MODULE_CFLAGS) /OBJECT=$(MMS$TARGET) $(MMS$SOURCE)
+    $(CC) $(PY_CORE_BUILTIN_CFLAGS) /OBJECT=$(MMS$TARGET) $(MMS$SOURCE)
 
 [.$(OBJ_DIR).Modules]pwdmodule.obj : [.Modules]pwdmodule.c [.Modules]posixmodule.h $(PYTHON_HEADERS)
     pipe create/dir $(DIR $(MMS$TARGET)) | copy SYS$INPUT nl:
-    $(CC) $(PY_BUILTIN_MODULE_CFLAGS) /OBJECT=$(MMS$TARGET) $(MMS$SOURCE)
+    $(CC) $(PY_CORE_BUILTIN_CFLAGS) /OBJECT=$(MMS$TARGET) $(MMS$SOURCE)
 
 [.$(OBJ_DIR).Modules]_sre.obj : [.Modules]_sre.c [.Modules]sre.h [.Modules]sre_constants.h [.Modules]sre_lib.h $(PYTHON_HEADERS)
     pipe create/dir $(DIR $(MMS$TARGET)) | copy SYS$INPUT nl:
-    $(CC) $(PY_BUILTIN_MODULE_CFLAGS) /OBJECT=$(MMS$TARGET) $(MMS$SOURCE)
+    $(CC) $(PY_CORE_BUILTIN_CFLAGS) /OBJECT=$(MMS$TARGET) $(MMS$SOURCE)
 
 [.$(OBJ_DIR).Modules]_codecsmodule.obj : [.Modules]_codecsmodule.c $(PYTHON_HEADERS)
     pipe create/dir $(DIR $(MMS$TARGET)) | copy SYS$INPUT nl:
-    $(CC) $(PY_BUILTIN_MODULE_CFLAGS) /OBJECT=$(MMS$TARGET) $(MMS$SOURCE)
+    $(CC) $(PY_CORE_BUILTIN_CFLAGS) /OBJECT=$(MMS$TARGET) $(MMS$SOURCE)
 
 [.$(OBJ_DIR).Modules]_weakref.obj : [.Modules]_weakref.c $(PYTHON_HEADERS)
     pipe create/dir $(DIR $(MMS$TARGET)) | copy SYS$INPUT nl:
-    $(CC) $(PY_BUILTIN_MODULE_CFLAGS) /OBJECT=$(MMS$TARGET) $(MMS$SOURCE)
+    $(CC) $(PY_CORE_BUILTIN_CFLAGS) /OBJECT=$(MMS$TARGET) $(MMS$SOURCE)
 
 [.$(OBJ_DIR).Modules]_functoolsmodule.obj : [.Modules]_functoolsmodule.c $(PYTHON_HEADERS)
     pipe create/dir $(DIR $(MMS$TARGET)) | copy SYS$INPUT nl:
-    $(CC) $(PY_BUILTIN_MODULE_CFLAGS) /OBJECT=$(MMS$TARGET) $(MMS$SOURCE)
+    $(CC) $(PY_CORE_BUILTIN_CFLAGS) /OBJECT=$(MMS$TARGET) $(MMS$SOURCE)
 
 [.$(OBJ_DIR).Modules]_operator.obj : [.Modules]_operator.c $(PYTHON_HEADERS)
     pipe create/dir $(DIR $(MMS$TARGET)) | copy SYS$INPUT nl:
-    $(CC) $(PY_BUILTIN_MODULE_CFLAGS) /OBJECT=$(MMS$TARGET) $(MMS$SOURCE)
+    $(CC) $(PY_CORE_BUILTIN_CFLAGS) /OBJECT=$(MMS$TARGET) $(MMS$SOURCE)
 
 [.$(OBJ_DIR).Modules]_collectionsmodule.obj : [.Modules]_collectionsmodule.c $(PYTHON_HEADERS)
     pipe create/dir $(DIR $(MMS$TARGET)) | copy SYS$INPUT nl:
-    $(CC) $(PY_BUILTIN_MODULE_CFLAGS) /OBJECT=$(MMS$TARGET) $(MMS$SOURCE)
+    $(CC) $(PY_CORE_BUILTIN_CFLAGS) /OBJECT=$(MMS$TARGET) $(MMS$SOURCE)
 
 [.$(OBJ_DIR).Modules]_abc.obj : [.Modules]_abc.c $(PYTHON_HEADERS)
     pipe create/dir $(DIR $(MMS$TARGET)) | copy SYS$INPUT nl:
-    $(CC) $(PY_BUILTIN_MODULE_CFLAGS) /OBJECT=$(MMS$TARGET) $(MMS$SOURCE)
+    $(CC) $(PY_CORE_BUILTIN_CFLAGS) /OBJECT=$(MMS$TARGET) $(MMS$SOURCE)
 
 [.$(OBJ_DIR).Modules]itertoolsmodule.obj : [.Modules]itertoolsmodule.c $(PYTHON_HEADERS)
     pipe create/dir $(DIR $(MMS$TARGET)) | copy SYS$INPUT nl:
-    $(CC) $(PY_BUILTIN_MODULE_CFLAGS) /OBJECT=$(MMS$TARGET) $(MMS$SOURCE)
+    $(CC) $(PY_CORE_BUILTIN_CFLAGS) /OBJECT=$(MMS$TARGET) $(MMS$SOURCE)
 
 [.$(OBJ_DIR).Modules]atexitmodule.obj : [.Modules]atexitmodule.c $(PYTHON_HEADERS)
     pipe create/dir $(DIR $(MMS$TARGET)) | copy SYS$INPUT nl:
-    $(CC) $(PY_BUILTIN_MODULE_CFLAGS) /OBJECT=$(MMS$TARGET) $(MMS$SOURCE)
+    $(CC) $(PY_CORE_BUILTIN_CFLAGS) /OBJECT=$(MMS$TARGET) $(MMS$SOURCE)
 
 [.$(OBJ_DIR).Modules]signalmodule.obj : [.Modules]signalmodule.c [.Modules]posixmodule.h $(PYTHON_HEADERS)
     pipe create/dir $(DIR $(MMS$TARGET)) | copy SYS$INPUT nl:
-    $(CC) $(PY_BUILTIN_MODULE_CFLAGS) /OBJECT=$(MMS$TARGET) $(MMS$SOURCE)
+    $(CC) $(PY_CORE_BUILTIN_CFLAGS) /OBJECT=$(MMS$TARGET) $(MMS$SOURCE)
 
 [.$(OBJ_DIR).Modules]_stat.obj : [.Modules]_stat.c $(PYTHON_HEADERS)
     pipe create/dir $(DIR $(MMS$TARGET)) | copy SYS$INPUT nl:
-    $(CC) $(PY_BUILTIN_MODULE_CFLAGS) /OBJECT=$(MMS$TARGET) $(MMS$SOURCE)
+    $(CC) $(PY_CORE_BUILTIN_CFLAGS) /OBJECT=$(MMS$TARGET) $(MMS$SOURCE)
 
 [.$(OBJ_DIR).Modules]timemodule.obj : [.Modules]timemodule.c $(PYTHON_HEADERS)
     pipe create/dir $(DIR $(MMS$TARGET)) | copy SYS$INPUT nl:
-    $(CC) $(PY_BUILTIN_MODULE_CFLAGS) /OBJECT=$(MMS$TARGET) $(MMS$SOURCE)
+    $(CC) $(PY_CORE_BUILTIN_CFLAGS) /OBJECT=$(MMS$TARGET) $(MMS$SOURCE)
 
 [.$(OBJ_DIR).Modules]_threadmodule.obj : [.Modules]_threadmodule.c $(PYTHON_HEADERS)
     pipe create/dir $(DIR $(MMS$TARGET)) | copy SYS$INPUT nl:
-    $(CC) $(PY_BUILTIN_MODULE_CFLAGS) /OBJECT=$(MMS$TARGET) $(MMS$SOURCE)
+    $(CC) $(PY_CORE_BUILTIN_CFLAGS) /OBJECT=$(MMS$TARGET) $(MMS$SOURCE)
 
 [.$(OBJ_DIR).Modules]_localemodule.obj : [.Modules]_localemodule.c $(PYTHON_HEADERS)
     pipe create/dir $(DIR $(MMS$TARGET)) | copy SYS$INPUT nl:
-    $(CC) $(PY_BUILTIN_MODULE_CFLAGS) /OBJECT=$(MMS$TARGET) $(MMS$SOURCE)
+    $(CC) $(PY_CORE_BUILTIN_CFLAGS) /OBJECT=$(MMS$TARGET) $(MMS$SOURCE)
 
 ! _io
 
 [.$(OBJ_DIR).Modules._io]_iomodule.obj : [.Modules._io]_iomodule.c $(IO_HEADERS) $(PYTHON_HEADERS)
     pipe create/dir $(DIR $(MMS$TARGET)) | copy SYS$INPUT nl:
-    $(CC) $(PY_BUILTIN_MODULE_CFLAGS_IO) /OBJECT=$(MMS$TARGET) $(MMS$SOURCE)
+    $(CC) $(PY_CORE_BUILTIN_CFLAGS_IO) /OBJECT=$(MMS$TARGET) $(MMS$SOURCE)
 
 [.$(OBJ_DIR).Modules._io]iobase.obj : [.Modules._io]iobase.c $(IO_HEADERS) $(PYTHON_HEADERS)
     pipe create/dir $(DIR $(MMS$TARGET)) | copy SYS$INPUT nl:
-    $(CC) $(PY_BUILTIN_MODULE_CFLAGS_IO) /OBJECT=$(MMS$TARGET) $(MMS$SOURCE)
+    $(CC) $(PY_CORE_BUILTIN_CFLAGS_IO) /OBJECT=$(MMS$TARGET) $(MMS$SOURCE)
 
 [.$(OBJ_DIR).Modules._io]fileio.obj : [.Modules._io]fileio.c $(IO_HEADERS) $(PYTHON_HEADERS)
     pipe create/dir $(DIR $(MMS$TARGET)) | copy SYS$INPUT nl:
-    $(CC) $(PY_BUILTIN_MODULE_CFLAGS_IO) /OBJECT=$(MMS$TARGET) $(MMS$SOURCE)
+    $(CC) $(PY_CORE_BUILTIN_CFLAGS_IO) /OBJECT=$(MMS$TARGET) $(MMS$SOURCE)
 
 [.$(OBJ_DIR).Modules._io]bytesio.obj : [.Modules._io]bytesio.c $(IO_HEADERS) $(PYTHON_HEADERS)
     pipe create/dir $(DIR $(MMS$TARGET)) | copy SYS$INPUT nl:
-    $(CC) $(PY_BUILTIN_MODULE_CFLAGS_IO) /OBJECT=$(MMS$TARGET) $(MMS$SOURCE)
+    $(CC) $(PY_CORE_BUILTIN_CFLAGS_IO) /OBJECT=$(MMS$TARGET) $(MMS$SOURCE)
 
 [.$(OBJ_DIR).Modules._io]bufferedio.obj : [.Modules._io]bufferedio.c $(IO_HEADERS) $(PYTHON_HEADERS)
     pipe create/dir $(DIR $(MMS$TARGET)) | copy SYS$INPUT nl:
-    $(CC) $(PY_BUILTIN_MODULE_CFLAGS_IO) /OBJECT=$(MMS$TARGET) $(MMS$SOURCE)
+    $(CC) $(PY_CORE_BUILTIN_CFLAGS_IO) /OBJECT=$(MMS$TARGET) $(MMS$SOURCE)
 
 [.$(OBJ_DIR).Modules._io]textio.obj : [.Modules._io]textio.c $(IO_HEADERS) $(PYTHON_HEADERS)
     pipe create/dir $(DIR $(MMS$TARGET)) | copy SYS$INPUT nl:
-    $(CC) $(PY_BUILTIN_MODULE_CFLAGS_IO) /OBJECT=$(MMS$TARGET) $(MMS$SOURCE)
+    $(CC) $(PY_CORE_BUILTIN_CFLAGS_IO) /OBJECT=$(MMS$TARGET) $(MMS$SOURCE)
 
 [.$(OBJ_DIR).Modules._io]stringio.obj : [.Modules._io]stringio.c $(IO_HEADERS) $(PYTHON_HEADERS)
     pipe create/dir $(DIR $(MMS$TARGET)) | copy SYS$INPUT nl:
-    $(CC) $(PY_BUILTIN_MODULE_CFLAGS_IO) /OBJECT=$(MMS$TARGET) $(MMS$SOURCE)
+    $(CC) $(PY_CORE_BUILTIN_CFLAGS_IO) /OBJECT=$(MMS$TARGET) $(MMS$SOURCE)
 
 [.$(OBJ_DIR).Modules]faulthandler.obj : [.Modules]faulthandler.c $(PYTHON_HEADERS)
     pipe create/dir $(DIR $(MMS$TARGET)) | copy SYS$INPUT nl:
-    $(CC) $(PY_BUILTIN_MODULE_CFLAGS) /OBJECT=$(MMS$TARGET) $(MMS$SOURCE)
+    $(CC) $(PY_CORE_BUILTIN_CFLAGS) /OBJECT=$(MMS$TARGET) $(MMS$SOURCE)
 
 [.$(OBJ_DIR).Modules]_tracemalloc.obj : [.Modules]_tracemalloc.c $(PYTHON_HEADERS)
     pipe create/dir $(DIR $(MMS$TARGET)) | copy SYS$INPUT nl:
-    $(CC) $(PY_BUILTIN_MODULE_CFLAGS) /OBJECT=$(MMS$TARGET) $(MMS$SOURCE)
+    $(CC) $(PY_CORE_BUILTIN_CFLAGS) /OBJECT=$(MMS$TARGET) $(MMS$SOURCE)
 
 [.$(OBJ_DIR).Modules]hashtable.obj : [.Modules]hashtable.c $(PYTHON_HEADERS)
     pipe create/dir $(DIR $(MMS$TARGET)) | copy SYS$INPUT nl:
-    $(CC) $(PY_BUILTIN_MODULE_CFLAGS) /OBJECT=$(MMS$TARGET) $(MMS$SOURCE)
+    $(CC) $(PY_CORE_BUILTIN_CFLAGS) /OBJECT=$(MMS$TARGET) $(MMS$SOURCE)
 
 [.$(OBJ_DIR).Modules]symtablemodule.obj : [.Modules]symtablemodule.c $(PYTHON_HEADERS)
     pipe create/dir $(DIR $(MMS$TARGET)) | copy SYS$INPUT nl:
-    $(CC) $(PY_BUILTIN_MODULE_CFLAGS) /OBJECT=$(MMS$TARGET) $(MMS$SOURCE)
+    $(CC) $(PY_CORE_BUILTIN_CFLAGS) /OBJECT=$(MMS$TARGET) $(MMS$SOURCE)
 
 [.$(OBJ_DIR).Modules]xxsubtype.obj : [.Modules]xxsubtype.c $(PYTHON_HEADERS)
     pipe create/dir $(DIR $(MMS$TARGET)) | copy SYS$INPUT nl:
-    $(CC) $(PY_BUILTIN_MODULE_CFLAGS) /OBJECT=$(MMS$TARGET) $(MMS$SOURCE)
+    $(CC) $(PY_CORE_BUILTIN_CFLAGS) /OBJECT=$(MMS$TARGET) $(MMS$SOURCE)
 
 [.$(OUT_DIR)]python$shr.exe : [.$(OUT_DIR)]libpython3.olb
     $(LINK)$(LINKFLAGS)/SHARE=python$build_out:[000000]$(NOTDIR $(MMS$TARGET_NAME)).EXE [.opt]$(PYTHON$SHR_OPT).opt/OPT
@@ -775,6 +784,81 @@ DTRACE_DEPS = -
 [.$(OUT_DIR).$(DYNLOAD_DIR)]_contextvars.exe : [.$(OBJ_DIR).Modules]_contextvarsmodule.obm
     @ pipe create/dir $(DIR $(MMS$TARGET)) | copy SYS$INPUT nl:
     $(LINK)$(LINKFLAGS)/SHARE=python$build_out:[$(DYNLOAD_DIR)]$(NOTDIR $(MMS$TARGET_NAME)).EXE $(MMS$SOURCE),[.opt]$(NOTDIR $(MMS$TARGET_NAME)).opt/OPT
+
+! math mathmodule
+[.$(OBJ_DIR).Modules]mathmodule.obm : [.Modules]mathmodule.c
+[.$(OUT_DIR).$(DYNLOAD_DIR)]math.exe : [.$(OBJ_DIR).Modules]mathmodule.obm, [.$(OBJ_DIR).Modules]_math.obj
+    @ pipe create/dir $(DIR $(MMS$TARGET)) | copy SYS$INPUT nl:
+    $(LINK)$(LINKFLAGS)/SHARE=python$build_out:[$(DYNLOAD_DIR)]$(NOTDIR $(MMS$TARGET_NAME)).EXE $(MMS$SOURCE),[.opt]$(NOTDIR $(MMS$TARGET_NAME)).opt/OPT
+
+! cmath cmathmodule
+[.$(OBJ_DIR).Modules]cmathmodule.obm : [.Modules]cmathmodule.c
+[.$(OUT_DIR).$(DYNLOAD_DIR)]cmath.exe : [.$(OBJ_DIR).Modules]cmathmodule.obm, [.$(OBJ_DIR).Modules]_math.obj
+    @ pipe create/dir $(DIR $(MMS$TARGET)) | copy SYS$INPUT nl:
+    $(LINK)$(LINKFLAGS)/SHARE=python$build_out:[$(DYNLOAD_DIR)]$(NOTDIR $(MMS$TARGET_NAME)).EXE $(MMS$SOURCE),[.opt]$(NOTDIR $(MMS$TARGET_NAME)).opt/OPT
+
+! _datetime _datetimemodule
+[.$(OBJ_DIR).Modules]_datetimemodule.obm : [.Modules]_datetimemodule.c
+[.$(OUT_DIR).$(DYNLOAD_DIR)]_datetime.exe : [.$(OBJ_DIR).Modules]_datetimemodule.obm
+    @ pipe create/dir $(DIR $(MMS$TARGET)) | copy SYS$INPUT nl:
+    $(LINK)$(LINKFLAGS)/SHARE=python$build_out:[$(DYNLOAD_DIR)]$(NOTDIR $(MMS$TARGET_NAME)).EXE $(MMS$SOURCE),[.opt]$(NOTDIR $(MMS$TARGET_NAME)).opt/OPT
+
+! _random _randommodule
+[.$(OBJ_DIR).Modules]_randommodule.obm : [.Modules]_randommodule.c
+[.$(OUT_DIR).$(DYNLOAD_DIR)]_random.exe : [.$(OBJ_DIR).Modules]_randommodule.obm
+    @ pipe create/dir $(DIR $(MMS$TARGET)) | copy SYS$INPUT nl:
+    $(LINK)$(LINKFLAGS)/SHARE=python$build_out:[$(DYNLOAD_DIR)]$(NOTDIR $(MMS$TARGET_NAME)).EXE $(MMS$SOURCE),[.opt]$(NOTDIR $(MMS$TARGET_NAME)).opt/OPT
+
+! _bisect _bisectmodule
+[.$(OBJ_DIR).Modules]_bisectmodule.obm : [.Modules]_bisectmodule.c
+[.$(OUT_DIR).$(DYNLOAD_DIR)]_bisect.exe : [.$(OBJ_DIR).Modules]_bisectmodule.obm
+    @ pipe create/dir $(DIR $(MMS$TARGET)) | copy SYS$INPUT nl:
+    $(LINK)$(LINKFLAGS)/SHARE=python$build_out:[$(DYNLOAD_DIR)]$(NOTDIR $(MMS$TARGET_NAME)).EXE $(MMS$SOURCE),[.opt]$(NOTDIR $(MMS$TARGET_NAME)).opt/OPT
+
+! _heapq _heapqmodule
+[.$(OBJ_DIR).Modules]_heapqmodule.obm : [.Modules]_heapqmodule.c
+[.$(OUT_DIR).$(DYNLOAD_DIR)]_heapq.exe : [.$(OBJ_DIR).Modules]_heapqmodule.obm
+    @ pipe create/dir $(DIR $(MMS$TARGET)) | copy SYS$INPUT nl:
+    $(LINK)$(LINKFLAGS)/SHARE=python$build_out:[$(DYNLOAD_DIR)]$(NOTDIR $(MMS$TARGET_NAME)).EXE $(MMS$SOURCE),[.opt]$(NOTDIR $(MMS$TARGET_NAME)).opt/OPT
+
+! _pickle _pickle
+[.$(OBJ_DIR).Modules]_pickle.obm : [.Modules]_pickle.c
+    pipe create/dir $(DIR $(MMS$TARGET)) | copy SYS$INPUT nl:
+    $(CC) $(PY_CORE_MODULE_CFLAGS) /OBJECT=$(MMS$TARGET) $(MMS$SOURCE)
+
+[.$(OUT_DIR).$(DYNLOAD_DIR)]_pickle.exe : [.$(OBJ_DIR).Modules]_pickle.obm
+    @ pipe create/dir $(DIR $(MMS$TARGET)) | copy SYS$INPUT nl:
+    $(LINK)$(LINKFLAGS)/SHARE=python$build_out:[$(DYNLOAD_DIR)]$(NOTDIR $(MMS$TARGET_NAME)).EXE $(MMS$SOURCE),[.opt]$(NOTDIR $(MMS$TARGET_NAME)).opt/OPT
+
+!! modulename modulesource
+! [.$(OBJ_DIR).Modules]modulesource.obm : [.Modules]modulesource.c
+! [.$(OUT_DIR).$(DYNLOAD_DIR)]modulename.exe : [.$(OBJ_DIR).Modules]modulesource.obm
+!     @ pipe create/dir $(DIR $(MMS$TARGET)) | copy SYS$INPUT nl:
+!     $(LINK)$(LINKFLAGS)/SHARE=python$build_out:[$(DYNLOAD_DIR)]$(NOTDIR $(MMS$TARGET_NAME)).EXE $(MMS$SOURCE),[.opt]$(NOTDIR $(MMS$TARGET_NAME)).opt/OPT
+
+!! modulename modulesource
+! [.$(OBJ_DIR).Modules]modulesource.obm : [.Modules]modulesource.c
+! [.$(OUT_DIR).$(DYNLOAD_DIR)]modulename.exe : [.$(OBJ_DIR).Modules]modulesource.obm
+!     @ pipe create/dir $(DIR $(MMS$TARGET)) | copy SYS$INPUT nl:
+!     $(LINK)$(LINKFLAGS)/SHARE=python$build_out:[$(DYNLOAD_DIR)]$(NOTDIR $(MMS$TARGET_NAME)).EXE $(MMS$SOURCE),[.opt]$(NOTDIR $(MMS$TARGET_NAME)).opt/OPT
+
+!! modulename modulesource
+! [.$(OBJ_DIR).Modules]modulesource.obm : [.Modules]modulesource.c
+! [.$(OUT_DIR).$(DYNLOAD_DIR)]modulename.exe : [.$(OBJ_DIR).Modules]modulesource.obm
+!     @ pipe create/dir $(DIR $(MMS$TARGET)) | copy SYS$INPUT nl:
+!     $(LINK)$(LINKFLAGS)/SHARE=python$build_out:[$(DYNLOAD_DIR)]$(NOTDIR $(MMS$TARGET_NAME)).EXE $(MMS$SOURCE),[.opt]$(NOTDIR $(MMS$TARGET_NAME)).opt/OPT
+
+!! modulename modulesource
+! [.$(OBJ_DIR).Modules]modulesource.obm : [.Modules]modulesource.c
+! [.$(OUT_DIR).$(DYNLOAD_DIR)]modulename.exe : [.$(OBJ_DIR).Modules]modulesource.obm
+!     @ pipe create/dir $(DIR $(MMS$TARGET)) | copy SYS$INPUT nl:
+!     $(LINK)$(LINKFLAGS)/SHARE=python$build_out:[$(DYNLOAD_DIR)]$(NOTDIR $(MMS$TARGET_NAME)).EXE $(MMS$SOURCE),[.opt]$(NOTDIR $(MMS$TARGET_NAME)).opt/OPT
+
+!! modulename modulesource
+! [.$(OBJ_DIR).Modules]modulesource.obm : [.Modules]modulesource.c
+! [.$(OUT_DIR).$(DYNLOAD_DIR)]modulename.exe : [.$(OBJ_DIR).Modules]modulesource.obm
+!     @ pipe create/dir $(DIR $(MMS$TARGET)) | copy SYS$INPUT nl:
+!     $(LINK)$(LINKFLAGS)/SHARE=python$build_out:[$(DYNLOAD_DIR)]$(NOTDIR $(MMS$TARGET_NAME)).EXE $(MMS$SOURCE),[.opt]$(NOTDIR $(MMS$TARGET_NAME)).opt/OPT
 
 !! modulename modulesource
 ! [.$(OBJ_DIR).Modules]modulesource.obm : [.Modules]modulesource.c

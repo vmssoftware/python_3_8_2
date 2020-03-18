@@ -1,4 +1,4 @@
-[.Modules]cmathmodule.obj,[.Modules]_math.obj
+python$build_obj:[Modules]_math.obj 
 sys$library:pthread$rtl.exe/share
 python$build_out:[000000]python$shr.exe/share
 GSMATCH=LEQUAL,1,0
