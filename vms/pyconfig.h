@@ -1,4 +1,5 @@
 #include "vms/py_vms.h"
+#include "vms/format_macros.h"
 
 /* pyconfig.h Created from Python 3.5 for VMS source */
 
