@@ -804,7 +804,9 @@ subprocess_fork_exec(PyObject* self, PyObject *args)
         preexec_fn_args_tuple = PyTuple_New(0);
         if (!preexec_fn_args_tuple)
             goto cleanup;
+#ifdef HAVE_FORK
         PyOS_BeforeFork();
+#endif
         need_after_fork = 1;
     }
 
@@ -845,8 +847,10 @@ subprocess_fork_exec(PyObject* self, PyObject *args)
 
     Py_XDECREF(cwd_obj2);
 
+#ifdef HAVE_FORK
     if (need_after_fork)
         PyOS_AfterFork_Parent();
+#endif
     if (envp)
         _Py_FreeCharPArray(envp);
     if (argv)

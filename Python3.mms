@@ -100,12 +100,10 @@ PY_OSF_CFLAGS = $(PY_CFLAGS_Q)/DEFINE=(_OSF_SOURCE,$(PY_CFLAGS_DEF))/INCLUDE_DIR
 
 ! modules hack
 .C.OBM
-    ! .C to .OBM
     @ pipe create/dir $(DIR $(MMS$TARGET)) | copy SYS$INPUT nl:
     $(CC) $(PY_CFLAGS) /OBJECT=$(MMS$TARGET) $(MMS$SOURCE)
 
 .OBM.EXE
-    ! .OBM to .EXE
     @ pipe create/dir $(DIR $(MMS$TARGET)) | copy SYS$INPUT nl:
     $(LINK)$(LINKFLAGS)/SHARE=python$build_out:[$(DYNLOAD_DIR)]$(NOTDIR $(MMS$TARGET_NAME)).EXE $(MMS$SOURCE_LIST),[.opt]$(NOTDIR $(MMS$TARGET_NAME)).opt/OPT
 
@@ -135,10 +133,20 @@ LIBDYNLOAD = -
 [.$(OUT_DIR).$(DYNLOAD_DIR)]select.exe -
 [.$(OUT_DIR).$(DYNLOAD_DIR)]syslog.exe -
 [.$(OUT_DIR).$(DYNLOAD_DIR)]unicodedata.exe -
+[.$(OUT_DIR).$(DYNLOAD_DIR)]audioop.exe -
+[.$(OUT_DIR).$(DYNLOAD_DIR)]_csv.exe -
+[.$(OUT_DIR).$(DYNLOAD_DIR)]_posixsubprocess.exe -
+[.$(OUT_DIR).$(DYNLOAD_DIR)]_testcapi.exe -
+[.$(OUT_DIR).$(DYNLOAD_DIR)]_testinternalcapi.exe -
+[.$(OUT_DIR).$(DYNLOAD_DIR)]_testbuffer.exe -
+[.$(OUT_DIR).$(DYNLOAD_DIR)]_testimportmultiple.exe -
+[.$(OUT_DIR).$(DYNLOAD_DIR)]_testmultiphase.exe -
+[.$(OUT_DIR).$(DYNLOAD_DIR)]_xxtestfuzz.exe -
+[.$(OUT_DIR).$(DYNLOAD_DIR)]readline.exe -
 [.$(OUT_DIR).$(DYNLOAD_DIR)]_decc.exe
 
 TARGET : [.$(OUT_DIR)]python3.exe $(LIBDYNLOAD)
-    ! done
+    ! TARGET BUILT
 
 CLEAN :
     del/tree [.$(OUT_DIR)...]*.*;*
@@ -936,6 +944,142 @@ DTRACE_DEPS = -
 [.$(OUT_DIR).$(DYNLOAD_DIR)]_xxsubinterpreters.exe : [.$(OBJ_DIR).Modules]_xxsubinterpretersmodule.obm
     @ pipe create/dir $(DIR $(MMS$TARGET)) | copy SYS$INPUT nl:
     $(LINK)$(LINKFLAGS)/SHARE=python$build_out:[$(DYNLOAD_DIR)]$(NOTDIR $(MMS$TARGET_NAME)).EXE $(MMS$SOURCE),[.opt]$(NOTDIR $(MMS$TARGET_NAME)).opt/OPT
+
+! audioop audioop
+[.$(OBJ_DIR).Modules]audioop.obm : [.Modules]audioop.c $(PYTHON_HEADERS)
+[.$(OUT_DIR).$(DYNLOAD_DIR)]audioop.exe : [.$(OBJ_DIR).Modules]audioop.obm
+
+! _csv _csv
+[.$(OBJ_DIR).Modules]_csv.obm : [.Modules]_csv.c $(PYTHON_HEADERS)
+[.$(OUT_DIR).$(DYNLOAD_DIR)]_csv.exe : [.$(OBJ_DIR).Modules]_csv.obm
+
+! _posixsubprocess _posixsubprocess
+[.$(OBJ_DIR).Modules]_posixsubprocess.obm : [.Modules]_posixsubprocess.c $(PYTHON_HEADERS)
+[.$(OUT_DIR).$(DYNLOAD_DIR)]_posixsubprocess.exe : [.$(OBJ_DIR).Modules]_posixsubprocess.obm
+
+! _testcapi _testcapimodule
+[.$(OBJ_DIR).Modules]_testcapimodule.obm : [.Modules]_testcapimodule.c [.Modules]testcapi_long.h $(PYTHON_HEADERS)
+[.$(OUT_DIR).$(DYNLOAD_DIR)]_testcapi.exe : [.$(OBJ_DIR).Modules]_testcapimodule.obm
+    @ pipe create/dir $(DIR $(MMS$TARGET)) | copy SYS$INPUT nl:
+    $(LINK)$(LINKFLAGS)/SHARE=python$build_out:[$(DYNLOAD_DIR)]$(NOTDIR $(MMS$TARGET_NAME)).EXE $(MMS$SOURCE),[.opt]$(NOTDIR $(MMS$TARGET_NAME)).opt/OPT
+
+! _testinternalcapi _testinternalcapi
+[.$(OBJ_DIR).Modules]_testinternalcapi.obm : [.Modules]_testinternalcapi.c $(PYTHON_HEADERS)
+    pipe create/dir $(DIR $(MMS$TARGET)) | copy SYS$INPUT nl:
+    $(CC) $(PY_CORE_MODULE_CFLAGS) /OBJECT=$(MMS$TARGET) $(MMS$SOURCE)
+
+[.$(OUT_DIR).$(DYNLOAD_DIR)]_testinternalcapi.exe : [.$(OBJ_DIR).Modules]_testinternalcapi.obm
+
+! _testbuffer _testbuffer
+[.$(OBJ_DIR).Modules]_testbuffer.obm : [.Modules]_testbuffer.c $(PYTHON_HEADERS)
+[.$(OUT_DIR).$(DYNLOAD_DIR)]_testbuffer.exe : [.$(OBJ_DIR).Modules]_testbuffer.obm
+
+! _testimportmultiple _testimportmultiple
+[.$(OBJ_DIR).Modules]_testimportmultiple.obm : [.Modules]_testimportmultiple.c $(PYTHON_HEADERS)
+[.$(OUT_DIR).$(DYNLOAD_DIR)]_testimportmultiple.exe : [.$(OBJ_DIR).Modules]_testimportmultiple.obm
+
+! _testmultiphase _testmultiphase
+[.$(OBJ_DIR).Modules]_testmultiphase.obm : [.Modules]_testmultiphase.c $(PYTHON_HEADERS)
+[.$(OUT_DIR).$(DYNLOAD_DIR)]_testmultiphase.exe : [.$(OBJ_DIR).Modules]_testmultiphase.obm
+
+! _xxtestfuzz [_xxtestfuzz]_xxtestfuzz [_xxtestfuzz]fuzzer
+[.$(OBJ_DIR).Modules._xxtestfuzz]_xxtestfuzz.obm : [.Modules._xxtestfuzz]_xxtestfuzz.c $(PYTHON_HEADERS)
+[.$(OBJ_DIR).Modules._xxtestfuzz]fuzzer.obm : [.Modules._xxtestfuzz]fuzzer.c $(PYTHON_HEADERS)
+[.$(OUT_DIR).$(DYNLOAD_DIR)]_xxtestfuzz.exe : [.$(OBJ_DIR).Modules._xxtestfuzz]_xxtestfuzz.obm,[.$(OBJ_DIR).Modules._xxtestfuzz]fuzzer.obm
+
+! readline readline
+[.$(OBJ_DIR).Modules]readline.obm : [.Modules]readline.c $(PYTHON_HEADERS)
+[.$(OUT_DIR).$(DYNLOAD_DIR)]readline.exe : [.$(OBJ_DIR).Modules]readline.obm
+
+!! modulename modulesource
+! [.$(OBJ_DIR).Modules]modulesource.obm : [.Modules]modulesource.c $(PYTHON_HEADERS)
+! [.$(OUT_DIR).$(DYNLOAD_DIR)]modulename.exe : [.$(OBJ_DIR).Modules]modulesource.obm
+!     @ pipe create/dir $(DIR $(MMS$TARGET)) | copy SYS$INPUT nl:
+!     $(LINK)$(LINKFLAGS)/SHARE=python$build_out:[$(DYNLOAD_DIR)]$(NOTDIR $(MMS$TARGET_NAME)).EXE $(MMS$SOURCE),[.opt]$(NOTDIR $(MMS$TARGET_NAME)).opt/OPT
+
+!! modulename modulesource
+! [.$(OBJ_DIR).Modules]modulesource.obm : [.Modules]modulesource.c $(PYTHON_HEADERS)
+! [.$(OUT_DIR).$(DYNLOAD_DIR)]modulename.exe : [.$(OBJ_DIR).Modules]modulesource.obm
+!     @ pipe create/dir $(DIR $(MMS$TARGET)) | copy SYS$INPUT nl:
+!     $(LINK)$(LINKFLAGS)/SHARE=python$build_out:[$(DYNLOAD_DIR)]$(NOTDIR $(MMS$TARGET_NAME)).EXE $(MMS$SOURCE),[.opt]$(NOTDIR $(MMS$TARGET_NAME)).opt/OPT
+
+!! modulename modulesource
+! [.$(OBJ_DIR).Modules]modulesource.obm : [.Modules]modulesource.c $(PYTHON_HEADERS)
+! [.$(OUT_DIR).$(DYNLOAD_DIR)]modulename.exe : [.$(OBJ_DIR).Modules]modulesource.obm
+!     @ pipe create/dir $(DIR $(MMS$TARGET)) | copy SYS$INPUT nl:
+!     $(LINK)$(LINKFLAGS)/SHARE=python$build_out:[$(DYNLOAD_DIR)]$(NOTDIR $(MMS$TARGET_NAME)).EXE $(MMS$SOURCE),[.opt]$(NOTDIR $(MMS$TARGET_NAME)).opt/OPT
+
+!! modulename modulesource
+! [.$(OBJ_DIR).Modules]modulesource.obm : [.Modules]modulesource.c $(PYTHON_HEADERS)
+! [.$(OUT_DIR).$(DYNLOAD_DIR)]modulename.exe : [.$(OBJ_DIR).Modules]modulesource.obm
+!     @ pipe create/dir $(DIR $(MMS$TARGET)) | copy SYS$INPUT nl:
+!     $(LINK)$(LINKFLAGS)/SHARE=python$build_out:[$(DYNLOAD_DIR)]$(NOTDIR $(MMS$TARGET_NAME)).EXE $(MMS$SOURCE),[.opt]$(NOTDIR $(MMS$TARGET_NAME)).opt/OPT
+
+!! modulename modulesource
+! [.$(OBJ_DIR).Modules]modulesource.obm : [.Modules]modulesource.c $(PYTHON_HEADERS)
+! [.$(OUT_DIR).$(DYNLOAD_DIR)]modulename.exe : [.$(OBJ_DIR).Modules]modulesource.obm
+!     @ pipe create/dir $(DIR $(MMS$TARGET)) | copy SYS$INPUT nl:
+!     $(LINK)$(LINKFLAGS)/SHARE=python$build_out:[$(DYNLOAD_DIR)]$(NOTDIR $(MMS$TARGET_NAME)).EXE $(MMS$SOURCE),[.opt]$(NOTDIR $(MMS$TARGET_NAME)).opt/OPT
+
+!! modulename modulesource
+! [.$(OBJ_DIR).Modules]modulesource.obm : [.Modules]modulesource.c $(PYTHON_HEADERS)
+! [.$(OUT_DIR).$(DYNLOAD_DIR)]modulename.exe : [.$(OBJ_DIR).Modules]modulesource.obm
+!     @ pipe create/dir $(DIR $(MMS$TARGET)) | copy SYS$INPUT nl:
+!     $(LINK)$(LINKFLAGS)/SHARE=python$build_out:[$(DYNLOAD_DIR)]$(NOTDIR $(MMS$TARGET_NAME)).EXE $(MMS$SOURCE),[.opt]$(NOTDIR $(MMS$TARGET_NAME)).opt/OPT
+
+!! modulename modulesource
+! [.$(OBJ_DIR).Modules]modulesource.obm : [.Modules]modulesource.c $(PYTHON_HEADERS)
+! [.$(OUT_DIR).$(DYNLOAD_DIR)]modulename.exe : [.$(OBJ_DIR).Modules]modulesource.obm
+!     @ pipe create/dir $(DIR $(MMS$TARGET)) | copy SYS$INPUT nl:
+!     $(LINK)$(LINKFLAGS)/SHARE=python$build_out:[$(DYNLOAD_DIR)]$(NOTDIR $(MMS$TARGET_NAME)).EXE $(MMS$SOURCE),[.opt]$(NOTDIR $(MMS$TARGET_NAME)).opt/OPT
+
+!! modulename modulesource
+! [.$(OBJ_DIR).Modules]modulesource.obm : [.Modules]modulesource.c $(PYTHON_HEADERS)
+! [.$(OUT_DIR).$(DYNLOAD_DIR)]modulename.exe : [.$(OBJ_DIR).Modules]modulesource.obm
+!     @ pipe create/dir $(DIR $(MMS$TARGET)) | copy SYS$INPUT nl:
+!     $(LINK)$(LINKFLAGS)/SHARE=python$build_out:[$(DYNLOAD_DIR)]$(NOTDIR $(MMS$TARGET_NAME)).EXE $(MMS$SOURCE),[.opt]$(NOTDIR $(MMS$TARGET_NAME)).opt/OPT
+
+!! modulename modulesource
+! [.$(OBJ_DIR).Modules]modulesource.obm : [.Modules]modulesource.c $(PYTHON_HEADERS)
+! [.$(OUT_DIR).$(DYNLOAD_DIR)]modulename.exe : [.$(OBJ_DIR).Modules]modulesource.obm
+!     @ pipe create/dir $(DIR $(MMS$TARGET)) | copy SYS$INPUT nl:
+!     $(LINK)$(LINKFLAGS)/SHARE=python$build_out:[$(DYNLOAD_DIR)]$(NOTDIR $(MMS$TARGET_NAME)).EXE $(MMS$SOURCE),[.opt]$(NOTDIR $(MMS$TARGET_NAME)).opt/OPT
+
+!! modulename modulesource
+! [.$(OBJ_DIR).Modules]modulesource.obm : [.Modules]modulesource.c $(PYTHON_HEADERS)
+! [.$(OUT_DIR).$(DYNLOAD_DIR)]modulename.exe : [.$(OBJ_DIR).Modules]modulesource.obm
+!     @ pipe create/dir $(DIR $(MMS$TARGET)) | copy SYS$INPUT nl:
+!     $(LINK)$(LINKFLAGS)/SHARE=python$build_out:[$(DYNLOAD_DIR)]$(NOTDIR $(MMS$TARGET_NAME)).EXE $(MMS$SOURCE),[.opt]$(NOTDIR $(MMS$TARGET_NAME)).opt/OPT
+
+!! modulename modulesource
+! [.$(OBJ_DIR).Modules]modulesource.obm : [.Modules]modulesource.c $(PYTHON_HEADERS)
+! [.$(OUT_DIR).$(DYNLOAD_DIR)]modulename.exe : [.$(OBJ_DIR).Modules]modulesource.obm
+!     @ pipe create/dir $(DIR $(MMS$TARGET)) | copy SYS$INPUT nl:
+!     $(LINK)$(LINKFLAGS)/SHARE=python$build_out:[$(DYNLOAD_DIR)]$(NOTDIR $(MMS$TARGET_NAME)).EXE $(MMS$SOURCE),[.opt]$(NOTDIR $(MMS$TARGET_NAME)).opt/OPT
+
+!! modulename modulesource
+! [.$(OBJ_DIR).Modules]modulesource.obm : [.Modules]modulesource.c $(PYTHON_HEADERS)
+! [.$(OUT_DIR).$(DYNLOAD_DIR)]modulename.exe : [.$(OBJ_DIR).Modules]modulesource.obm
+!     @ pipe create/dir $(DIR $(MMS$TARGET)) | copy SYS$INPUT nl:
+!     $(LINK)$(LINKFLAGS)/SHARE=python$build_out:[$(DYNLOAD_DIR)]$(NOTDIR $(MMS$TARGET_NAME)).EXE $(MMS$SOURCE),[.opt]$(NOTDIR $(MMS$TARGET_NAME)).opt/OPT
+
+!! modulename modulesource
+! [.$(OBJ_DIR).Modules]modulesource.obm : [.Modules]modulesource.c $(PYTHON_HEADERS)
+! [.$(OUT_DIR).$(DYNLOAD_DIR)]modulename.exe : [.$(OBJ_DIR).Modules]modulesource.obm
+!     @ pipe create/dir $(DIR $(MMS$TARGET)) | copy SYS$INPUT nl:
+!     $(LINK)$(LINKFLAGS)/SHARE=python$build_out:[$(DYNLOAD_DIR)]$(NOTDIR $(MMS$TARGET_NAME)).EXE $(MMS$SOURCE),[.opt]$(NOTDIR $(MMS$TARGET_NAME)).opt/OPT
+
+!! modulename modulesource
+! [.$(OBJ_DIR).Modules]modulesource.obm : [.Modules]modulesource.c $(PYTHON_HEADERS)
+! [.$(OUT_DIR).$(DYNLOAD_DIR)]modulename.exe : [.$(OBJ_DIR).Modules]modulesource.obm
+!     @ pipe create/dir $(DIR $(MMS$TARGET)) | copy SYS$INPUT nl:
+!     $(LINK)$(LINKFLAGS)/SHARE=python$build_out:[$(DYNLOAD_DIR)]$(NOTDIR $(MMS$TARGET_NAME)).EXE $(MMS$SOURCE),[.opt]$(NOTDIR $(MMS$TARGET_NAME)).opt/OPT
+
+!! modulename modulesource
+! [.$(OBJ_DIR).Modules]modulesource.obm : [.Modules]modulesource.c $(PYTHON_HEADERS)
+! [.$(OUT_DIR).$(DYNLOAD_DIR)]modulename.exe : [.$(OBJ_DIR).Modules]modulesource.obm
+!     @ pipe create/dir $(DIR $(MMS$TARGET)) | copy SYS$INPUT nl:
+!     $(LINK)$(LINKFLAGS)/SHARE=python$build_out:[$(DYNLOAD_DIR)]$(NOTDIR $(MMS$TARGET_NAME)).EXE $(MMS$SOURCE),[.opt]$(NOTDIR $(MMS$TARGET_NAME)).opt/OPT
 
 !! modulename modulesource
 ! [.$(OBJ_DIR).Modules]modulesource.obm : [.Modules]modulesource.c $(PYTHON_HEADERS)

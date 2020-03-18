@@ -1159,6 +1159,8 @@ rlhandler(char *text)
     rl_callback_handler_remove();
 }
 
+/* HP OpenVMS systems documentation: The select() function cannot be used on normal files. */
+#ifndef __VMS
 static char *
 readline_until_enter_or_signal(const char *prompt, int *signal)
 {
@@ -1224,6 +1226,43 @@ readline_until_enter_or_signal(const char *prompt, int *signal)
 
     return completed_input_string;
 }
+#else
+/* Interrupt handler */
+
+static jmp_buf jbuf;
+
+/* ARGSUSED */
+static void
+onintr(int sig)
+{
+    longjmp(jbuf, 1);
+}
+
+static char *
+readline_until_enter_or_signal(const char *prompt, int *signal)
+{
+    PyOS_sighandler_t old_inthandler;
+    char *p;
+
+    *signal = 0;
+
+    old_inthandler = PyOS_setsig(SIGINT, onintr);
+    if (setjmp(jbuf)) {
+#ifdef HAVE_SIGRELSE
+        /* This seems necessary on SunOS 4.1 (Rasmus Hahn) */
+        sigrelse(SIGINT);
+#endif
+        PyOS_setsig(SIGINT, old_inthandler);
+        *signal = 1;
+        return NULL;
+    }
+    rl_event_hook = PyOS_InputHook;
+    p = readline(prompt);
+    PyOS_setsig(SIGINT, old_inthandler);
+
+    return p;
+}
+#endif
 
 
 static char *
