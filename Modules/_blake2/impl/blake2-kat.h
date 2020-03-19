@@ -14,8 +14,9 @@
 #ifndef __BLAKE2_KAT_H__
 #define __BLAKE2_KAT_H__
 
-
+#ifdef HAVE_STDINT_H
 #include <stdint.h>
+#endif
 
 #define KAT_LENGTH 256
 

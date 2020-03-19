@@ -1,4 +1,3 @@
-[.Modules._ctypes]_ctypes.obj,[.Modules._ctypes]callbacks.obj,[.Modules._ctypes]callproc.obj,[.Modules._ctypes]stgdict.obj,[.Modules._ctypes]cfield.obj
 oss$root:[lib]libffi32.olb/lib
 sys$library:pthread$rtl.exe/share
 python$build_out:[000000]python$shr.exe/share

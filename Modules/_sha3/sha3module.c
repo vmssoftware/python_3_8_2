@@ -17,7 +17,11 @@
 
 #include "Python.h"
 #include "pystrhex.h"
+#ifdef __VMS
+#include "Modules/hashlib.h"
+#else
 #include "../hashlib.h"
+#endif
 
 /* **************************************************************************
  *                          SHA-3 (Keccak) and SHAKE

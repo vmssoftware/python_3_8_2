@@ -46,6 +46,17 @@ PY_CFLAGS_DEF = $(OPT_DEF),_USE_STD_STAT,__STDC_FORMAT_MACROS
 PY_CFLAGS_INC = [],[.Include],[.Include.internal],oss$root:[include],[.vms]
 PY_CFLAGS = $(PY_CFLAGS_Q)/DEFINE=($(PY_CFLAGS_DEF))/INCLUDE_DIRECTORY=($(PY_CFLAGS_INC))
 
+PY_CFLAGS_SQL = $(PY_CFLAGS)/FIRST=[.vms]vms_sqlite3_first.h
+
+PY_CFLAGS_USE_ZLIB = $(PY_CFLAGS_Q)/DEFINE=(USE_ZLIB_CRC32,$(PY_CFLAGS_DEF))/INCLUDE_DIRECTORY=($(PY_CFLAGS_INC))
+
+PY_CFLAGS_EXPAT = $(PY_CFLAGS_Q)/DEFINE=(HAVE_EXPAT_CONFIG_H,XML_POOR_ENTROPY,$(PY_CFLAGS_DEF))/INCLUDE_DIRECTORY=([.Modules.expat],$(PY_CFLAGS_INC))
+PY_CFLAGS_EXPAT_ELEM = $(PY_CFLAGS_Q)/DEFINE=(HAVE_EXPAT_CONFIG_H,USE_PYEXPAT_CAPI,XML_POOR_ENTROPY,$(PY_CFLAGS_DEF))/INCLUDE_DIRECTORY=([.Modules.expat],$(PY_CFLAGS_INC))
+
+PY_CFLAGS_DECIMAL = $(PY_CFLAGS_Q)/DEFINE=(CONFIG_32,ANSI,$(PY_CFLAGS_DEF))/INCLUDE_DIRECTORY=([.Modules._decimal.libmpdec],$(PY_CFLAGS_INC))
+
+PY_CFLAGS_MULT = $(PY_CFLAGS_Q)/DEFINE=($(PY_CFLAGS_DEF))/INCLUDE_DIRECTORY=([.Modules._multiprocessing],$(PY_CFLAGS_INC))
+
 PY_CORE_MODULE_CFLAGS = $(PY_CFLAGS_Q)/DEFINE=("Py_BUILD_CORE_MODULE",$(PY_CFLAGS_DEF))/INCLUDE_DIRECTORY=($(PY_CFLAGS_INC))
 
 PY_CORE_BUILTIN_CFLAGS = $(PY_CFLAGS_Q)/DEFINE=("Py_BUILD_CORE_BUILTIN",$(PY_CFLAGS_DEF))/INCLUDE_DIRECTORY=($(PY_CFLAGS_INC))
@@ -74,20 +85,23 @@ PY_OSF_CFLAGS = $(PY_CFLAGS_Q)/DEFINE=(_OSF_SOURCE,$(PY_CFLAGS_DEF))/INCLUDE_DIR
 .FIRST
     ! defines for nested includes, like: 
     ! #include "clinic/transmogrify.h.h"
-    define clinic [.Objects.clinic],[.Python.clinic],[.Modules.clinic],[.Modules._io.clinic],[.Modules.cjkcodecs.clinic],[.Objects.stringlib.clinic]
+    define clinic [.Objects.clinic],[.Python.clinic],[.Modules.clinic],[.Modules._io.clinic],[.Modules.cjkcodecs.clinic],[.Objects.stringlib.clinic],[.Modules._blake2.clinic],[.Modules._sha3.clinic]
     define stringlib [.Objects.stringlib]
     define modules [.Modules]
     define readline oss$root:[include.readline]
     define lzma oss$root:[include.lzma]
     define cpython [.Include.cpython]
     define internal [.Include.internal]
+    define _ssl [.Modules._ssl]
+    define impl [.Modules._blake2.impl]
+    define kcp  [.Modules._sha3.kcp]
     BUILD_OUT_DIR = F$ENVIRONMENT("DEFAULT")-"]"+".$(OUT_DIR).]"
     BUILD_OBJ_DIR = F$ENVIRONMENT("DEFAULT")-"]"+".$(OBJ_DIR).]"
     define /trans=concealed python$build_out 'BUILD_OUT_DIR'
     define /trans=concealed python$build_obj 'BUILD_OBJ_DIR'
 
 .SUFFIXES
-.SUFFIXES .EXE .OLB .OBJ .OBM .C
+.SUFFIXES .EXE .OLB .OBJ .OBM .OBD .C
 
 .C.OBJ
     @ pipe create/dir $(DIR $(MMS$TARGET)) | copy SYS$INPUT nl:
@@ -107,42 +121,80 @@ PY_OSF_CFLAGS = $(PY_CFLAGS_Q)/DEFINE=(_OSF_SOURCE,$(PY_CFLAGS_DEF))/INCLUDE_DIR
     @ pipe create/dir $(DIR $(MMS$TARGET)) | copy SYS$INPUT nl:
     $(LINK)$(LINKFLAGS)/SHARE=python$build_out:[$(DYNLOAD_DIR)]$(NOTDIR $(MMS$TARGET_NAME)).EXE $(MMS$SOURCE_LIST),[.opt]$(NOTDIR $(MMS$TARGET_NAME)).opt/OPT
 
+.C.OBD
+    @ pipe create/dir $(DIR $(MMS$TARGET)) | copy SYS$INPUT nl:
+    $(CC) $(PY_CFLAGS_DECIMAL) /OBJECT=$(MMS$TARGET) $(MMS$SOURCE)
+
+.OBD.EXE
+    @ pipe create/dir $(DIR $(MMS$TARGET)) | copy SYS$INPUT nl:
+    $(LINK)$(LINKFLAGS)/SHARE=python$build_out:[$(DYNLOAD_DIR)]$(NOTDIR $(MMS$TARGET_NAME)).EXE $(MMS$SOURCE_LIST),[.opt]$(NOTDIR $(MMS$TARGET_NAME)).opt/OPT
+
 
 LIBDYNLOAD = -
 [.$(OUT_DIR).$(DYNLOAD_DIR)]_asyncio.exe -
 [.$(OUT_DIR).$(DYNLOAD_DIR)]_bisect.exe -
 [.$(OUT_DIR).$(DYNLOAD_DIR)]_contextvars.exe -
+[.$(OUT_DIR).$(DYNLOAD_DIR)]_crypt.exe -
+[.$(OUT_DIR).$(DYNLOAD_DIR)]_csv.exe -
 [.$(OUT_DIR).$(DYNLOAD_DIR)]_datetime.exe -
 [.$(OUT_DIR).$(DYNLOAD_DIR)]_heapq.exe -
 [.$(OUT_DIR).$(DYNLOAD_DIR)]_json.exe -
 [.$(OUT_DIR).$(DYNLOAD_DIR)]_lsprof.exe -
 [.$(OUT_DIR).$(DYNLOAD_DIR)]_opcode.exe -
 [.$(OUT_DIR).$(DYNLOAD_DIR)]_pickle.exe -
+[.$(OUT_DIR).$(DYNLOAD_DIR)]_posixsubprocess.exe -
 [.$(OUT_DIR).$(DYNLOAD_DIR)]_queue.exe -
 [.$(OUT_DIR).$(DYNLOAD_DIR)]_random.exe -
 [.$(OUT_DIR).$(DYNLOAD_DIR)]_statistics.exe -
 [.$(OUT_DIR).$(DYNLOAD_DIR)]_struct.exe -
+[.$(OUT_DIR).$(DYNLOAD_DIR)]_testbuffer.exe -
+[.$(OUT_DIR).$(DYNLOAD_DIR)]_testcapi.exe -
+[.$(OUT_DIR).$(DYNLOAD_DIR)]_testimportmultiple.exe -
+[.$(OUT_DIR).$(DYNLOAD_DIR)]_testinternalcapi.exe -
+[.$(OUT_DIR).$(DYNLOAD_DIR)]_testmultiphase.exe -
 [.$(OUT_DIR).$(DYNLOAD_DIR)]_xxsubinterpreters.exe -
+[.$(OUT_DIR).$(DYNLOAD_DIR)]_xxtestfuzz.exe -
 [.$(OUT_DIR).$(DYNLOAD_DIR)]array.exe -
+[.$(OUT_DIR).$(DYNLOAD_DIR)]audioop.exe -
 [.$(OUT_DIR).$(DYNLOAD_DIR)]cmath.exe -
 [.$(OUT_DIR).$(DYNLOAD_DIR)]fcntl.exe -
 [.$(OUT_DIR).$(DYNLOAD_DIR)]grp.exe -
 [.$(OUT_DIR).$(DYNLOAD_DIR)]math.exe -
 [.$(OUT_DIR).$(DYNLOAD_DIR)]mmap.exe -
 [.$(OUT_DIR).$(DYNLOAD_DIR)]parser.exe -
+[.$(OUT_DIR).$(DYNLOAD_DIR)]readline.exe -
 [.$(OUT_DIR).$(DYNLOAD_DIR)]select.exe -
 [.$(OUT_DIR).$(DYNLOAD_DIR)]syslog.exe -
 [.$(OUT_DIR).$(DYNLOAD_DIR)]unicodedata.exe -
-[.$(OUT_DIR).$(DYNLOAD_DIR)]audioop.exe -
-[.$(OUT_DIR).$(DYNLOAD_DIR)]_csv.exe -
-[.$(OUT_DIR).$(DYNLOAD_DIR)]_posixsubprocess.exe -
-[.$(OUT_DIR).$(DYNLOAD_DIR)]_testcapi.exe -
-[.$(OUT_DIR).$(DYNLOAD_DIR)]_testinternalcapi.exe -
-[.$(OUT_DIR).$(DYNLOAD_DIR)]_testbuffer.exe -
-[.$(OUT_DIR).$(DYNLOAD_DIR)]_testimportmultiple.exe -
-[.$(OUT_DIR).$(DYNLOAD_DIR)]_testmultiphase.exe -
-[.$(OUT_DIR).$(DYNLOAD_DIR)]_xxtestfuzz.exe -
-[.$(OUT_DIR).$(DYNLOAD_DIR)]readline.exe -
+[.$(OUT_DIR).$(DYNLOAD_DIR)]_socket.exe -
+[.$(OUT_DIR).$(DYNLOAD_DIR)]_gdbm.exe -
+[.$(OUT_DIR).$(DYNLOAD_DIR)]_sqlite3.exe -
+[.$(OUT_DIR).$(DYNLOAD_DIR)]zlib.exe -
+[.$(OUT_DIR).$(DYNLOAD_DIR)]binascii.exe -
+[.$(OUT_DIR).$(DYNLOAD_DIR)]_bz2.exe -
+[.$(OUT_DIR).$(DYNLOAD_DIR)]_lzma.exe -
+[.$(OUT_DIR).$(DYNLOAD_DIR)]pyexpat.exe -
+[.$(OUT_DIR).$(DYNLOAD_DIR)]_elementtree.exe -
+[.$(OUT_DIR).$(DYNLOAD_DIR)]_multibytecodec.exe -
+[.$(OUT_DIR).$(DYNLOAD_DIR)]_codecs_kr.exe -
+[.$(OUT_DIR).$(DYNLOAD_DIR)]_codecs_jp.exe -
+[.$(OUT_DIR).$(DYNLOAD_DIR)]_codecs_cn.exe -
+[.$(OUT_DIR).$(DYNLOAD_DIR)]_codecs_tw.exe -
+[.$(OUT_DIR).$(DYNLOAD_DIR)]_codecs_hk.exe -
+[.$(OUT_DIR).$(DYNLOAD_DIR)]_codecs_iso2022.exe -
+[.$(OUT_DIR).$(DYNLOAD_DIR)]_multiprocessing.exe -
+- ! [.$(OUT_DIR).$(DYNLOAD_DIR)]_uuid.exe -
+[.$(OUT_DIR).$(DYNLOAD_DIR)]_ctypes.exe -
+[.$(OUT_DIR).$(DYNLOAD_DIR)]_ctypes_test.exe -
+[.$(OUT_DIR).$(DYNLOAD_DIR)]_decimal.exe -
+[.$(OUT_DIR).$(DYNLOAD_DIR)]_ssl.exe -
+[.$(OUT_DIR).$(DYNLOAD_DIR)]_hashlib.exe -
+[.$(OUT_DIR).$(DYNLOAD_DIR)]_sha256.exe -
+[.$(OUT_DIR).$(DYNLOAD_DIR)]_sha512.exe -
+[.$(OUT_DIR).$(DYNLOAD_DIR)]_md5.exe -
+[.$(OUT_DIR).$(DYNLOAD_DIR)]_sha1.exe -
+[.$(OUT_DIR).$(DYNLOAD_DIR)]_blake2.exe -
+[.$(OUT_DIR).$(DYNLOAD_DIR)]_sha3.exe -
 [.$(OUT_DIR).$(DYNLOAD_DIR)]_decc.exe
 
 TARGET : [.$(OUT_DIR)]python3.exe $(LIBDYNLOAD)
@@ -991,95 +1043,364 @@ DTRACE_DEPS = -
 [.$(OBJ_DIR).Modules]readline.obm : [.Modules]readline.c $(PYTHON_HEADERS)
 [.$(OUT_DIR).$(DYNLOAD_DIR)]readline.exe : [.$(OBJ_DIR).Modules]readline.obm
 
-!! modulename modulesource
-! [.$(OBJ_DIR).Modules]modulesource.obm : [.Modules]modulesource.c $(PYTHON_HEADERS)
-! [.$(OUT_DIR).$(DYNLOAD_DIR)]modulename.exe : [.$(OBJ_DIR).Modules]modulesource.obm
+! _crypt _cryptmodule
+[.$(OBJ_DIR).Modules]_cryptmodule.obm : [.Modules]_cryptmodule.c $(PYTHON_HEADERS)
+[.$(OUT_DIR).$(DYNLOAD_DIR)]_crypt.exe : [.$(OBJ_DIR).Modules]_cryptmodule.obm
+    @ pipe create/dir $(DIR $(MMS$TARGET)) | copy SYS$INPUT nl:
+    $(LINK)$(LINKFLAGS)/SHARE=python$build_out:[$(DYNLOAD_DIR)]$(NOTDIR $(MMS$TARGET_NAME)).EXE $(MMS$SOURCE),[.opt]$(NOTDIR $(MMS$TARGET_NAME)).opt/OPT
+
+! _socket socketmodule
+[.$(OBJ_DIR).Modules]socketmodule.obm : [.Modules]socketmodule.c [.Modules]socketmodule.h $(PYTHON_HEADERS)
+[.$(OUT_DIR).$(DYNLOAD_DIR)]_socket.exe : [.$(OBJ_DIR).Modules]socketmodule.obm
+    @ pipe create/dir $(DIR $(MMS$TARGET)) | copy SYS$INPUT nl:
+    $(LINK)$(LINKFLAGS)/SHARE=python$build_out:[$(DYNLOAD_DIR)]$(NOTDIR $(MMS$TARGET_NAME)).EXE $(MMS$SOURCE),[.opt]$(NOTDIR $(MMS$TARGET_NAME)).opt/OPT
+
+! _gdbm _gdbmmodule
+[.$(OBJ_DIR).Modules]_gdbmmodule.obm : [.Modules]_gdbmmodule.c $(PYTHON_HEADERS)
+[.$(OUT_DIR).$(DYNLOAD_DIR)]_gdbm.exe : [.$(OBJ_DIR).Modules]_gdbmmodule.obm
+    @ pipe create/dir $(DIR $(MMS$TARGET)) | copy SYS$INPUT nl:
+    $(LINK)$(LINKFLAGS)/SHARE=python$build_out:[$(DYNLOAD_DIR)]$(NOTDIR $(MMS$TARGET_NAME)).EXE $(MMS$SOURCE),[.opt]$(NOTDIR $(MMS$TARGET_NAME)).opt/OPT
+
+! _sqlite3
+SQL_OBJ_LIST = -
+[.$(OBJ_DIR).Modules._sqlite]cache.obm - 
+[.$(OBJ_DIR).Modules._sqlite]connection.obm -
+[.$(OBJ_DIR).Modules._sqlite]cursor.obm -
+[.$(OBJ_DIR).Modules._sqlite]microprotocols.obm -
+[.$(OBJ_DIR).Modules._sqlite]module.obm -
+[.$(OBJ_DIR).Modules._sqlite]prepare_protocol.obm -
+[.$(OBJ_DIR).Modules._sqlite]row.obm -
+[.$(OBJ_DIR).Modules._sqlite]statement.obm -
+[.$(OBJ_DIR).Modules._sqlite]util.obm
+
+[.$(OBJ_DIR).Modules._sqlite]cache.obm : [.Modules._sqlite]cache.c $(PYTHON_HEADERS)
+    @ pipe create/dir $(DIR $(MMS$TARGET)) | copy SYS$INPUT nl:
+    $(CC) $(PY_CFLAGS_SQL) /OBJECT=$(MMS$TARGET) $(MMS$SOURCE)
+
+[.$(OBJ_DIR).Modules._sqlite]connection.obm : [.Modules._sqlite]connection.c $(PYTHON_HEADERS)
+    @ pipe create/dir $(DIR $(MMS$TARGET)) | copy SYS$INPUT nl:
+    $(CC) $(PY_CFLAGS_SQL) /OBJECT=$(MMS$TARGET) $(MMS$SOURCE)
+
+[.$(OBJ_DIR).Modules._sqlite]cursor.obm : [.Modules._sqlite]cursor.c $(PYTHON_HEADERS)
+    @ pipe create/dir $(DIR $(MMS$TARGET)) | copy SYS$INPUT nl:
+    $(CC) $(PY_CFLAGS_SQL) /OBJECT=$(MMS$TARGET) $(MMS$SOURCE)
+
+[.$(OBJ_DIR).Modules._sqlite]microprotocols.obm : [.Modules._sqlite]microprotocols.c $(PYTHON_HEADERS)
+    @ pipe create/dir $(DIR $(MMS$TARGET)) | copy SYS$INPUT nl:
+    $(CC) $(PY_CFLAGS_SQL) /OBJECT=$(MMS$TARGET) $(MMS$SOURCE)
+
+[.$(OBJ_DIR).Modules._sqlite]module.obm : [.Modules._sqlite]module.c $(PYTHON_HEADERS)
+    @ pipe create/dir $(DIR $(MMS$TARGET)) | copy SYS$INPUT nl:
+    $(CC) $(PY_CFLAGS_SQL) /OBJECT=$(MMS$TARGET) $(MMS$SOURCE)
+
+[.$(OBJ_DIR).Modules._sqlite]prepare_protocol.obm : [.Modules._sqlite]prepare_protocol.c $(PYTHON_HEADERS)
+    @ pipe create/dir $(DIR $(MMS$TARGET)) | copy SYS$INPUT nl:
+    $(CC) $(PY_CFLAGS_SQL) /OBJECT=$(MMS$TARGET) $(MMS$SOURCE)
+
+[.$(OBJ_DIR).Modules._sqlite]row.obm : [.Modules._sqlite]row.c $(PYTHON_HEADERS)
+    @ pipe create/dir $(DIR $(MMS$TARGET)) | copy SYS$INPUT nl:
+    $(CC) $(PY_CFLAGS_SQL) /OBJECT=$(MMS$TARGET) $(MMS$SOURCE)
+
+[.$(OBJ_DIR).Modules._sqlite]statement.obm : [.Modules._sqlite]statement.c $(PYTHON_HEADERS)
+    @ pipe create/dir $(DIR $(MMS$TARGET)) | copy SYS$INPUT nl:
+    $(CC) $(PY_CFLAGS_SQL) /OBJECT=$(MMS$TARGET) $(MMS$SOURCE)
+
+[.$(OBJ_DIR).Modules._sqlite]util.obm : [.Modules._sqlite]util.c $(PYTHON_HEADERS)
+    @ pipe create/dir $(DIR $(MMS$TARGET)) | copy SYS$INPUT nl:
+    $(CC) $(PY_CFLAGS_SQL) /OBJECT=$(MMS$TARGET) $(MMS$SOURCE)
+
+[.$(OUT_DIR).$(DYNLOAD_DIR)]_sqlite3.exe : $(SQL_OBJ_LIST)
+    @ pipe create/dir $(DIR $(MMS$TARGET)) | copy SYS$INPUT nl:
+    $(LINK)$(LINKFLAGS)/SHARE=python$build_out:[$(DYNLOAD_DIR)]$(NOTDIR $(MMS$TARGET_NAME)).EXE $(MMS$SOURCE_LIST),[.opt]$(NOTDIR $(MMS$TARGET_NAME)).opt/OPT
+
+! zlib zlibmodule
+[.$(OBJ_DIR).Modules]zlibmodule.obm : [.Modules]zlibmodule.c $(PYTHON_HEADERS)
+[.$(OUT_DIR).$(DYNLOAD_DIR)]zlib.exe : [.$(OBJ_DIR).Modules]zlibmodule.obm
+    @ pipe create/dir $(DIR $(MMS$TARGET)) | copy SYS$INPUT nl:
+    $(LINK)$(LINKFLAGS)/SHARE=python$build_out:[$(DYNLOAD_DIR)]$(NOTDIR $(MMS$TARGET_NAME)).EXE $(MMS$SOURCE),[.opt]$(NOTDIR $(MMS$TARGET_NAME)).opt/OPT
+
+! binascii binascii
+[.$(OBJ_DIR).Modules]binascii.obm : [.Modules]binascii.c $(PYTHON_HEADERS)
+    @ pipe create/dir $(DIR $(MMS$TARGET)) | copy SYS$INPUT nl:
+    $(CC) $(PY_CFLAGS_USE_ZLIB) /OBJECT=$(MMS$TARGET) $(MMS$SOURCE)
+
+[.$(OUT_DIR).$(DYNLOAD_DIR)]binascii.exe : [.$(OBJ_DIR).Modules]binascii.obm
+
+! _bz2 _bz2module
+[.$(OBJ_DIR).Modules]_bz2module.obm : [.Modules]_bz2module.c $(PYTHON_HEADERS)
+[.$(OUT_DIR).$(DYNLOAD_DIR)]_bz2.exe : [.$(OBJ_DIR).Modules]_bz2module.obm
+    @ pipe create/dir $(DIR $(MMS$TARGET)) | copy SYS$INPUT nl:
+    $(LINK)$(LINKFLAGS)/SHARE=python$build_out:[$(DYNLOAD_DIR)]$(NOTDIR $(MMS$TARGET_NAME)).EXE $(MMS$SOURCE),[.opt]$(NOTDIR $(MMS$TARGET_NAME)).opt/OPT
+
+! _lzma _lzmamodule
+[.$(OBJ_DIR).Modules]_lzmamodule.obm : [.Modules]_lzmamodule.c $(PYTHON_HEADERS)
+[.$(OUT_DIR).$(DYNLOAD_DIR)]_lzma.exe : [.$(OBJ_DIR).Modules]_lzmamodule.obm
+    @ pipe create/dir $(DIR $(MMS$TARGET)) | copy SYS$INPUT nl:
+    $(LINK)$(LINKFLAGS)/SHARE=python$build_out:[$(DYNLOAD_DIR)]$(NOTDIR $(MMS$TARGET_NAME)).EXE $(MMS$SOURCE),[.opt]$(NOTDIR $(MMS$TARGET_NAME)).opt/OPT
+
+! pyexpat
+EXPAT_OBJ_LIST = -
+[.$(OBJ_DIR).Modules.expat]xmlparse.obm - 
+[.$(OBJ_DIR).Modules.expat]xmlrole.obm - 
+[.$(OBJ_DIR).Modules.expat]xmltok.obm
+
+EXPAT_HEADERS = -
+[.Modules.expat]ascii.h -
+[.Modules.expat]asciitab.h -
+[.Modules.expat]expat.h -
+[.Modules.expat]expat_config.h -
+[.Modules.expat]expat_external.h -
+[.Modules.expat]internal.h -
+[.Modules.expat]latin1tab.h -
+[.Modules.expat]utf8tab.h -
+[.Modules.expat]xmlrole.h -
+[.Modules.expat]xmltok.h -
+[.Modules.expat]xmltok_impl.h
+
+[.$(OBJ_DIR).Modules]pyexpat.obm : [.Modules]pyexpat.c $(EXPAT_HEADERS) $(PYTHON_HEADERS)
+    @ pipe create/dir $(DIR $(MMS$TARGET)) | copy SYS$INPUT nl:
+    $(CC) $(PY_CFLAGS_EXPAT) /OBJECT=$(MMS$TARGET) $(MMS$SOURCE)
+
+[.$(OBJ_DIR).Modules.expat]xmlparse.obm : [.Modules.expat]xmlparse.c $(EXPAT_HEADERS) $(PYTHON_HEADERS)
+    @ pipe create/dir $(DIR $(MMS$TARGET)) | copy SYS$INPUT nl:
+    $(CC) $(PY_CFLAGS_EXPAT) /OBJECT=$(MMS$TARGET) $(MMS$SOURCE)
+
+[.$(OBJ_DIR).Modules.expat]xmlrole.obm : [.Modules.expat]xmlrole.c $(EXPAT_HEADERS) $(PYTHON_HEADERS)
+    @ pipe create/dir $(DIR $(MMS$TARGET)) | copy SYS$INPUT nl:
+    $(CC) $(PY_CFLAGS_EXPAT) /OBJECT=$(MMS$TARGET) $(MMS$SOURCE)
+
+[.$(OBJ_DIR).Modules.expat]xmltok.obm : [.Modules.expat]xmltok.c $(EXPAT_HEADERS) $(PYTHON_HEADERS)
+    @ pipe create/dir $(DIR $(MMS$TARGET)) | copy SYS$INPUT nl:
+    $(CC) $(PY_CFLAGS_EXPAT) /OBJECT=$(MMS$TARGET) $(MMS$SOURCE)
+
+[.$(OUT_DIR).$(DYNLOAD_DIR)]pyexpat.exe : [.$(OBJ_DIR).Modules]pyexpat.obm,$(EXPAT_OBJ_LIST)
+
+! _elementtree _elementtree
+[.$(OBJ_DIR).Modules]_elementtree.obm : [.Modules]_elementtree.c $(EXPAT_HEADERS) $(PYTHON_HEADERS) [.$(OUT_DIR).$(DYNLOAD_DIR)]pyexpat.exe
+    @ pipe create/dir $(DIR $(MMS$TARGET)) | copy SYS$INPUT nl:
+    $(CC) $(PY_CFLAGS_EXPAT_ELEM) /OBJECT=$(MMS$TARGET) $(MMS$SOURCE)
+
+[.$(OUT_DIR).$(DYNLOAD_DIR)]_elementtree.exe : [.$(OBJ_DIR).Modules]_elementtree.obm
+
+! _multibytecodec cjkcodecs/multibytecodec.c
+[.$(OBJ_DIR).Modules.cjkcodecs]multibytecodec.obm : [.Modules.cjkcodecs]multibytecodec.c $(PYTHON_HEADERS)
+[.$(OUT_DIR).$(DYNLOAD_DIR)]_multibytecodec.exe : [.$(OBJ_DIR).Modules.cjkcodecs]multibytecodec.obm
+    @ pipe create/dir $(DIR $(MMS$TARGET)) | copy SYS$INPUT nl:
+    $(LINK)$(LINKFLAGS)/SHARE=python$build_out:[$(DYNLOAD_DIR)]$(NOTDIR $(MMS$TARGET_NAME)).EXE $(MMS$SOURCE),[.opt]$(NOTDIR $(MMS$TARGET_NAME)).opt/OPT
+
+! _codecs_kr cjkcodecs/_codecs_kr.c
+[.$(OBJ_DIR).Modules.cjkcodecs]_codecs_kr.obm : [.Modules.cjkcodecs]_codecs_kr.c $(PYTHON_HEADERS)
+[.$(OUT_DIR).$(DYNLOAD_DIR)]_codecs_kr.exe : [.$(OBJ_DIR).Modules.cjkcodecs]_codecs_kr.obm
+
+! _codecs_jp cjkcodecs/_codecs_jp.c
+[.$(OBJ_DIR).Modules.cjkcodecs]_codecs_jp.obm : [.Modules.cjkcodecs]_codecs_jp.c $(PYTHON_HEADERS)
+[.$(OUT_DIR).$(DYNLOAD_DIR)]_codecs_jp.exe : [.$(OBJ_DIR).Modules.cjkcodecs]_codecs_jp.obm
+
+! _codecs_cn cjkcodecs/_codecs_cn.c
+[.$(OBJ_DIR).Modules.cjkcodecs]_codecs_cn.obm : [.Modules.cjkcodecs]_codecs_cn.c $(PYTHON_HEADERS)
+[.$(OUT_DIR).$(DYNLOAD_DIR)]_codecs_cn.exe : [.$(OBJ_DIR).Modules.cjkcodecs]_codecs_cn.obm
+
+! _codecs_tw cjkcodecs/_codecs_tw.c
+[.$(OBJ_DIR).Modules.cjkcodecs]_codecs_tw.obm : [.Modules.cjkcodecs]_codecs_tw.c $(PYTHON_HEADERS)
+[.$(OUT_DIR).$(DYNLOAD_DIR)]_codecs_tw.exe : [.$(OBJ_DIR).Modules.cjkcodecs]_codecs_tw.obm
+
+! _codecs_hk cjkcodecs/_codecs_hk.c
+[.$(OBJ_DIR).Modules.cjkcodecs]_codecs_hk.obm : [.Modules.cjkcodecs]_codecs_hk.c $(PYTHON_HEADERS)
+[.$(OUT_DIR).$(DYNLOAD_DIR)]_codecs_hk.exe : [.$(OBJ_DIR).Modules.cjkcodecs]_codecs_hk.obm
+
+! _codecs_iso2022 cjkcodecs/_codecs_iso2022.c
+[.$(OBJ_DIR).Modules.cjkcodecs]_codecs_iso2022.obm : [.Modules.cjkcodecs]_codecs_iso2022.c $(PYTHON_HEADERS)
+[.$(OUT_DIR).$(DYNLOAD_DIR)]_codecs_iso2022.exe : [.$(OBJ_DIR).Modules.cjkcodecs]_codecs_iso2022.obm
+
+! _multiprocessing
+[.$(OBJ_DIR).Modules._multiprocessing]multiprocessing.obm : [.Modules._multiprocessing]multiprocessing.c [.Modules._multiprocessing]multiprocessing.h $(PYTHON_HEADERS)
+    @ pipe create/dir $(DIR $(MMS$TARGET)) | copy SYS$INPUT nl:
+    $(CC) $(PY_CFLAGS_MULT) /OBJECT=$(MMS$TARGET) $(MMS$SOURCE)
+
+[.$(OBJ_DIR).Modules._multiprocessing]semaphore.obm : [.Modules._multiprocessing]semaphore.c [.Modules._multiprocessing]multiprocessing.h $(PYTHON_HEADERS)
+    @ pipe create/dir $(DIR $(MMS$TARGET)) | copy SYS$INPUT nl:
+    $(CC) $(PY_CFLAGS_MULT) /OBJECT=$(MMS$TARGET) $(MMS$SOURCE)
+
+[.$(OUT_DIR).$(DYNLOAD_DIR)]_multiprocessing.exe : [.$(OBJ_DIR).Modules._multiprocessing]multiprocessing.obm,[.$(OBJ_DIR).Modules._multiprocessing]semaphore.obm
+    @ pipe create/dir $(DIR $(MMS$TARGET)) | copy SYS$INPUT nl:
+    $(LINK)$(LINKFLAGS)/SHARE=python$build_out:[$(DYNLOAD_DIR)]$(NOTDIR $(MMS$TARGET_NAME)).EXE $(MMS$SOURCE_LIST),[.opt]$(NOTDIR $(MMS$TARGET_NAME)).opt/OPT
+
+! ! _uuid _uuidmodule
+! [.$(OBJ_DIR).Modules]_uuidmodule.obm : [.Modules]_uuidmodule.c $(PYTHON_HEADERS)
+! [.$(OUT_DIR).$(DYNLOAD_DIR)]_uuid.exe : [.$(OBJ_DIR).Modules]_uuidmodule.obm
 !     @ pipe create/dir $(DIR $(MMS$TARGET)) | copy SYS$INPUT nl:
 !     $(LINK)$(LINKFLAGS)/SHARE=python$build_out:[$(DYNLOAD_DIR)]$(NOTDIR $(MMS$TARGET_NAME)).EXE $(MMS$SOURCE),[.opt]$(NOTDIR $(MMS$TARGET_NAME)).opt/OPT
 
-!! modulename modulesource
-! [.$(OBJ_DIR).Modules]modulesource.obm : [.Modules]modulesource.c $(PYTHON_HEADERS)
-! [.$(OUT_DIR).$(DYNLOAD_DIR)]modulename.exe : [.$(OBJ_DIR).Modules]modulesource.obm
-!     @ pipe create/dir $(DIR $(MMS$TARGET)) | copy SYS$INPUT nl:
-!     $(LINK)$(LINKFLAGS)/SHARE=python$build_out:[$(DYNLOAD_DIR)]$(NOTDIR $(MMS$TARGET_NAME)).EXE $(MMS$SOURCE),[.opt]$(NOTDIR $(MMS$TARGET_NAME)).opt/OPT
+! _ctypes
+CTYPES_OBJ_LIST = -
+[.$(OBJ_DIR).Modules._ctypes]callbacks.obm - 
+[.$(OBJ_DIR).Modules._ctypes]callproc.obm - 
+[.$(OBJ_DIR).Modules._ctypes]stgdict.obm - 
+[.$(OBJ_DIR).Modules._ctypes]cfield.obm
 
-!! modulename modulesource
-! [.$(OBJ_DIR).Modules]modulesource.obm : [.Modules]modulesource.c $(PYTHON_HEADERS)
-! [.$(OUT_DIR).$(DYNLOAD_DIR)]modulename.exe : [.$(OBJ_DIR).Modules]modulesource.obm
-!     @ pipe create/dir $(DIR $(MMS$TARGET)) | copy SYS$INPUT nl:
-!     $(LINK)$(LINKFLAGS)/SHARE=python$build_out:[$(DYNLOAD_DIR)]$(NOTDIR $(MMS$TARGET_NAME)).EXE $(MMS$SOURCE),[.opt]$(NOTDIR $(MMS$TARGET_NAME)).opt/OPT
+CTYPES_HEADERS = -
+[.Modules._ctypes]ctypes.h
 
-!! modulename modulesource
-! [.$(OBJ_DIR).Modules]modulesource.obm : [.Modules]modulesource.c $(PYTHON_HEADERS)
-! [.$(OUT_DIR).$(DYNLOAD_DIR)]modulename.exe : [.$(OBJ_DIR).Modules]modulesource.obm
-!     @ pipe create/dir $(DIR $(MMS$TARGET)) | copy SYS$INPUT nl:
-!     $(LINK)$(LINKFLAGS)/SHARE=python$build_out:[$(DYNLOAD_DIR)]$(NOTDIR $(MMS$TARGET_NAME)).EXE $(MMS$SOURCE),[.opt]$(NOTDIR $(MMS$TARGET_NAME)).opt/OPT
+[.$(OBJ_DIR).Modules._ctypes]_ctypes.obm : [.Modules._ctypes]_ctypes.c $(CTYPES_HEADERS) $(PYTHON_HEADERS)
+[.$(OBJ_DIR).Modules._ctypes]callbacks.obm : [.Modules._ctypes]callbacks.c $(CTYPES_HEADERS) $(PYTHON_HEADERS)
+[.$(OBJ_DIR).Modules._ctypes]stgdict.obm : [.Modules._ctypes]stgdict.c $(CTYPES_HEADERS) $(PYTHON_HEADERS)
+[.$(OBJ_DIR).Modules._ctypes]callproc.obm : [.Modules._ctypes]callproc.c $(CTYPES_HEADERS) $(PYTHON_HEADERS)
+[.$(OBJ_DIR).Modules._ctypes]cfield.obm : [.Modules._ctypes]cfield.c $(CTYPES_HEADERS) $(PYTHON_HEADERS)
+[.$(OUT_DIR).$(DYNLOAD_DIR)]_ctypes.exe : [.$(OBJ_DIR).Modules._ctypes]_ctypes.obm,$(CTYPES_OBJ_LIST)
 
-!! modulename modulesource
-! [.$(OBJ_DIR).Modules]modulesource.obm : [.Modules]modulesource.c $(PYTHON_HEADERS)
-! [.$(OUT_DIR).$(DYNLOAD_DIR)]modulename.exe : [.$(OBJ_DIR).Modules]modulesource.obm
-!     @ pipe create/dir $(DIR $(MMS$TARGET)) | copy SYS$INPUT nl:
-!     $(LINK)$(LINKFLAGS)/SHARE=python$build_out:[$(DYNLOAD_DIR)]$(NOTDIR $(MMS$TARGET_NAME)).EXE $(MMS$SOURCE),[.opt]$(NOTDIR $(MMS$TARGET_NAME)).opt/OPT
+! _ctypes_test _ctypes_test
+[.$(OBJ_DIR).Modules._ctypes]_ctypes_test.obm : [.Modules._ctypes]_ctypes_test.c $(PYTHON_HEADERS)
+[.$(OUT_DIR).$(DYNLOAD_DIR)]_ctypes_test.exe : [.$(OBJ_DIR).Modules._ctypes]_ctypes_test.obm
 
-!! modulename modulesource
-! [.$(OBJ_DIR).Modules]modulesource.obm : [.Modules]modulesource.c $(PYTHON_HEADERS)
-! [.$(OUT_DIR).$(DYNLOAD_DIR)]modulename.exe : [.$(OBJ_DIR).Modules]modulesource.obm
-!     @ pipe create/dir $(DIR $(MMS$TARGET)) | copy SYS$INPUT nl:
-!     $(LINK)$(LINKFLAGS)/SHARE=python$build_out:[$(DYNLOAD_DIR)]$(NOTDIR $(MMS$TARGET_NAME)).EXE $(MMS$SOURCE),[.opt]$(NOTDIR $(MMS$TARGET_NAME)).opt/OPT
+! _decimal
+DECIMAL_OBJ_LIST = -
+[.$(OBJ_DIR).Modules._decimal.libmpdec]basearith.obd -
+[.$(OBJ_DIR).Modules._decimal.libmpdec]constants.obd -
+[.$(OBJ_DIR).Modules._decimal.libmpdec]context.obd -
+[.$(OBJ_DIR).Modules._decimal.libmpdec]convolute.obd -
+[.$(OBJ_DIR).Modules._decimal.libmpdec]crt.obd -
+[.$(OBJ_DIR).Modules._decimal.libmpdec]difradix2.obd -
+[.$(OBJ_DIR).Modules._decimal.libmpdec]fnt.obd -
+[.$(OBJ_DIR).Modules._decimal.libmpdec]fourstep.obd -
+[.$(OBJ_DIR).Modules._decimal.libmpdec]io.obd -
+[.$(OBJ_DIR).Modules._decimal.libmpdec]memory.obd -
+[.$(OBJ_DIR).Modules._decimal.libmpdec]mpdecimal.obd -
+[.$(OBJ_DIR).Modules._decimal.libmpdec]numbertheory.obd -
+[.$(OBJ_DIR).Modules._decimal.libmpdec]sixstep.obd -
+[.$(OBJ_DIR).Modules._decimal.libmpdec]transpose.obd
 
-!! modulename modulesource
-! [.$(OBJ_DIR).Modules]modulesource.obm : [.Modules]modulesource.c $(PYTHON_HEADERS)
-! [.$(OUT_DIR).$(DYNLOAD_DIR)]modulename.exe : [.$(OBJ_DIR).Modules]modulesource.obm
-!     @ pipe create/dir $(DIR $(MMS$TARGET)) | copy SYS$INPUT nl:
-!     $(LINK)$(LINKFLAGS)/SHARE=python$build_out:[$(DYNLOAD_DIR)]$(NOTDIR $(MMS$TARGET_NAME)).EXE $(MMS$SOURCE),[.opt]$(NOTDIR $(MMS$TARGET_NAME)).opt/OPT
+DECIMAL_HEADERS = -
+[.Modules._decimal]docstrings.h -
+[.Modules._decimal.libmpdec]basearith.h -
+[.Modules._decimal.libmpdec]bits.h -
+[.Modules._decimal.libmpdec]constants.h -
+[.Modules._decimal.libmpdec]convolute.h -
+[.Modules._decimal.libmpdec]crt.h -
+[.Modules._decimal.libmpdec]difradix2.h -
+[.Modules._decimal.libmpdec]fnt.h -
+[.Modules._decimal.libmpdec]fourstep.h -
+[.Modules._decimal.libmpdec]io.h -
+[.Modules._decimal.libmpdec]mpalloc.h -
+[.Modules._decimal.libmpdec]mpdecimal.h -
+[.Modules._decimal.libmpdec]numbertheory.h -
+[.Modules._decimal.libmpdec]sixstep.h -
+[.Modules._decimal.libmpdec]transpose.h -
+[.Modules._decimal.libmpdec]typearith.h -
+[.Modules._decimal.libmpdec]umodarith.h
 
-!! modulename modulesource
-! [.$(OBJ_DIR).Modules]modulesource.obm : [.Modules]modulesource.c $(PYTHON_HEADERS)
-! [.$(OUT_DIR).$(DYNLOAD_DIR)]modulename.exe : [.$(OBJ_DIR).Modules]modulesource.obm
-!     @ pipe create/dir $(DIR $(MMS$TARGET)) | copy SYS$INPUT nl:
-!     $(LINK)$(LINKFLAGS)/SHARE=python$build_out:[$(DYNLOAD_DIR)]$(NOTDIR $(MMS$TARGET_NAME)).EXE $(MMS$SOURCE),[.opt]$(NOTDIR $(MMS$TARGET_NAME)).opt/OPT
+[.$(OBJ_DIR).Modules._decimal]_decimal.obd : [.Modules._decimal]_decimal.c $(DECIMAL_HEADERS) $(PYTHON_HEADERS)
+[.$(OBJ_DIR).Modules._decimal.libmpdec]basearith.obd : [.Modules._decimal.libmpdec]basearith.c $(DECIMAL_HEADERS) $(PYTHON_HEADERS)
+[.$(OBJ_DIR).Modules._decimal.libmpdec]constants.obd : [.Modules._decimal.libmpdec]constants.c $(DECIMAL_HEADERS) $(PYTHON_HEADERS)
+[.$(OBJ_DIR).Modules._decimal.libmpdec]context.obd : [.Modules._decimal.libmpdec]context.c $(DECIMAL_HEADERS) $(PYTHON_HEADERS)
+[.$(OBJ_DIR).Modules._decimal.libmpdec]convolute.obd : [.Modules._decimal.libmpdec]convolute.c $(DECIMAL_HEADERS) $(PYTHON_HEADERS)
+[.$(OBJ_DIR).Modules._decimal.libmpdec]crt.obd : [.Modules._decimal.libmpdec]crt.c $(DECIMAL_HEADERS) $(PYTHON_HEADERS)
+[.$(OBJ_DIR).Modules._decimal.libmpdec]difradix2.obd : [.Modules._decimal.libmpdec]difradix2.c $(DECIMAL_HEADERS) $(PYTHON_HEADERS)
+[.$(OBJ_DIR).Modules._decimal.libmpdec]fnt.obd : [.Modules._decimal.libmpdec]fnt.c $(DECIMAL_HEADERS) $(PYTHON_HEADERS)
+[.$(OBJ_DIR).Modules._decimal.libmpdec]fourstep.obd : [.Modules._decimal.libmpdec]fourstep.c $(DECIMAL_HEADERS) $(PYTHON_HEADERS)
+[.$(OBJ_DIR).Modules._decimal.libmpdec]io.obd : [.Modules._decimal.libmpdec]io.c $(DECIMAL_HEADERS) $(PYTHON_HEADERS)
+[.$(OBJ_DIR).Modules._decimal.libmpdec]memory.obd : [.Modules._decimal.libmpdec]memory.c $(DECIMAL_HEADERS) $(PYTHON_HEADERS)
+[.$(OBJ_DIR).Modules._decimal.libmpdec]mpdecimal.obd : [.Modules._decimal.libmpdec]mpdecimal.c $(DECIMAL_HEADERS) $(PYTHON_HEADERS)
+[.$(OBJ_DIR).Modules._decimal.libmpdec]numbertheory.obd : [.Modules._decimal.libmpdec]numbertheory.c $(DECIMAL_HEADERS) $(PYTHON_HEADERS)
+[.$(OBJ_DIR).Modules._decimal.libmpdec]sixstep.obd : [.Modules._decimal.libmpdec]sixstep.c $(DECIMAL_HEADERS) $(PYTHON_HEADERS)
+[.$(OBJ_DIR).Modules._decimal.libmpdec]transpose.obd : [.Modules._decimal.libmpdec]transpose.c $(DECIMAL_HEADERS) $(PYTHON_HEADERS)
+[.$(OUT_DIR).$(DYNLOAD_DIR)]_decimal.exe : [.$(OBJ_DIR).Modules._decimal]_decimal.obd,$(DECIMAL_OBJ_LIST)
 
-!! modulename modulesource
-! [.$(OBJ_DIR).Modules]modulesource.obm : [.Modules]modulesource.c $(PYTHON_HEADERS)
-! [.$(OUT_DIR).$(DYNLOAD_DIR)]modulename.exe : [.$(OBJ_DIR).Modules]modulesource.obm
-!     @ pipe create/dir $(DIR $(MMS$TARGET)) | copy SYS$INPUT nl:
-!     $(LINK)$(LINKFLAGS)/SHARE=python$build_out:[$(DYNLOAD_DIR)]$(NOTDIR $(MMS$TARGET_NAME)).EXE $(MMS$SOURCE),[.opt]$(NOTDIR $(MMS$TARGET_NAME)).opt/OPT
+! _ssl 
+[.$(OBJ_DIR).Modules]_ssl.obm : [.Modules]_ssl.c [.Modules]socketmodule.h $(PYTHON_HEADERS)
+[.$(OUT_DIR).$(DYNLOAD_DIR)]_ssl.exe : [.$(OBJ_DIR).Modules]_ssl.obm
 
-!! modulename modulesource
-! [.$(OBJ_DIR).Modules]modulesource.obm : [.Modules]modulesource.c $(PYTHON_HEADERS)
-! [.$(OUT_DIR).$(DYNLOAD_DIR)]modulename.exe : [.$(OBJ_DIR).Modules]modulesource.obm
-!     @ pipe create/dir $(DIR $(MMS$TARGET)) | copy SYS$INPUT nl:
-!     $(LINK)$(LINKFLAGS)/SHARE=python$build_out:[$(DYNLOAD_DIR)]$(NOTDIR $(MMS$TARGET_NAME)).EXE $(MMS$SOURCE),[.opt]$(NOTDIR $(MMS$TARGET_NAME)).opt/OPT
+! _hashlib _hashopenssl
+[.$(OBJ_DIR).Modules]_hashopenssl.obm : [.Modules]_hashopenssl.c [.Modules]hashlib.h $(PYTHON_HEADERS)
+[.$(OUT_DIR).$(DYNLOAD_DIR)]_hashlib.exe : [.$(OBJ_DIR).Modules]_hashopenssl.obm
+    @ pipe create/dir $(DIR $(MMS$TARGET)) | copy SYS$INPUT nl:
+    $(LINK)$(LINKFLAGS)/SHARE=python$build_out:[$(DYNLOAD_DIR)]$(NOTDIR $(MMS$TARGET_NAME)).EXE $(MMS$SOURCE),[.opt]$(NOTDIR $(MMS$TARGET_NAME)).opt/OPT
 
-!! modulename modulesource
-! [.$(OBJ_DIR).Modules]modulesource.obm : [.Modules]modulesource.c $(PYTHON_HEADERS)
-! [.$(OUT_DIR).$(DYNLOAD_DIR)]modulename.exe : [.$(OBJ_DIR).Modules]modulesource.obm
-!     @ pipe create/dir $(DIR $(MMS$TARGET)) | copy SYS$INPUT nl:
-!     $(LINK)$(LINKFLAGS)/SHARE=python$build_out:[$(DYNLOAD_DIR)]$(NOTDIR $(MMS$TARGET_NAME)).EXE $(MMS$SOURCE),[.opt]$(NOTDIR $(MMS$TARGET_NAME)).opt/OPT
+! _sha256 sha256module
+[.$(OBJ_DIR).Modules]sha256module.obm : [.Modules]sha256module.c [.Modules]hashlib.h $(PYTHON_HEADERS)
+[.$(OUT_DIR).$(DYNLOAD_DIR)]_sha256.exe : [.$(OBJ_DIR).Modules]sha256module.obm
+    @ pipe create/dir $(DIR $(MMS$TARGET)) | copy SYS$INPUT nl:
+    $(LINK)$(LINKFLAGS)/SHARE=python$build_out:[$(DYNLOAD_DIR)]$(NOTDIR $(MMS$TARGET_NAME)).EXE $(MMS$SOURCE),[.opt]$(NOTDIR $(MMS$TARGET_NAME)).opt/OPT
 
-!! modulename modulesource
-! [.$(OBJ_DIR).Modules]modulesource.obm : [.Modules]modulesource.c $(PYTHON_HEADERS)
-! [.$(OUT_DIR).$(DYNLOAD_DIR)]modulename.exe : [.$(OBJ_DIR).Modules]modulesource.obm
-!     @ pipe create/dir $(DIR $(MMS$TARGET)) | copy SYS$INPUT nl:
-!     $(LINK)$(LINKFLAGS)/SHARE=python$build_out:[$(DYNLOAD_DIR)]$(NOTDIR $(MMS$TARGET_NAME)).EXE $(MMS$SOURCE),[.opt]$(NOTDIR $(MMS$TARGET_NAME)).opt/OPT
+! _sha512 sha512module
+[.$(OBJ_DIR).Modules]sha512module.obm : [.Modules]sha512module.c [.Modules]hashlib.h $(PYTHON_HEADERS)
+[.$(OUT_DIR).$(DYNLOAD_DIR)]_sha512.exe : [.$(OBJ_DIR).Modules]sha512module.obm
+    @ pipe create/dir $(DIR $(MMS$TARGET)) | copy SYS$INPUT nl:
+    $(LINK)$(LINKFLAGS)/SHARE=python$build_out:[$(DYNLOAD_DIR)]$(NOTDIR $(MMS$TARGET_NAME)).EXE $(MMS$SOURCE),[.opt]$(NOTDIR $(MMS$TARGET_NAME)).opt/OPT
 
-!! modulename modulesource
-! [.$(OBJ_DIR).Modules]modulesource.obm : [.Modules]modulesource.c $(PYTHON_HEADERS)
-! [.$(OUT_DIR).$(DYNLOAD_DIR)]modulename.exe : [.$(OBJ_DIR).Modules]modulesource.obm
-!     @ pipe create/dir $(DIR $(MMS$TARGET)) | copy SYS$INPUT nl:
-!     $(LINK)$(LINKFLAGS)/SHARE=python$build_out:[$(DYNLOAD_DIR)]$(NOTDIR $(MMS$TARGET_NAME)).EXE $(MMS$SOURCE),[.opt]$(NOTDIR $(MMS$TARGET_NAME)).opt/OPT
+! _md5 md5module
+[.$(OBJ_DIR).Modules]md5module.obm : [.Modules]md5module.c [.Modules]hashlib.h $(PYTHON_HEADERS)
+[.$(OUT_DIR).$(DYNLOAD_DIR)]_md5.exe : [.$(OBJ_DIR).Modules]md5module.obm
+    @ pipe create/dir $(DIR $(MMS$TARGET)) | copy SYS$INPUT nl:
+    $(LINK)$(LINKFLAGS)/SHARE=python$build_out:[$(DYNLOAD_DIR)]$(NOTDIR $(MMS$TARGET_NAME)).EXE $(MMS$SOURCE),[.opt]$(NOTDIR $(MMS$TARGET_NAME)).opt/OPT
 
-!! modulename modulesource
-! [.$(OBJ_DIR).Modules]modulesource.obm : [.Modules]modulesource.c $(PYTHON_HEADERS)
-! [.$(OUT_DIR).$(DYNLOAD_DIR)]modulename.exe : [.$(OBJ_DIR).Modules]modulesource.obm
-!     @ pipe create/dir $(DIR $(MMS$TARGET)) | copy SYS$INPUT nl:
-!     $(LINK)$(LINKFLAGS)/SHARE=python$build_out:[$(DYNLOAD_DIR)]$(NOTDIR $(MMS$TARGET_NAME)).EXE $(MMS$SOURCE),[.opt]$(NOTDIR $(MMS$TARGET_NAME)).opt/OPT
+! _sha1 sha1module
+[.$(OBJ_DIR).Modules]sha1module.obm : [.Modules]sha1module.c [.Modules]hashlib.h $(PYTHON_HEADERS)
+[.$(OUT_DIR).$(DYNLOAD_DIR)]_sha1.exe : [.$(OBJ_DIR).Modules]sha1module.obm
+    @ pipe create/dir $(DIR $(MMS$TARGET)) | copy SYS$INPUT nl:
+    $(LINK)$(LINKFLAGS)/SHARE=python$build_out:[$(DYNLOAD_DIR)]$(NOTDIR $(MMS$TARGET_NAME)).EXE $(MMS$SOURCE),[.opt]$(NOTDIR $(MMS$TARGET_NAME)).opt/OPT
 
-!! modulename modulesource
-! [.$(OBJ_DIR).Modules]modulesource.obm : [.Modules]modulesource.c $(PYTHON_HEADERS)
-! [.$(OUT_DIR).$(DYNLOAD_DIR)]modulename.exe : [.$(OBJ_DIR).Modules]modulesource.obm
-!     @ pipe create/dir $(DIR $(MMS$TARGET)) | copy SYS$INPUT nl:
-!     $(LINK)$(LINKFLAGS)/SHARE=python$build_out:[$(DYNLOAD_DIR)]$(NOTDIR $(MMS$TARGET_NAME)).EXE $(MMS$SOURCE),[.opt]$(NOTDIR $(MMS$TARGET_NAME)).opt/OPT
+! _blake2 modulesource
+BLAKE2_OBJ_LIST = -
+[.$(OBJ_DIR).Modules._blake2]blake2module.obm -
+[.$(OBJ_DIR).Modules._blake2]blake2b_impl.obm -
+[.$(OBJ_DIR).Modules._blake2]blake2s_impl.obm
+
+BLAKE2_HEADERS = -
+[.Modules._blake2.impl]blake2-config.h -
+[.Modules._blake2.impl]blake2-dispatch.c -
+[.Modules._blake2.impl]blake2-impl.h -
+[.Modules._blake2.impl]blake2-kat.h -
+[.Modules._blake2.impl]blake2.h -
+[.Modules._blake2.impl]blake2b-load-sse2.h -
+[.Modules._blake2.impl]blake2b-load-sse41.h -
+[.Modules._blake2.impl]blake2b-ref.c -
+[.Modules._blake2.impl]blake2b-round.h -
+[.Modules._blake2.impl]blake2b-test.c -
+[.Modules._blake2.impl]blake2b.c -
+[.Modules._blake2.impl]blake2bp-test.c -
+[.Modules._blake2.impl]blake2bp.c -
+[.Modules._blake2.impl]blake2s-load-sse2.h -
+[.Modules._blake2.impl]blake2s-load-sse41.h -
+[.Modules._blake2.impl]blake2s-load-xop.h -
+[.Modules._blake2.impl]blake2s-ref.c -
+[.Modules._blake2.impl]blake2s-round.h -
+[.Modules._blake2.impl]blake2s-test.c -
+[.Modules._blake2.impl]blake2s.c -
+[.Modules._blake2.impl]blake2sp-test.c -
+[.Modules._blake2.impl]blake2sp.c -
+[.Modules]hashlib.h
+
+[.$(OBJ_DIR).Modules._blake2]blake2module.obm : [.Modules._blake2]blake2module.c $(BLAKE2_HEADERS) $(PYTHON_HEADERS)
+[.$(OBJ_DIR).Modules._blake2]blake2b_impl.obm : [.Modules._blake2]blake2b_impl.c $(BLAKE2_HEADERS) $(PYTHON_HEADERS)
+[.$(OBJ_DIR).Modules._blake2]blake2s_impl.obm : [.Modules._blake2]blake2s_impl.c $(BLAKE2_HEADERS) $(PYTHON_HEADERS)
+[.$(OUT_DIR).$(DYNLOAD_DIR)]_blake2.exe : $(BLAKE2_OBJ_LIST)
+    @ pipe create/dir $(DIR $(MMS$TARGET)) | copy SYS$INPUT nl:
+    $(LINK)$(LINKFLAGS)/SHARE=python$build_out:[$(DYNLOAD_DIR)]$(NOTDIR $(MMS$TARGET_NAME)).EXE $(MMS$SOURCE_LIST),[.opt]$(NOTDIR $(MMS$TARGET_NAME)).opt/OPT
+
+! _sha3
+SHA3_HEADERS = -
+[.Modules._sha3.kcp]align.h -
+[.Modules._sha3.kcp]KeccakHash.c -
+[.Modules._sha3.kcp]KeccakHash.h -
+[.Modules._sha3.kcp]KeccakP-1600-64.macros -
+[.Modules._sha3.kcp]KeccakP-1600-inplace32BI.c -
+[.Modules._sha3.kcp]KeccakP-1600-opt64-config.h -
+[.Modules._sha3.kcp]KeccakP-1600-opt64.c -
+[.Modules._sha3.kcp]KeccakP-1600-SnP-opt32.h -
+[.Modules._sha3.kcp]KeccakP-1600-SnP-opt64.h -
+[.Modules._sha3.kcp]KeccakP-1600-SnP.h -
+[.Modules._sha3.kcp]KeccakP-1600-unrolling.macros -
+[.Modules._sha3.kcp]KeccakSponge.c -
+[.Modules._sha3.kcp]KeccakSponge.h -
+[.Modules._sha3.kcp]KeccakSponge.inc -
+[.Modules._sha3.kcp]PlSnP-Fallback.inc -
+[.Modules._sha3.kcp]SnP-Relaned.h -
+[.Modules]hashlib.h
+
+[.$(OBJ_DIR).Modules._sha3]sha3module.obm : [.Modules._sha3]sha3module.c $(SHA3_HEADERS) $(PYTHON_HEADERS)
+[.$(OUT_DIR).$(DYNLOAD_DIR)]_sha3.exe : [.$(OBJ_DIR).Modules._sha3]sha3module.obm
+    @ pipe create/dir $(DIR $(MMS$TARGET)) | copy SYS$INPUT nl:
+    $(LINK)$(LINKFLAGS)/SHARE=python$build_out:[$(DYNLOAD_DIR)]$(NOTDIR $(MMS$TARGET_NAME)).EXE $(MMS$SOURCE_LIST),[.opt]$(NOTDIR $(MMS$TARGET_NAME)).opt/OPT
 
 !! modulename modulesource
 ! [.$(OBJ_DIR).Modules]modulesource.obm : [.Modules]modulesource.c $(PYTHON_HEADERS)

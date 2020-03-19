@@ -1,6 +1,5 @@
-[.Modules]_ssl.obj
-ssl1$root:[lib]ssl1$libssl32.olb/lib
-ssl1$root:[lib]ssl1$libcrypto32.olb/lib
+sys$library:ssl111$libssl_shr32.exe/share
+sys$library:ssl111$libcrypto_shr32.exe/share
 sys$library:pthread$rtl.exe/share
 python$build_out:[000000]python$shr.exe/share
 GSMATCH=LEQUAL,1,0

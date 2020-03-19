@@ -17,7 +17,11 @@
 #include "pystrhex.h"
 #include "pythread.h"
 
+#ifdef __VMS
+#include "Modules/hashlib.h"
+#else
 #include "../hashlib.h"
+#endif
 #include "blake2ns.h"
 
 #define HAVE_BLAKE2S 1

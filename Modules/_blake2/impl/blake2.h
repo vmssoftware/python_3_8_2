@@ -15,7 +15,9 @@
 #define __BLAKE2_H__
 
 #include <stddef.h>
+#ifdef HAVE_STDINT_H
 #include <stdint.h>
+#endif
 
 #if defined(_WIN32) || defined(__CYGWIN__)
     #define BLAKE2_DLL_IMPORT __declspec(dllimport)

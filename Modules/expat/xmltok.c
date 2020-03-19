@@ -56,20 +56,20 @@
 #include "nametab.h"
 
 #ifdef XML_DTD
-#  define IGNORE_SECTION_TOK_VTABLE , PREFIX(ignoreSectionTok)
+#  define IGNORE_SECTION_TOK_VTABLE , PREFIX_(ignoreSectionTok)
 #else
 #  define IGNORE_SECTION_TOK_VTABLE /* as nothing */
 #endif
 
 #define VTABLE1                                                                \
-  {PREFIX(prologTok), PREFIX(contentTok),                                      \
-   PREFIX(cdataSectionTok) IGNORE_SECTION_TOK_VTABLE},                         \
-      {PREFIX(attributeValueTok), PREFIX(entityValueTok)},                     \
-      PREFIX(nameMatchesAscii), PREFIX(nameLength), PREFIX(skipS),             \
-      PREFIX(getAtts), PREFIX(charRefNumber), PREFIX(predefinedEntityName),    \
-      PREFIX(updatePosition), PREFIX(isPublicId)
+  {PREFIX_(prologTok), PREFIX_(contentTok),                                      \
+   PREFIX_(cdataSectionTok) IGNORE_SECTION_TOK_VTABLE},                         \
+      {PREFIX_(attributeValueTok), PREFIX_(entityValueTok)},                     \
+      PREFIX_(nameMatchesAscii), PREFIX_(nameLength), PREFIX_(skipS),             \
+      PREFIX_(getAtts), PREFIX_(charRefNumber), PREFIX_(predefinedEntityName),    \
+      PREFIX_(updatePosition), PREFIX_(isPublicId)
 
-#define VTABLE VTABLE1, PREFIX(toUtf8), PREFIX(toUtf16)
+#define VTABLE VTABLE1, PREFIX_(toUtf8), PREFIX_(toUtf16)
 
 #define UCS2_GET_NAMING(pages, hi, lo)                                         \
   (namingBitmap[(pages[hi] << 3) + ((lo) >> 5)] & (1u << ((lo)&0x1F)))
@@ -295,7 +295,7 @@ sb_charMatches(const ENCODING *enc, const char *p, int c) {
 #  define CHAR_MATCHES(enc, p, c) (*(p) == c)
 #endif
 
-#define PREFIX(ident) normal_##ident
+#define PREFIX_(ident) normal_##ident
 #define XML_TOK_IMPL_C
 #include "xmltok_impl.c"
 #undef XML_TOK_IMPL_C
@@ -778,8 +778,8 @@ little2_isNmstrtMin(const ENCODING *enc, const char *p) {
 
 #else /* not XML_MIN_SIZE */
 
-#  undef PREFIX
-#  define PREFIX(ident) little2_##ident
+#  undef PREFIX_
+#  define PREFIX_(ident) little2_##ident
 #  define MINBPC(enc) 2
 /* CHAR_MATCHES is guaranteed to have MINBPC bytes available. */
 #  define BYTE_TYPE(enc, p) LITTLE2_BYTE_TYPE(enc, p)
@@ -913,8 +913,8 @@ big2_isNmstrtMin(const ENCODING *enc, const char *p) {
 
 #else /* not XML_MIN_SIZE */
 
-#  undef PREFIX
-#  define PREFIX(ident) big2_##ident
+#  undef PREFIX_
+#  define PREFIX_(ident) big2_##ident
 #  define MINBPC(enc) 2
 /* CHAR_MATCHES is guaranteed to have MINBPC bytes available. */
 #  define BYTE_TYPE(enc, p) BIG2_BYTE_TYPE(enc, p)
@@ -1001,7 +1001,7 @@ static const struct normal_encoding internal_big2_encoding
 
 #endif
 
-#undef PREFIX
+#undef PREFIX_
 
 static int FASTCALL
 streqci(const char *s1, const char *s2) {

@@ -48,7 +48,9 @@ extern "C" {
 #include <string.h>
 #include <limits.h>
 #include <assert.h>
+#ifdef HAVE_STDINT_H
 #include <stdint.h>
+#endif
 #include <inttypes.h>
 
 #ifdef _MSC_VER

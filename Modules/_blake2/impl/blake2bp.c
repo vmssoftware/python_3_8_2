@@ -14,7 +14,9 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#ifdef HAVE_STDINT_H
 #include <stdint.h>
+#endif
 
 #if defined(_OPENMP)
 #include <omp.h>

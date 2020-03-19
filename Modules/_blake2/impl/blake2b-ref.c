@@ -11,7 +11,9 @@
    this software. If not, see <http://creativecommons.org/publicdomain/zero/1.0/>.
 */
 
+#ifdef HAVE_STDINT_H
 #include <stdint.h>
+#endif
 #include <string.h>
 #include <stdio.h>
 

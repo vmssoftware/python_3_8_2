@@ -19,7 +19,9 @@
 #endif
 
 #include <stddef.h>
+#ifdef HAVE_STDINT_H
 #include <stdint.h>
+#endif
 #include <string.h>
 
 #define BLAKE2_IMPL_CAT(x,y) x ## y
@@ -140,7 +142,7 @@ static inline void secure_zero_memory(void *v, size_t n)
 {
 #if defined(_WIN32) || defined(WIN32)
   SecureZeroMemory(v, n);
-#elif defined(__hpux)
+#elif defined(__hpux) || defined(__VMS)
   static void *(*const volatile memset_v)(void *, int, size_t) = &memset;
   memset_v(v, 0, n);
 #else
