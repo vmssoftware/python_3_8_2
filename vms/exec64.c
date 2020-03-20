@@ -19,10 +19,12 @@ int execve64(const __char_ptr64 file_spec, __char_ptr64 argv[], __char_ptr64 env
         n++;
     }
 
-    assert((argv32 = (__char_ptr_ptr32) _malloc32((n + 1) * sizeof(char *))));
+    argv32 = (__char_ptr_ptr32) _malloc32((n + 1) * sizeof(char *));
+    assert(argv32);
 
     for (i = 0; i < n; i++) {
-        assert((argv32[i] = _strdup32(argv[i])));
+        argv32[i] = _strdup32(argv[i]);
+        assert(argv32[i]);
     }
 
     argv32[n] = NULL;
@@ -33,10 +35,12 @@ int execve64(const __char_ptr64 file_spec, __char_ptr64 argv[], __char_ptr64 env
         m++;
     }
 
-    assert((envp32 = (__char_ptr_ptr32) _malloc32((m + 1) * sizeof(char *))));
+    envp32 = (__char_ptr_ptr32) _malloc32((m + 1) * sizeof(char *));
+    assert(envp32);
 
     for (i = 0; i < m; i++) {
-        assert((envp32[i] = _strdup32(envp[i])));
+        envp32[i] = _strdup32(envp[i]);
+        assert(envp32[i]);
     }
 
     envp32[m] = NULL;
@@ -69,10 +73,12 @@ int execv64(const __char_ptr64 file_spec, __char_ptr64 argv[])
         n++;
     }
 
-    assert((argv32 = (__char_ptr_ptr32) _malloc32((n + 1) * sizeof(char *))));
+    argv32 = (__char_ptr_ptr32) _malloc32((n + 1) * sizeof(char *));
+    assert(argv32);
 
     for (i = 0; i < n; i++) {
-        assert((argv32[i] = _strdup32(argv[i])));
+        argv32[i] = _strdup32(argv[i])
+        assert(argv32[i]);
     }
 
     argv32[n] = NULL;
@@ -101,10 +107,12 @@ int execvp64(const __char_ptr64 file_spec, __char_ptr64 argv[])
         n++;
     }
 
-    assert((argv32 = (__char_ptr_ptr32) _malloc32((n + 1) * sizeof(char *))));
+    argv32 = (__char_ptr_ptr32) _malloc32((n + 1) * sizeof(char *));
+    assert(argv32);
 
     for (i = 0; i < n; i++) {
-        assert((argv32[i] = _strdup32(argv[i])));
+        argv32[i] = _strdup32(argv[i])
+        assert(argv32[i]);
     }
 
     argv32[n] = NULL;

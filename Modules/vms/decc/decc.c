@@ -91,7 +91,8 @@ extern int decc$to_vms(const char *, int (*)(char *, int, void *), int, int, ...
 static int cb_from_vms(char *name, void *ud)
 {
     char **tmp = (char **) ud;
-    assert((*tmp = strdup(name)));
+    *tmp = strdup(name);
+    assert(*tmp);
     return (1);
 }
 
@@ -109,7 +110,8 @@ char *_from_vms(char *path)
 static int cb_to_vms(char *name, int flag, void *ud)
 {
     char **tmp = (char **) ud;
-    assert((*tmp = strdup(name)));
+    *tmp = strdup(name);
+    assert((*tmp));
     return (1);
 }
 
@@ -135,9 +137,10 @@ char *_getenv(char *name, char *def)
     }
 
     if (val) {
-	assert((tmp = strdup(val)));
+        tmp = strdup(val);
+	    assert(tmp);
     } else {
-	tmp = NULL;
+	    tmp = NULL;
     }
 
     return (tmp);
