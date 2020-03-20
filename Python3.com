@@ -17,5 +17,5 @@ $ backup WRK_DISK:[vorfolomeev.Python3.out.'CONFIG']python$shr.exe python$root:[
 $ backup WRK_DISK:[vorfolomeev.Python3.lib...]*.* python$root:[lib.python3^.8...]
 $ backup WRK_DISK:[vorfolomeev.Python3.out.'CONFIG'.lib-dynload...]*.* python$root:[lib.python3^.8.lib-dynload...]*.*
 $ ! next file must be present
-$ backup WRK_DISK:[vorfolomeev.Python3.build.lib^.linux-x86_64-3^.8]_sysconfigdata__linux_x86_64-linux-gnu.py python$root:[lib.python3^.8]_sysconfigdata_m_OpenVMS_cpython-38m-ia64-openvms.py
+$ backup WRK_DISK:[vorfolomeev.Python3.build]_sysconfigdata__linux_x86_64-linux-gnu.py python$root:[lib.python3^.8]_sysconfigdata_m_OpenVMS_cpython-38m-ia64-openvms.py
 $ python :== $python$root:[bin]python3.exe

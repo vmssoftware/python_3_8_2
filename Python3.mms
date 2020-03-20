@@ -198,7 +198,7 @@ LIBDYNLOAD = -
 [.$(OUT_DIR).$(DYNLOAD_DIR)]_sha3.exe -
 [.$(OUT_DIR).$(DYNLOAD_DIR)]_decc.exe
 
-TARGET : [.$(OUT_DIR)]python3.exe $(LIBDYNLOAD)
+TARGET : [.$(OUT_DIR)]python3.exe [.$(OUT_DIR)]_testembed.exe $(LIBDYNLOAD)
     ! TARGET BUILT
 
 CLEAN :
@@ -834,6 +834,10 @@ DTRACE_DEPS = -
    @ pipe create/dir $(DIR $(MMS$TARGET)) | copy SYS$INPUT nl:
     $(LINK)$(LINKFLAGS)/EXECUTABLE=python$build_out:[000000]$(NOTDIR $(MMS$TARGET_NAME)).EXE [.$(OBJ_DIR).vms]vms_crtl_init.obj,[.$(OBJ_DIR).Programs]python.obj,[.opt]$(NOTDIR $(MMS$TARGET_NAME)).opt/OPT
     ! [.$(OUT_DIR)]python3.exe is built => python$build_out:[000000]$(NOTDIR $(MMS$TARGET_NAME)).EXE
+
+[.$(OUT_DIR)]_testembed.exe : [.$(OBJ_DIR).Programs]_testembed.obj,[.$(OUT_DIR)]python$shr.exe
+   @ pipe create/dir $(DIR $(MMS$TARGET)) | copy SYS$INPUT nl:
+    $(LINK)$(LINKFLAGS)/EXECUTABLE=python$build_out:[000000]$(NOTDIR $(MMS$TARGET_NAME)).EXE $(MMS$SOURCE),[.opt]$(NOTDIR $(MMS$TARGET_NAME)).opt/OPT
 
 ! libpython3.olb
 [.$(OUT_DIR)]libpython3.olb : [.$(OUT_DIR)]libpython3.olb($(LIBRARY_OBJS))
