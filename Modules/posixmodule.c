@@ -4851,7 +4851,7 @@ split_py_long_to_s_and_ns(PyObject *py_long, time_t *s, long *ns)
         goto exit;
     }
     *s = _PyLong_AsTime_t(PyTuple_GET_ITEM(divmod, 0));
-    if ((*s == -1) && PyErr_Occurred())
+    if ((*s == (time_t)-1) && PyErr_Occurred())
         goto exit;
     *ns = PyLong_AsLong(PyTuple_GET_ITEM(divmod, 1));
     if ((*ns == -1) && PyErr_Occurred())

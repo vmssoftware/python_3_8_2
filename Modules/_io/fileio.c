@@ -727,7 +727,7 @@ _io_FileIO_readall_impl(fileio *self)
     while (1) {
         if (bytes_read >= (Py_ssize_t)bufsize) {
             bufsize = new_buffersize(self, bytes_read);
-            if (bufsize > PY_SSIZE_T_MAX || bufsize <= 0) {
+            if (bufsize > PY_SSIZE_T_MAX || (int)bufsize <= 0) {
                 PyErr_SetString(PyExc_OverflowError,
                                 "unbounded read returned more bytes "
                                 "than a Python bytes object can hold");

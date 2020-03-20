@@ -5835,7 +5835,7 @@ local_timezone(PyDateTime_DateTime *utc_time)
         return NULL;
     timestamp = _PyLong_AsTime_t(seconds);
     Py_DECREF(seconds);
-    if (timestamp == -1 && PyErr_Occurred())
+    if ((int)timestamp == -1 && PyErr_Occurred())
         return NULL;
     return local_timezone_from_timestamp(timestamp);
 }

@@ -2074,7 +2074,7 @@ _Py_dg_strtod(const char *s00, char **se)
         else {
             if (bc.scale && y <= 2*P*Exp_msk1) {
                 if (aadj <= 0x7fffffff) {
-                    if ((z = (ULong)aadj) <= 0)
+                    if ((int)(z = (ULong)aadj) <= 0)
                         z = 1;
                     aadj = z;
                     aadj1 = dsign ? aadj : -aadj;

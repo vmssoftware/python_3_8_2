@@ -3042,7 +3042,7 @@ sock_getsockopt(PySocketSockObject *s, PyObject *args)
         return NULL;
         }
 #endif
-    if (buflen <= 0 || buflen > 1024) {
+    if ((int)buflen <= 0 || buflen > 1024) {
         PyErr_SetString(PyExc_OSError,
                         "getsockopt buflen out of range");
         return NULL;

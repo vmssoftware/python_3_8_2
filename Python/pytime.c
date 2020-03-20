@@ -150,8 +150,14 @@ _PyTime_DoubleToDenominator(double d, time_t *sec, long *numerator,
         intpart -= 1.0;
     }
     assert(0.0 <= floatpart && floatpart < denominator);
-
+#ifdef __VMS
+#pragma message save
+#pragma message disable(QUESTCOMPARE)
+#endif
     if (!_Py_InIntegralTypeRange(time_t, intpart)) {
+#ifdef __VMS
+#pragma message restore
+#endif
         error_time_t_overflow();
         return -1;
     }
@@ -204,7 +210,14 @@ _PyTime_ObjectToTime_t(PyObject *obj, time_t *sec, _PyTime_round_t round)
         d = _PyTime_Round(d, round);
         (void)modf(d, &intpart);
 
+#ifdef __VMS
+#pragma message save
+#pragma message disable(QUESTCOMPARE)
+#endif
         if (!_Py_InIntegralTypeRange(time_t, intpart)) {
+#ifdef __VMS
+#pragma message restore
+#endif
             error_time_t_overflow();
             return -1;
         }

@@ -282,7 +282,7 @@ select_select_impl(PyObject *module, PyObject *rlist, PyObject *wlist,
 
         if (_PyTime_AsTimeval(timeout, &tv, _PyTime_ROUND_TIMEOUT) == -1)
             return NULL;
-        if (tv.tv_sec < 0) {
+        if ((int)tv.tv_sec < 0) {
             PyErr_SetString(PyExc_ValueError, "timeout must be non-negative");
             return NULL;
         }
