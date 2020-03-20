@@ -41,8 +41,15 @@ static void print_subinterp(void)
     PyThreadState *ts = PyThreadState_Get();
     PyInterpreterState *interp = ts->interp;
     int64_t id = PyInterpreterState_GetID(interp);
+#ifdef __VMS
+#pragma message save
+#pragma message disable(OUTTYPELEN)
+#endif
     printf("interp %" PRId64 " <0x%" PRIXPTR ">, thread state <0x%" PRIXPTR ">: ",
             id, (uintptr_t)interp, (uintptr_t)ts);
+#ifdef __VMS
+#pragma message restore
+#endif
     fflush(stdout);
     PyRun_SimpleString(
         "import sys;"
