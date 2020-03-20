@@ -45,6 +45,9 @@ def main(regrtest_args):
     if sys.platform == 'win32':
         from subprocess import call
         sys.exit(call(args))
+    elif sys.platform == 'OpenVMS':
+        from subprocess import call
+        sys.exit(call(args))
     else:
         os.execv(sys.executable, args)
 

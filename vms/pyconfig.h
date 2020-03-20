@@ -311,7 +311,7 @@
 #define HAVE_ERRNO_H 1
 
 /* Define to 1 if you have the `execv' function. */
-#undef HAVE_EXECV
+#define HAVE_EXECV 1
 
 /* Define to 1 if you have the `explicit_bzero' function. */
 #undef HAVE_EXPLICIT_BZERO
