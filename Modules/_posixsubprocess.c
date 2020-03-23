@@ -582,12 +582,12 @@ child_exec(char *const argv[],
            int p2cread,
            int c2pwrite)
 {
-	char str[1024];
+	char str[2048];
 
 	struct dsc$descriptor_s dsc = {0, DSC$K_DTYPE_T, DSC$K_CLASS_S, 0};
 	unsigned long status;
 	int i = 0;
-	int j = 0;
+    int doFixProgramName = 1;
 	int flags = CLI$M_NOWAIT;
 
 	char i_file[PATH_MAX + 1] = "";
@@ -628,35 +628,56 @@ child_exec(char *const argv[],
 	str[0] = '\0';
 
 	i = 0;
-	while (argv[i]) {
-	   if (strcmp(argv[i], "/bin/sh") == 0) {
-	      i++;
-	      if (argv[i] && (strcmp(argv[i], "-c") == 0)) {
-	         i++;
-	      }
-	   } else {
-	      if (j == 0) {
-	         if (strchr(argv[i], '/')) {
-                    char *path = NULL;
-                    decc$to_vms(argv[i], cb_to_vms, 0, 0, &path);
-	            if (path !=NULL) {
-		       strcat(str, "mcr ");
-	               strcat(str, path);
-	               free(path);
-	            } else {
-	               strcat(str, argv[i]);
-	            }
-	         } else {
-	            strcat(str, argv[i]);
-	         }
-	      } else {
-	         strcat(str, argv[i]);
-	      }
-	      strcat(str, " ");
-	      i++;
-	      j++;
-	   }
-	}
+    
+    while (argv[i])
+    {
+        if (doFixProgramName) {
+            if (strcmp(argv[i], "/bin/sh") == 0) {
+                // skip bash
+                ++i;
+                if (argv[i] && (strcmp(argv[i], "-c") == 0)) {
+                    // skip "-c" bash parameter
+                    ++i;
+                }
+            } else if (strchr(argv[i], '/')) {
+                // try fixing program mane
+                char *path = NULL;
+                decc$to_vms(argv[i], cb_to_vms, 0, 0, &path);
+                if (path != NULL) {
+                    // fix it
+                    strncat(str, "mcr ", sizeof(str));
+                    strncat(str, path, sizeof(str));
+                    free(path);
+                } else {
+                    // leave as is
+                    strncat(str, argv[i], sizeof(str));
+                }
+            }
+            doFixProgramName = 0;
+            ++i;
+        } else {
+            strncat(str, " ", sizeof(str));
+            if (strchr(argv[i], '\"')) {
+                // enclose in \" and change each \" to \"\"
+                char *src = argv[i];
+                char *dest = str + strlen(str);
+                if (dest - str < sizeof(str)) *(dest++) = '\"';
+                while(*src) {
+                    if (*src == '\"') {
+                        if (dest - str < sizeof(str)) *(dest++) = '\"';
+                    }
+                    if (dest - str < sizeof(str)) *(dest++) = *src;
+                    ++src;
+                };
+                if (dest - str < sizeof(str)) *(dest++) = '\"';
+            } else {
+                strncat(str, argv[i], sizeof(str));
+            }
+            ++i;
+        }
+    }
+
+    // printf("child_exec STR[%i]: %s\n", strlen(str), str);
 
 	dsc.dsc$w_length = strlen(str);
 	dsc.dsc$a_pointer = (char *) str;
