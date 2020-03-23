@@ -1,4 +1,3 @@
-[.modules.vms.pqldef]pqldef_wrap.obj
 sys$library:pthread$rtl.exe/share
 python$build_out:[000000]python$shr.exe/share
 GSMATCH=LEQUAL,1,0

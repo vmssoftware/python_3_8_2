@@ -1,0 +1,126 @@
+--##############################################################################
+
+module 	eib$$db_functions
+
+	language	c
+	authorization 	$$rdb$$
+	parameter 	colons
+
+	declare $$rdb$$ alias for filename sql$database
+
+-- ============================================================================
+procedure eib$$db_attach
+	  sqlca
+	  :p_attach 		char(255);
+
+	  attach :p_attach;
+
+-- ============================================================================
+procedure eib$$db_detach
+	  sqlca;
+
+	  disconnect default;
+
+-- ============================================================================
+procedure eib$$db_commit
+    	  sqlca;
+
+    	  commit;
+
+-- ============================================================================
+procedure eib$$db_rollback
+    	  sqlca;
+
+    	  rollback;
+
+-- ============================================================================
+procedure eib$$db_set_readonly
+          sqlca;
+
+          set transaction read only;
+
+-- ============================================================================
+procedure eib$$db_set_readwrite
+          sqlca;
+
+          set transaction read write;
+
+-- ============================================================================
+procedure eib$$db_exec_immediate
+          sqlca
+          :p_statement          char(8192);
+
+          execute immediate :p_statement;
+
+-- ============================================================================
+procedure eib$$db_exec
+          sqlca
+          :p_statement_id       integer
+    	  :i_sqlda 		sqlda
+    	  :o_sqlda 		sqlda;
+
+	  execute :p_statement_id into descriptor :o_sqlda using descriptor :i_sqlda;
+
+-- ============================================================================
+procedure eib$$db_prepare
+          sqlca
+          :p_statement_id       integer
+          :p_statement          char(8192);
+
+          prepare :p_statement_id from :p_statement;
+
+-- ============================================================================
+procedure eib$$db_release
+          sqlca
+          :p_statement_id       integer;
+
+          release :p_statement_id;
+
+-- ============================================================================
+procedure eib$$db_open_cursor
+          sqlca
+          :p_name               char(32)
+          sqlda;
+
+          open :p_name using descriptor sqlda;
+
+-- ============================================================================
+procedure eib$$db_close_cursor
+          sqlca
+          :p_name               char(32);
+
+          close :p_name;
+
+-- ============================================================================
+procedure eib$$db_declare
+          sqlca
+          :p_name               char(32)
+          :p_statement_id       integer;
+
+          declare :p_name cursor for :p_statement_id;
+
+-- ============================================================================
+procedure eib$$db_describe_select
+          sqlca
+          :p_statement_id       integer
+          sqlda;
+
+          describe :p_statement_id select list into sqlda;
+
+-- ============================================================================
+procedure eib$$db_describe_markers
+          sqlca
+          :p_statement_id       integer
+          sqlda;
+
+          describe :p_statement_id markers into sqlda;
+
+-- ============================================================================
+procedure eib$$db_fetch
+          sqlca
+          :p_cursor             char(32)
+          sqlda;
+
+          fetch :p_cursor using descriptor sqlda;
+
+--##############################################################################

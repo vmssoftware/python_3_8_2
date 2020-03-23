@@ -1,0 +1,32 @@
+%module lckdef
+
+%constant int LCK_M_VALBLK = 0x1L;
+%constant int LCK_M_CONVERT = 0x2L;
+%constant int LCK_M_NOQUEUE = 0x4L;
+%constant int LCK_M_SYNCSTS = 0x8L;
+%constant int LCK_M_SYSTEM = 0x10L;
+%constant int LCK_M_NOQUOTA = 0x20L;
+%constant int LCK_M_CVTSYS = 0x40L;
+%constant int LCK_M_RECOVER = 0x80L;
+%constant int LCK_M_PROTECT = 0x100L;
+%constant int LCK_M_NODLCKWT = 0x200L;
+%constant int LCK_M_NODLCKBLK = 0x400L;
+%constant int LCK_M_EXPEDITE = 0x800L;
+%constant int LCK_M_QUECVT = 0x1000L;
+%constant int LCK_M_BYPASS = 0x2000L;
+%constant int LCK_M_NOIOLOCK8 = 0x4000L;
+%constant int LCK_M_NOFORK = 0x8000L;
+%constant int LCK_M_XVALBLK = 0x10000L;
+%constant int LCK_M_DEQALL = 0x1L;
+%constant int LCK_M_CANCEL = 0x2L;
+%constant int LCK_M_INVVALBLK = 0x4L;
+%constant int LCK_M_RESV_NOIOLOCK8 = 0x4000L;
+%constant int LCK_M_RESV_NOFORK = 0x8000L;
+%constant int LCK_M_RESV_XVALBLK = 0x10000L;
+%constant int LCK_K_NLMODE = 0;
+%constant int LCK_K_CRMODE = 1;
+%constant int LCK_K_CWMODE = 2;
+%constant int LCK_K_PRMODE = 3;
+%constant int LCK_K_PWMODE = 4;
+%constant int LCK_K_EXMODE = 5;
+%constant int LCK_S_LCKDEF = 3;
