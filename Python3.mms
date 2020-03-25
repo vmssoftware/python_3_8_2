@@ -99,6 +99,9 @@ PY_OSF_CFLAGS = $(PY_CFLAGS_Q)/DEFINE=(_OSF_SOURCE,$(PY_CFLAGS_DEF))/INCLUDE_DIR
     define _ssl [.Modules._ssl]
     define impl [.Modules._blake2.impl]
     define kcp  [.Modules._sha3.kcp]
+    ! SWIG
+    swig :== $swig$root:[bin]swig.exe
+    ! names
     BUILD_OUT_DIR = F$ENVIRONMENT("DEFAULT")-"]"+".$(OUT_DIR).]"
     BUILD_OBJ_DIR = F$ENVIRONMENT("DEFAULT")-"]"+".$(OBJ_DIR).]"
     define /trans=concealed python$build_out 'BUILD_OUT_DIR'
@@ -142,78 +145,78 @@ PY_OSF_CFLAGS = $(PY_CFLAGS_Q)/DEFINE=(_OSF_SOURCE,$(PY_CFLAGS_DEF))/INCLUDE_DIR
     $(LINK)$(LINKFLAGS)/SHARE=python$build_out:[$(DYNLOAD_DIR)]$(NOTDIR $(MMS$TARGET_NAME)).EXE $(MMS$SOURCE_LIST),[.opt]$(NOTDIR $(MMS$TARGET_NAME)).opt/OPT
 
 LIBDYNLOAD_VMS = -
-[.$(OUT_DIR).$(DYNLOAD_DIR)]_jpidef.exe -
-[.$(OUT_DIR).$(DYNLOAD_DIR)]_syidef.exe -
-[.$(OUT_DIR).$(DYNLOAD_DIR)]_clidef.exe -
-[.$(OUT_DIR).$(DYNLOAD_DIR)]_dvidef.exe -
-[.$(OUT_DIR).$(DYNLOAD_DIR)]_quidef.exe -
-[.$(OUT_DIR).$(DYNLOAD_DIR)]_psldef.exe -
-[.$(OUT_DIR).$(DYNLOAD_DIR)]_fabdef.exe -
-[.$(OUT_DIR).$(DYNLOAD_DIR)]_rmsdef.exe -
-[.$(OUT_DIR).$(DYNLOAD_DIR)]_pscandef.exe -
-[.$(OUT_DIR).$(DYNLOAD_DIR)]_prdef.exe -
-[.$(OUT_DIR).$(DYNLOAD_DIR)]_rsdmdef.exe -
-[.$(OUT_DIR).$(DYNLOAD_DIR)]_ppropdef.exe -
-[.$(OUT_DIR).$(DYNLOAD_DIR)]_maildef.exe -
-[.$(OUT_DIR).$(DYNLOAD_DIR)]_jbcmsgdef.exe -
-[.$(OUT_DIR).$(DYNLOAD_DIR)]_libclidef.exe -
-[.$(OUT_DIR).$(DYNLOAD_DIR)]_libdtdef.exe -
-[.$(OUT_DIR).$(DYNLOAD_DIR)]_libfisdef.exe -
-[.$(OUT_DIR).$(DYNLOAD_DIR)]_dcdef.exe -
-[.$(OUT_DIR).$(DYNLOAD_DIR)]_cvtfnmdef.exe -
-[.$(OUT_DIR).$(DYNLOAD_DIR)]_fscndef.exe -
-[.$(OUT_DIR).$(DYNLOAD_DIR)]_fpdef.exe -
-[.$(OUT_DIR).$(DYNLOAD_DIR)]_fdldef.exe -
-[.$(OUT_DIR).$(DYNLOAD_DIR)]_dpsdef.exe -
-[.$(OUT_DIR).$(DYNLOAD_DIR)]_efndef.exe -
-[.$(OUT_DIR).$(DYNLOAD_DIR)]_dvsdef.exe -
-[.$(OUT_DIR).$(DYNLOAD_DIR)]_eradef.exe -
-[.$(OUT_DIR).$(DYNLOAD_DIR)]_iodef.exe -
-[.$(OUT_DIR).$(DYNLOAD_DIR)]_initdef.exe -
-[.$(OUT_DIR).$(DYNLOAD_DIR)]_issdef.exe -
-[.$(OUT_DIR).$(DYNLOAD_DIR)]_impdef.exe -
-[.$(OUT_DIR).$(DYNLOAD_DIR)]_mntdef.exe -
-[.$(OUT_DIR).$(DYNLOAD_DIR)]_nsadef.exe -
-[.$(OUT_DIR).$(DYNLOAD_DIR)]_ossdef.exe -
-[.$(OUT_DIR).$(DYNLOAD_DIR)]_pcbdef.exe -
-[.$(OUT_DIR).$(DYNLOAD_DIR)]_prxdef.exe -
-[.$(OUT_DIR).$(DYNLOAD_DIR)]_prvdef.exe -
-[.$(OUT_DIR).$(DYNLOAD_DIR)]_pqldef.exe -
-[.$(OUT_DIR).$(DYNLOAD_DIR)]_prcdef.exe -
-[.$(OUT_DIR).$(DYNLOAD_DIR)]_lckdef.exe -
-[.$(OUT_DIR).$(DYNLOAD_DIR)]_kgbdef.exe -
-[.$(OUT_DIR).$(DYNLOAD_DIR)]_pxbdef.exe -
-[.$(OUT_DIR).$(DYNLOAD_DIR)]_sdvdef.exe -
-[.$(OUT_DIR).$(DYNLOAD_DIR)]_stsdef.exe -
-[.$(OUT_DIR).$(DYNLOAD_DIR)]_lnmdef.exe -
-[.$(OUT_DIR).$(DYNLOAD_DIR)]_iccdef.exe -
-[.$(OUT_DIR).$(DYNLOAD_DIR)]_dscdef.exe -
-[.$(OUT_DIR).$(DYNLOAD_DIR)]_dmtdef.exe -
-[.$(OUT_DIR).$(DYNLOAD_DIR)]_cmbdef.exe -
-[.$(OUT_DIR).$(DYNLOAD_DIR)]_iledef.exe -
-[.$(OUT_DIR).$(DYNLOAD_DIR)]_lkidef.exe -
-[.$(OUT_DIR).$(DYNLOAD_DIR)]_sjcdef.exe -
-[.$(OUT_DIR).$(DYNLOAD_DIR)]_ssdef.exe -
-[.$(OUT_DIR).$(DYNLOAD_DIR)]_ciadef.exe -
-[.$(OUT_DIR).$(DYNLOAD_DIR)]_capdef.exe -
-[.$(OUT_DIR).$(DYNLOAD_DIR)]_chpdef.exe -
-[.$(OUT_DIR).$(DYNLOAD_DIR)]_uaidef.exe -
-[.$(OUT_DIR).$(DYNLOAD_DIR)]_uafdef.exe -
-[.$(OUT_DIR).$(DYNLOAD_DIR)]_rmidef.exe -
-[.$(OUT_DIR).$(DYNLOAD_DIR)]_regdef.exe -
-[.$(OUT_DIR).$(DYNLOAD_DIR)]_rabdef.exe -
 [.$(OUT_DIR).$(DYNLOAD_DIR)]_accdef.exe -
 [.$(OUT_DIR).$(DYNLOAD_DIR)]_acldef.exe -
 [.$(OUT_DIR).$(DYNLOAD_DIR)]_acrdef.exe -
 [.$(OUT_DIR).$(DYNLOAD_DIR)]_armdef.exe -
-[.$(OUT_DIR).$(DYNLOAD_DIR)]_stenvdef.exe -
-[.$(OUT_DIR).$(DYNLOAD_DIR)]_statedef.exe -
 [.$(OUT_DIR).$(DYNLOAD_DIR)]_brkdef.exe -
-[.$(OUT_DIR).$(DYNLOAD_DIR)]_sys.exe -
+[.$(OUT_DIR).$(DYNLOAD_DIR)]_capdef.exe -
+[.$(OUT_DIR).$(DYNLOAD_DIR)]_chpdef.exe -
+[.$(OUT_DIR).$(DYNLOAD_DIR)]_ciadef.exe -
+[.$(OUT_DIR).$(DYNLOAD_DIR)]_clidef.exe -
+[.$(OUT_DIR).$(DYNLOAD_DIR)]_cmbdef.exe -
+[.$(OUT_DIR).$(DYNLOAD_DIR)]_cvtfnmdef.exe -
+[.$(OUT_DIR).$(DYNLOAD_DIR)]_dcdef.exe -
+[.$(OUT_DIR).$(DYNLOAD_DIR)]_decc.exe -
+[.$(OUT_DIR).$(DYNLOAD_DIR)]_dmtdef.exe -
+[.$(OUT_DIR).$(DYNLOAD_DIR)]_dpsdef.exe -
+[.$(OUT_DIR).$(DYNLOAD_DIR)]_dscdef.exe -
+[.$(OUT_DIR).$(DYNLOAD_DIR)]_dvidef.exe -
+[.$(OUT_DIR).$(DYNLOAD_DIR)]_dvsdef.exe -
+[.$(OUT_DIR).$(DYNLOAD_DIR)]_efndef.exe -
+[.$(OUT_DIR).$(DYNLOAD_DIR)]_eradef.exe -
+[.$(OUT_DIR).$(DYNLOAD_DIR)]_fabdef.exe -
+[.$(OUT_DIR).$(DYNLOAD_DIR)]_fdldef.exe -
+[.$(OUT_DIR).$(DYNLOAD_DIR)]_fpdef.exe -
+[.$(OUT_DIR).$(DYNLOAD_DIR)]_fscndef.exe -
+[.$(OUT_DIR).$(DYNLOAD_DIR)]_iccdef.exe -
 [.$(OUT_DIR).$(DYNLOAD_DIR)]_ile3.exe -
+[.$(OUT_DIR).$(DYNLOAD_DIR)]_iledef.exe -
+[.$(OUT_DIR).$(DYNLOAD_DIR)]_impdef.exe -
+[.$(OUT_DIR).$(DYNLOAD_DIR)]_initdef.exe -
+[.$(OUT_DIR).$(DYNLOAD_DIR)]_iodef.exe -
+[.$(OUT_DIR).$(DYNLOAD_DIR)]_issdef.exe -
+[.$(OUT_DIR).$(DYNLOAD_DIR)]_jbcmsgdef.exe -
+[.$(OUT_DIR).$(DYNLOAD_DIR)]_jpidef.exe -
+[.$(OUT_DIR).$(DYNLOAD_DIR)]_kgbdef.exe -
+[.$(OUT_DIR).$(DYNLOAD_DIR)]_lckdef.exe -
 [.$(OUT_DIR).$(DYNLOAD_DIR)]_lib.exe -
+[.$(OUT_DIR).$(DYNLOAD_DIR)]_libclidef.exe -
+[.$(OUT_DIR).$(DYNLOAD_DIR)]_libdtdef.exe -
+[.$(OUT_DIR).$(DYNLOAD_DIR)]_libfisdef.exe -
+[.$(OUT_DIR).$(DYNLOAD_DIR)]_lkidef.exe -
+[.$(OUT_DIR).$(DYNLOAD_DIR)]_lnmdef.exe -
+[.$(OUT_DIR).$(DYNLOAD_DIR)]_maildef.exe -
+[.$(OUT_DIR).$(DYNLOAD_DIR)]_mntdef.exe -
+[.$(OUT_DIR).$(DYNLOAD_DIR)]_nsadef.exe -
+[.$(OUT_DIR).$(DYNLOAD_DIR)]_ossdef.exe -
+[.$(OUT_DIR).$(DYNLOAD_DIR)]_pcbdef.exe -
+[.$(OUT_DIR).$(DYNLOAD_DIR)]_ppropdef.exe -
+[.$(OUT_DIR).$(DYNLOAD_DIR)]_pqldef.exe -
+[.$(OUT_DIR).$(DYNLOAD_DIR)]_prcdef.exe -
+[.$(OUT_DIR).$(DYNLOAD_DIR)]_prdef.exe -
+[.$(OUT_DIR).$(DYNLOAD_DIR)]_prvdef.exe -
+[.$(OUT_DIR).$(DYNLOAD_DIR)]_prxdef.exe -
+[.$(OUT_DIR).$(DYNLOAD_DIR)]_pscandef.exe -
+[.$(OUT_DIR).$(DYNLOAD_DIR)]_psldef.exe -
+[.$(OUT_DIR).$(DYNLOAD_DIR)]_pxbdef.exe -
+[.$(OUT_DIR).$(DYNLOAD_DIR)]_quidef.exe -
+[.$(OUT_DIR).$(DYNLOAD_DIR)]_rabdef.exe -
+[.$(OUT_DIR).$(DYNLOAD_DIR)]_regdef.exe -
+[.$(OUT_DIR).$(DYNLOAD_DIR)]_rmidef.exe -
 [.$(OUT_DIR).$(DYNLOAD_DIR)]_rms.exe -
-[.$(OUT_DIR).$(DYNLOAD_DIR)]_decc.exe
+[.$(OUT_DIR).$(DYNLOAD_DIR)]_rmsdef.exe -
+[.$(OUT_DIR).$(DYNLOAD_DIR)]_rsdmdef.exe -
+[.$(OUT_DIR).$(DYNLOAD_DIR)]_sdvdef.exe -
+[.$(OUT_DIR).$(DYNLOAD_DIR)]_sjcdef.exe -
+[.$(OUT_DIR).$(DYNLOAD_DIR)]_ssdef.exe -
+[.$(OUT_DIR).$(DYNLOAD_DIR)]_statedef.exe -
+[.$(OUT_DIR).$(DYNLOAD_DIR)]_stenvdef.exe -
+[.$(OUT_DIR).$(DYNLOAD_DIR)]_stsdef.exe -
+[.$(OUT_DIR).$(DYNLOAD_DIR)]_syidef.exe -
+[.$(OUT_DIR).$(DYNLOAD_DIR)]_sys.exe -
+[.$(OUT_DIR).$(DYNLOAD_DIR)]_uafdef.exe -
+[.$(OUT_DIR).$(DYNLOAD_DIR)]_uaidef.exe
 ! [.$(OUT_DIR).$(DYNLOAD_DIR)]_rdb
 
 LIBDYNLOAD = -
@@ -620,8 +623,6 @@ MODOBJS = -
 [.$(OBJ_DIR).Modules]_tracemalloc.obj -
 [.$(OBJ_DIR).Modules]hashtable.obj -
 [.$(OBJ_DIR).Modules]symtablemodule.obj -
-- ![.$(OBJ_DIR).Modules.vms.decc]decc.obj -
-- ![.$(OBJ_DIR).Modules.vms.decc]decc_wrap.obj -
 [.$(OBJ_DIR).Modules]xxsubtype.obj
 
 LIBRARY_OBJS_OMIT_FROZEN = -
@@ -915,11 +916,13 @@ DTRACE_DEPS = -
 [.$(OUT_DIR)]python$shr.exe : [.$(OUT_DIR)]libpython3.olb
     $(LINK)$(LINKFLAGS)/SHARE=python$build_out:[000000]$(NOTDIR $(MMS$TARGET_NAME)).EXE [.opt]$(PYTHON$SHR_OPT).opt/OPT
 
+! python3.exe
 [.$(OUT_DIR)]python3.exe : [.$(OBJ_DIR).Programs]python.obj,[.$(OBJ_DIR).vms]vms_crtl_init.obj,[.$(OUT_DIR)]python$shr.exe
    @ pipe create/dir $(DIR $(MMS$TARGET)) | copy SYS$INPUT nl:
     $(LINK)$(LINKFLAGS)/EXECUTABLE=python$build_out:[000000]$(NOTDIR $(MMS$TARGET_NAME)).EXE [.$(OBJ_DIR).vms]vms_crtl_init.obj,[.$(OBJ_DIR).Programs]python.obj,[.opt]$(NOTDIR $(MMS$TARGET_NAME)).opt/OPT
     ! [.$(OUT_DIR)]python3.exe is built => python$build_out:[000000]$(NOTDIR $(MMS$TARGET_NAME)).EXE
 
+! _testembed.exe
 [.$(OUT_DIR)]_testembed.exe : [.$(OBJ_DIR).Programs]_testembed.obj,[.$(OUT_DIR)]python$shr.exe
    @ pipe create/dir $(DIR $(MMS$TARGET)) | copy SYS$INPUT nl:
     $(LINK)$(LINKFLAGS)/EXECUTABLE=python$build_out:[000000]$(NOTDIR $(MMS$TARGET_NAME)).EXE $(MMS$SOURCE),[.opt]$(NOTDIR $(MMS$TARGET_NAME)).opt/OPT
@@ -941,13 +944,6 @@ DTRACE_DEPS = -
 
 [.Python]importlib_zipimport.h : [.Lib]zipimport.py [.$(OUT_DIR).Programs]_freeze_importlib.exe
     mcr [.$(OUT_DIR).Programs]_freeze_importlib.exe zipimport Lib/zipimport.py Python/importlib_zipimport.h
-
-! _decc
-[.$(OBJ_DIR).Modules.vms.decc]decc_wrap.obm : [.Modules.vms.decc]decc_wrap.c $(PYTHON_HEADERS)
-[.$(OBJ_DIR).Modules.vms.decc]decc.obm : [.Modules.vms.decc]decc.c $(PYTHON_HEADERS)
-[.$(OUT_DIR).$(DYNLOAD_DIR)]_decc.exe : [.$(OBJ_DIR).Modules.vms.decc]decc_wrap.obm,[.$(OBJ_DIR).Modules.vms.decc]decc.obm
-    @ pipe create/dir $(DIR $(MMS$TARGET)) | copy SYS$INPUT nl:
-    $(LINK)$(LINKFLAGS)/SHARE=python$build_out:[$(DYNLOAD_DIR)]$(NOTDIR $(MMS$TARGET_NAME)).EXE $(MMS$SOURCE_LIST),[.opt]$(NOTDIR $(MMS$TARGET_NAME)).opt/OPT
 
 ! _struct
 [.$(OBJ_DIR).Modules]_struct.obm : [.Modules]_struct.c $(PYTHON_HEADERS)
@@ -1500,18 +1496,28 @@ SHA3_HEADERS = -
 
 !SWIG ============================================================
 
-! [.modules.vms.jpidef]jpidef_wrap.c : [.modules.vms.jpidef]jpidef.i
-!     SWIG -python modules/vms/jpidef/jpidef.i
-!     purge [.modules.vms.jpidef]jpidef_wrap.c
+[.Modules.vms.decc]decc_wrap.c : [.Modules.vms.decc]decc.i
+    SWIG -python modules/vms/decc/decc.i
+    purge [.modules.vms.decc]decc_wrap.c
+
+[.$(OBJ_DIR).Modules.vms.decc]decc_wrap.obm : [.Modules.vms.decc]decc_wrap.c $(PYTHON_HEADERS)
+[.$(OBJ_DIR).Modules.vms.decc]decc.obm : [.Modules.vms.decc]decc.c $(PYTHON_HEADERS)
+[.$(OUT_DIR).$(DYNLOAD_DIR)]_decc.exe : [.$(OBJ_DIR).Modules.vms.decc]decc_wrap.obm,[.$(OBJ_DIR).Modules.vms.decc]decc.obm
+    @ pipe create/dir $(DIR $(MMS$TARGET)) | copy SYS$INPUT nl:
+    $(LINK)$(LINKFLAGS)/SHARE=python$build_out:[$(DYNLOAD_DIR)]$(NOTDIR $(MMS$TARGET_NAME)).EXE $(MMS$SOURCE_LIST),[.opt]$(NOTDIR $(MMS$TARGET_NAME)).opt/OPT
+
+[.modules.vms.jpidef]jpidef_wrap.c : [.modules.vms.jpidef]jpidef.i
+    SWIG -python modules/vms/jpidef/jpidef.i
+    purge [.modules.vms.jpidef]jpidef_wrap.c
 
 [.$(OBJ_DIR).modules.vms.jpidef]jpidef_wrap.obs : [.modules.vms.jpidef]jpidef_wrap.c
 [.$(OUT_DIR).$(DYNLOAD_DIR)]_jpidef.exe : [.$(OBJ_DIR).modules.vms.jpidef]jpidef_wrap.obs
     @ pipe create/dir $(DIR $(MMS$TARGET)) | copy SYS$INPUT nl:
     $(LINK)$(LINKFLAGS)/SHARE=python$build_out:[$(DYNLOAD_DIR)]$(NOTDIR $(MMS$TARGET_NAME)).EXE $(MMS$SOURCE_LIST),[.opt]$(NOTDIR $(MMS$TARGET_NAME)).opt/OPT
 
-! [.modules.vms.syidef]syidef_wrap.c : [.modules.vms.syidef]syidef.i
-!     SWIG -python modules/vms/syidef/syidef.i
-!     purge [.modules.vms.syidef]syidef_wrap.c
+[.modules.vms.syidef]syidef_wrap.c : [.modules.vms.syidef]syidef.i
+    SWIG -python modules/vms/syidef/syidef.i
+    purge [.modules.vms.syidef]syidef_wrap.c
 
 [.$(OBJ_DIR).modules.vms.syidef]syidef_wrap.obs : [.modules.vms.syidef]syidef_wrap.c
 
@@ -1519,9 +1525,9 @@ SHA3_HEADERS = -
     @ pipe create/dir $(DIR $(MMS$TARGET)) | copy SYS$INPUT nl:
     $(LINK)$(LINKFLAGS)/SHARE=python$build_out:[$(DYNLOAD_DIR)]$(NOTDIR $(MMS$TARGET_NAME)).EXE $(MMS$SOURCE_LIST),[.opt]$(NOTDIR $(MMS$TARGET_NAME)).opt/OPT
 
-! [.modules.vms.clidef]clidef_wrap.c : [.modules.vms.clidef]clidef.i
-!     SWIG -python modules/vms/clidef/clidef.i
-!     purge [.modules.vms.clidef]clidef_wrap.c
+[.modules.vms.clidef]clidef_wrap.c : [.modules.vms.clidef]clidef.i
+    SWIG -python modules/vms/clidef/clidef.i
+    purge [.modules.vms.clidef]clidef_wrap.c
 
 [.$(OBJ_DIR).modules.vms.clidef]clidef_wrap.obs : [.modules.vms.clidef]clidef_wrap.c
 
@@ -1529,9 +1535,9 @@ SHA3_HEADERS = -
     @ pipe create/dir $(DIR $(MMS$TARGET)) | copy SYS$INPUT nl:
     $(LINK)$(LINKFLAGS)/SHARE=python$build_out:[$(DYNLOAD_DIR)]$(NOTDIR $(MMS$TARGET_NAME)).EXE $(MMS$SOURCE_LIST),[.opt]$(NOTDIR $(MMS$TARGET_NAME)).opt/OPT
 
-! [.modules.vms.dvidef]dvidef_wrap.c : [.modules.vms.dvidef]dvidef.i
-!     SWIG -python modules/vms/dvidef/dvidef.i
-!     purge [.modules.vms.dvidef]dvidef_wrap.c
+[.modules.vms.dvidef]dvidef_wrap.c : [.modules.vms.dvidef]dvidef.i
+    SWIG -python modules/vms/dvidef/dvidef.i
+    purge [.modules.vms.dvidef]dvidef_wrap.c
 
 [.$(OBJ_DIR).modules.vms.dvidef]dvidef_wrap.obs : [.modules.vms.dvidef]dvidef_wrap.c
 
@@ -1539,9 +1545,9 @@ SHA3_HEADERS = -
     @ pipe create/dir $(DIR $(MMS$TARGET)) | copy SYS$INPUT nl:
     $(LINK)$(LINKFLAGS)/SHARE=python$build_out:[$(DYNLOAD_DIR)]$(NOTDIR $(MMS$TARGET_NAME)).EXE $(MMS$SOURCE_LIST),[.opt]$(NOTDIR $(MMS$TARGET_NAME)).opt/OPT
 
-! [.modules.vms.quidef]quidef_wrap.c : [.modules.vms.quidef]quidef.i
-!     SWIG -python modules/vms/quidef/quidef.i
-!     purge [.modules.vms.quidef]quidef_wrap.c
+[.modules.vms.quidef]quidef_wrap.c : [.modules.vms.quidef]quidef.i
+    SWIG -python modules/vms/quidef/quidef.i
+    purge [.modules.vms.quidef]quidef_wrap.c
 
 [.$(OBJ_DIR).modules.vms.quidef]quidef_wrap.obs : [.modules.vms.quidef]quidef_wrap.c
 
@@ -1549,9 +1555,9 @@ SHA3_HEADERS = -
     @ pipe create/dir $(DIR $(MMS$TARGET)) | copy SYS$INPUT nl:
     $(LINK)$(LINKFLAGS)/SHARE=python$build_out:[$(DYNLOAD_DIR)]$(NOTDIR $(MMS$TARGET_NAME)).EXE $(MMS$SOURCE_LIST),[.opt]$(NOTDIR $(MMS$TARGET_NAME)).opt/OPT
 
-! [.modules.vms.psldef]psldef_wrap.c : [.modules.vms.psldef]psldef.i
-!     SWIG -python modules/vms/psldef/psldef.i
-!     purge [.modules.vms.psldef]psldef_wrap.c
+[.modules.vms.psldef]psldef_wrap.c : [.modules.vms.psldef]psldef.i
+    SWIG -python modules/vms/psldef/psldef.i
+    purge [.modules.vms.psldef]psldef_wrap.c
 
 [.$(OBJ_DIR).modules.vms.psldef]psldef_wrap.obs : [.modules.vms.psldef]psldef_wrap.c
 
@@ -1559,9 +1565,9 @@ SHA3_HEADERS = -
     @ pipe create/dir $(DIR $(MMS$TARGET)) | copy SYS$INPUT nl:
     $(LINK)$(LINKFLAGS)/SHARE=python$build_out:[$(DYNLOAD_DIR)]$(NOTDIR $(MMS$TARGET_NAME)).EXE $(MMS$SOURCE_LIST),[.opt]$(NOTDIR $(MMS$TARGET_NAME)).opt/OPT
 
-! [.modules.vms.fabdef]fabdef_wrap.c : [.modules.vms.fabdef]fabdef.i
-!     SWIG -python modules/vms/fabdef/fabdef.i
-!     purge [.modules.vms.fabdef]fabdef_wrap.c
+[.modules.vms.fabdef]fabdef_wrap.c : [.modules.vms.fabdef]fabdef.i
+    SWIG -python modules/vms/fabdef/fabdef.i
+    purge [.modules.vms.fabdef]fabdef_wrap.c
 
 [.$(OBJ_DIR).modules.vms.fabdef]fabdef_wrap.obs : [.modules.vms.fabdef]fabdef_wrap.c
 
@@ -1569,9 +1575,9 @@ SHA3_HEADERS = -
     @ pipe create/dir $(DIR $(MMS$TARGET)) | copy SYS$INPUT nl:
     $(LINK)$(LINKFLAGS)/SHARE=python$build_out:[$(DYNLOAD_DIR)]$(NOTDIR $(MMS$TARGET_NAME)).EXE $(MMS$SOURCE_LIST),[.opt]$(NOTDIR $(MMS$TARGET_NAME)).opt/OPT
 
-! [.modules.vms.rmsdef]rmsdef_wrap.c : [.modules.vms.rmsdef]rmsdef.i
-!     SWIG -python modules/vms/rmsdef/rmsdef.i
-!     purge [.modules.vms.rmsdef]rmsdef_wrap.c
+[.modules.vms.rmsdef]rmsdef_wrap.c : [.modules.vms.rmsdef]rmsdef.i
+    SWIG -python modules/vms/rmsdef/rmsdef.i
+    purge [.modules.vms.rmsdef]rmsdef_wrap.c
 
 [.$(OBJ_DIR).modules.vms.rmsdef]rmsdef_wrap.obs : [.modules.vms.rmsdef]rmsdef_wrap.c
 
@@ -1579,9 +1585,9 @@ SHA3_HEADERS = -
     @ pipe create/dir $(DIR $(MMS$TARGET)) | copy SYS$INPUT nl:
     $(LINK)$(LINKFLAGS)/SHARE=python$build_out:[$(DYNLOAD_DIR)]$(NOTDIR $(MMS$TARGET_NAME)).EXE $(MMS$SOURCE_LIST),[.opt]$(NOTDIR $(MMS$TARGET_NAME)).opt/OPT
 
-! [.modules.vms.pscandef]pscandef_wrap.c : [.modules.vms.pscandef]pscandef.i
-!     SWIG -python modules/vms/pscandef/pscandef.i
-!     purge [.modules.vms.pscandef]pscandef_wrap.c
+[.modules.vms.pscandef]pscandef_wrap.c : [.modules.vms.pscandef]pscandef.i
+    SWIG -python modules/vms/pscandef/pscandef.i
+    purge [.modules.vms.pscandef]pscandef_wrap.c
 
 [.$(OBJ_DIR).modules.vms.pscandef]pscandef_wrap.obs : [.modules.vms.pscandef]pscandef_wrap.c
 
@@ -1589,9 +1595,9 @@ SHA3_HEADERS = -
     @ pipe create/dir $(DIR $(MMS$TARGET)) | copy SYS$INPUT nl:
     $(LINK)$(LINKFLAGS)/SHARE=python$build_out:[$(DYNLOAD_DIR)]$(NOTDIR $(MMS$TARGET_NAME)).EXE $(MMS$SOURCE_LIST),[.opt]$(NOTDIR $(MMS$TARGET_NAME)).opt/OPT
 
-! [.modules.vms.prdef]prdef_wrap.c : [.modules.vms.prdef]prdef.i
-!     SWIG -python modules/vms/prdef/prdef.i
-!     purge [.modules.vms.prdef]prdef_wrap.c
+[.modules.vms.prdef]prdef_wrap.c : [.modules.vms.prdef]prdef.i
+    SWIG -python modules/vms/prdef/prdef.i
+    purge [.modules.vms.prdef]prdef_wrap.c
 
 [.$(OBJ_DIR).modules.vms.prdef]prdef_wrap.obs : [.modules.vms.prdef]prdef_wrap.c
 
@@ -1599,9 +1605,9 @@ SHA3_HEADERS = -
     @ pipe create/dir $(DIR $(MMS$TARGET)) | copy SYS$INPUT nl:
     $(LINK)$(LINKFLAGS)/SHARE=python$build_out:[$(DYNLOAD_DIR)]$(NOTDIR $(MMS$TARGET_NAME)).EXE $(MMS$SOURCE_LIST),[.opt]$(NOTDIR $(MMS$TARGET_NAME)).opt/OPT
 
-! [.modules.vms.rsdmdef]rsdmdef_wrap.c : [.modules.vms.rsdmdef]rsdmdef.i
-!     SWIG -python modules/vms/rsdmdef/rsdmdef.i
-!     purge [.modules.vms.rsdmdef]rsdmdef_wrap.c
+[.modules.vms.rsdmdef]rsdmdef_wrap.c : [.modules.vms.rsdmdef]rsdmdef.i
+    SWIG -python modules/vms/rsdmdef/rsdmdef.i
+    purge [.modules.vms.rsdmdef]rsdmdef_wrap.c
 
 [.$(OBJ_DIR).modules.vms.rsdmdef]rsdmdef_wrap.obs : [.modules.vms.rsdmdef]rsdmdef_wrap.c
 
@@ -1609,9 +1615,9 @@ SHA3_HEADERS = -
     @ pipe create/dir $(DIR $(MMS$TARGET)) | copy SYS$INPUT nl:
     $(LINK)$(LINKFLAGS)/SHARE=python$build_out:[$(DYNLOAD_DIR)]$(NOTDIR $(MMS$TARGET_NAME)).EXE $(MMS$SOURCE_LIST),[.opt]$(NOTDIR $(MMS$TARGET_NAME)).opt/OPT
 
-! [.modules.vms.ppropdef]ppropdef_wrap.c : [.modules.vms.ppropdef]ppropdef.i
-!     SWIG -python modules/vms/ppropdef/ppropdef.i
-!     purge [.modules.vms.ppropdef]ppropdef_wrap.c
+[.modules.vms.ppropdef]ppropdef_wrap.c : [.modules.vms.ppropdef]ppropdef.i
+    SWIG -python modules/vms/ppropdef/ppropdef.i
+    purge [.modules.vms.ppropdef]ppropdef_wrap.c
 
 [.$(OBJ_DIR).modules.vms.ppropdef]ppropdef_wrap.obs : [.modules.vms.ppropdef]ppropdef_wrap.c
 
@@ -1619,9 +1625,9 @@ SHA3_HEADERS = -
     @ pipe create/dir $(DIR $(MMS$TARGET)) | copy SYS$INPUT nl:
     $(LINK)$(LINKFLAGS)/SHARE=python$build_out:[$(DYNLOAD_DIR)]$(NOTDIR $(MMS$TARGET_NAME)).EXE $(MMS$SOURCE_LIST),[.opt]$(NOTDIR $(MMS$TARGET_NAME)).opt/OPT
 
-! [.modules.vms.maildef]maildef_wrap.c : [.modules.vms.maildef]maildef.i
-!     SWIG -python modules/vms/maildef/maildef.i
-!     purge [.modules.vms.maildef]maildef_wrap.c
+[.modules.vms.maildef]maildef_wrap.c : [.modules.vms.maildef]maildef.i
+    SWIG -python modules/vms/maildef/maildef.i
+    purge [.modules.vms.maildef]maildef_wrap.c
 
 [.$(OBJ_DIR).modules.vms.maildef]maildef_wrap.obs : [.modules.vms.maildef]maildef_wrap.c
 
@@ -1629,9 +1635,9 @@ SHA3_HEADERS = -
     @ pipe create/dir $(DIR $(MMS$TARGET)) | copy SYS$INPUT nl:
     $(LINK)$(LINKFLAGS)/SHARE=python$build_out:[$(DYNLOAD_DIR)]$(NOTDIR $(MMS$TARGET_NAME)).EXE $(MMS$SOURCE_LIST),[.opt]$(NOTDIR $(MMS$TARGET_NAME)).opt/OPT
 
-! [.modules.vms.jbcmsgdef]jbcmsgdef_wrap.c : [.modules.vms.jbcmsgdef]jbcmsgdef.i
-!     SWIG -python modules/vms/jbcmsgdef/jbcmsgdef.i
-!     purge [.modules.vms.jbcmsgdef]jbcmsgdef_wrap.c
+[.modules.vms.jbcmsgdef]jbcmsgdef_wrap.c : [.modules.vms.jbcmsgdef]jbcmsgdef.i
+    SWIG -python modules/vms/jbcmsgdef/jbcmsgdef.i
+    purge [.modules.vms.jbcmsgdef]jbcmsgdef_wrap.c
 
 [.$(OBJ_DIR).modules.vms.jbcmsgdef]jbcmsgdef_wrap.obs : [.modules.vms.jbcmsgdef]jbcmsgdef_wrap.c
 
@@ -1639,9 +1645,9 @@ SHA3_HEADERS = -
     @ pipe create/dir $(DIR $(MMS$TARGET)) | copy SYS$INPUT nl:
     $(LINK)$(LINKFLAGS)/SHARE=python$build_out:[$(DYNLOAD_DIR)]$(NOTDIR $(MMS$TARGET_NAME)).EXE $(MMS$SOURCE_LIST),[.opt]$(NOTDIR $(MMS$TARGET_NAME)).opt/OPT
 
-! [.modules.vms.libclidef]libclidef_wrap.c : [.modules.vms.libclidef]libclidef.i
-!     SWIG -python modules/vms/libclidef/libclidef.i
-!     purge [.modules.vms.libclidef]libclidef_wrap.c
+[.modules.vms.libclidef]libclidef_wrap.c : [.modules.vms.libclidef]libclidef.i
+    SWIG -python modules/vms/libclidef/libclidef.i
+    purge [.modules.vms.libclidef]libclidef_wrap.c
 
 [.$(OBJ_DIR).modules.vms.libclidef]libclidef_wrap.obs : [.modules.vms.libclidef]libclidef_wrap.c
 
@@ -1649,9 +1655,9 @@ SHA3_HEADERS = -
     @ pipe create/dir $(DIR $(MMS$TARGET)) | copy SYS$INPUT nl:
     $(LINK)$(LINKFLAGS)/SHARE=python$build_out:[$(DYNLOAD_DIR)]$(NOTDIR $(MMS$TARGET_NAME)).EXE $(MMS$SOURCE_LIST),[.opt]$(NOTDIR $(MMS$TARGET_NAME)).opt/OPT
 
-! [.modules.vms.libdtdef]libdtdef_wrap.c : [.modules.vms.libdtdef]libdtdef.i
-!     SWIG -python modules/vms/libdtdef/libdtdef.i
-!     purge [.modules.vms.libdtdef]libdtdef_wrap.c
+[.modules.vms.libdtdef]libdtdef_wrap.c : [.modules.vms.libdtdef]libdtdef.i
+    SWIG -python modules/vms/libdtdef/libdtdef.i
+    purge [.modules.vms.libdtdef]libdtdef_wrap.c
 
 [.$(OBJ_DIR).modules.vms.libdtdef]libdtdef_wrap.obs : [.modules.vms.libdtdef]libdtdef_wrap.c
 
@@ -1659,9 +1665,9 @@ SHA3_HEADERS = -
     @ pipe create/dir $(DIR $(MMS$TARGET)) | copy SYS$INPUT nl:
     $(LINK)$(LINKFLAGS)/SHARE=python$build_out:[$(DYNLOAD_DIR)]$(NOTDIR $(MMS$TARGET_NAME)).EXE $(MMS$SOURCE_LIST),[.opt]$(NOTDIR $(MMS$TARGET_NAME)).opt/OPT
 
-! [.modules.vms.libfisdef]libfisdef_wrap.c : [.modules.vms.libfisdef]libfisdef.i
-!     SWIG -python modules/vms/libfisdef/libfisdef.i
-!     purge [.modules.vms.libfisdef]libfisdef_wrap.c
+[.modules.vms.libfisdef]libfisdef_wrap.c : [.modules.vms.libfisdef]libfisdef.i
+    SWIG -python modules/vms/libfisdef/libfisdef.i
+    purge [.modules.vms.libfisdef]libfisdef_wrap.c
 
 [.$(OBJ_DIR).modules.vms.libfisdef]libfisdef_wrap.obs : [.modules.vms.libfisdef]libfisdef_wrap.c
 
@@ -1669,9 +1675,9 @@ SHA3_HEADERS = -
     @ pipe create/dir $(DIR $(MMS$TARGET)) | copy SYS$INPUT nl:
     $(LINK)$(LINKFLAGS)/SHARE=python$build_out:[$(DYNLOAD_DIR)]$(NOTDIR $(MMS$TARGET_NAME)).EXE $(MMS$SOURCE_LIST),[.opt]$(NOTDIR $(MMS$TARGET_NAME)).opt/OPT
 
-! [.modules.vms.dcdef]dcdef_wrap.c : [.modules.vms.dcdef]dcdef.i
-!     SWIG -python modules/vms/dcdef/dcdef.i
-!     purge [.modules.vms.dcdef]dcdef_wrap.c
+[.modules.vms.dcdef]dcdef_wrap.c : [.modules.vms.dcdef]dcdef.i
+    SWIG -python modules/vms/dcdef/dcdef.i
+    purge [.modules.vms.dcdef]dcdef_wrap.c
 
 [.$(OBJ_DIR).modules.vms.dcdef]dcdef_wrap.obs : [.modules.vms.dcdef]dcdef_wrap.c
 
@@ -1679,9 +1685,9 @@ SHA3_HEADERS = -
     @ pipe create/dir $(DIR $(MMS$TARGET)) | copy SYS$INPUT nl:
     $(LINK)$(LINKFLAGS)/SHARE=python$build_out:[$(DYNLOAD_DIR)]$(NOTDIR $(MMS$TARGET_NAME)).EXE $(MMS$SOURCE_LIST),[.opt]$(NOTDIR $(MMS$TARGET_NAME)).opt/OPT
 
-! [.modules.vms.cvtfnmdef]cvtfnmdef_wrap.c : [.modules.vms.cvtfnmdef]cvtfnmdef.i
-!     SWIG -python modules/vms/cvtfnmdef/cvtfnmdef.i
-!     purge [.modules.vms.cvtfnmdef]cvtfnmdef_wrap.c
+[.modules.vms.cvtfnmdef]cvtfnmdef_wrap.c : [.modules.vms.cvtfnmdef]cvtfnmdef.i
+    SWIG -python modules/vms/cvtfnmdef/cvtfnmdef.i
+    purge [.modules.vms.cvtfnmdef]cvtfnmdef_wrap.c
 
 [.$(OBJ_DIR).modules.vms.cvtfnmdef]cvtfnmdef_wrap.obs : [.modules.vms.cvtfnmdef]cvtfnmdef_wrap.c
 
@@ -1689,9 +1695,9 @@ SHA3_HEADERS = -
     @ pipe create/dir $(DIR $(MMS$TARGET)) | copy SYS$INPUT nl:
     $(LINK)$(LINKFLAGS)/SHARE=python$build_out:[$(DYNLOAD_DIR)]$(NOTDIR $(MMS$TARGET_NAME)).EXE $(MMS$SOURCE_LIST),[.opt]$(NOTDIR $(MMS$TARGET_NAME)).opt/OPT
 
-! [.modules.vms.fscndef]fscndef_wrap.c : [.modules.vms.fscndef]fscndef.i
-!     SWIG -python modules/vms/fscndef/fscndef.i
-!     purge [.modules.vms.fscndef]fscndef_wrap.c
+[.modules.vms.fscndef]fscndef_wrap.c : [.modules.vms.fscndef]fscndef.i
+    SWIG -python modules/vms/fscndef/fscndef.i
+    purge [.modules.vms.fscndef]fscndef_wrap.c
 
 [.$(OBJ_DIR).modules.vms.fscndef]fscndef_wrap.obs : [.modules.vms.fscndef]fscndef_wrap.c
 
@@ -1699,9 +1705,9 @@ SHA3_HEADERS = -
     @ pipe create/dir $(DIR $(MMS$TARGET)) | copy SYS$INPUT nl:
     $(LINK)$(LINKFLAGS)/SHARE=python$build_out:[$(DYNLOAD_DIR)]$(NOTDIR $(MMS$TARGET_NAME)).EXE $(MMS$SOURCE_LIST),[.opt]$(NOTDIR $(MMS$TARGET_NAME)).opt/OPT
 
-! [.modules.vms.fpdef]fpdef_wrap.c : [.modules.vms.fpdef]fpdef.i
-!     SWIG -python modules/vms/fpdef/fpdef.i
-!     purge [.modules.vms.fpdef]fpdef_wrap.c
+[.modules.vms.fpdef]fpdef_wrap.c : [.modules.vms.fpdef]fpdef.i
+    SWIG -python modules/vms/fpdef/fpdef.i
+    purge [.modules.vms.fpdef]fpdef_wrap.c
 
 [.$(OBJ_DIR).modules.vms.fpdef]fpdef_wrap.obs : [.modules.vms.fpdef]fpdef_wrap.c
 
@@ -1709,9 +1715,9 @@ SHA3_HEADERS = -
     @ pipe create/dir $(DIR $(MMS$TARGET)) | copy SYS$INPUT nl:
     $(LINK)$(LINKFLAGS)/SHARE=python$build_out:[$(DYNLOAD_DIR)]$(NOTDIR $(MMS$TARGET_NAME)).EXE $(MMS$SOURCE_LIST),[.opt]$(NOTDIR $(MMS$TARGET_NAME)).opt/OPT
 
-! [.modules.vms.fdldef]fdldef_wrap.c : [.modules.vms.fdldef]fdldef.i
-!     SWIG -python modules/vms/fdldef/fdldef.i
-!     purge [.modules.vms.fdldef]fdldef_wrap.c
+[.modules.vms.fdldef]fdldef_wrap.c : [.modules.vms.fdldef]fdldef.i
+    SWIG -python modules/vms/fdldef/fdldef.i
+    purge [.modules.vms.fdldef]fdldef_wrap.c
 
 [.$(OBJ_DIR).modules.vms.fdldef]fdldef_wrap.obs : [.modules.vms.fdldef]fdldef_wrap.c
 
@@ -1719,9 +1725,9 @@ SHA3_HEADERS = -
     @ pipe create/dir $(DIR $(MMS$TARGET)) | copy SYS$INPUT nl:
     $(LINK)$(LINKFLAGS)/SHARE=python$build_out:[$(DYNLOAD_DIR)]$(NOTDIR $(MMS$TARGET_NAME)).EXE $(MMS$SOURCE_LIST),[.opt]$(NOTDIR $(MMS$TARGET_NAME)).opt/OPT
 
-! [.modules.vms.dpsdef]dpsdef_wrap.c : [.modules.vms.dpsdef]dpsdef.i
-!     SWIG -python modules/vms/dpsdef/dpsdef.i
-!     purge [.modules.vms.dpsdef]dpsdef_wrap.c
+[.modules.vms.dpsdef]dpsdef_wrap.c : [.modules.vms.dpsdef]dpsdef.i
+    SWIG -python modules/vms/dpsdef/dpsdef.i
+    purge [.modules.vms.dpsdef]dpsdef_wrap.c
 
 [.$(OBJ_DIR).modules.vms.dpsdef]dpsdef_wrap.obs : [.modules.vms.dpsdef]dpsdef_wrap.c
 
@@ -1729,9 +1735,9 @@ SHA3_HEADERS = -
     @ pipe create/dir $(DIR $(MMS$TARGET)) | copy SYS$INPUT nl:
     $(LINK)$(LINKFLAGS)/SHARE=python$build_out:[$(DYNLOAD_DIR)]$(NOTDIR $(MMS$TARGET_NAME)).EXE $(MMS$SOURCE_LIST),[.opt]$(NOTDIR $(MMS$TARGET_NAME)).opt/OPT
 
-! [.modules.vms.efndef]efndef_wrap.c : [.modules.vms.efndef]efndef.i
-!     SWIG -python modules/vms/efndef/efndef.i
-!     purge [.modules.vms.efndef]efndef_wrap.c
+[.modules.vms.efndef]efndef_wrap.c : [.modules.vms.efndef]efndef.i
+    SWIG -python modules/vms/efndef/efndef.i
+    purge [.modules.vms.efndef]efndef_wrap.c
 
 [.$(OBJ_DIR).modules.vms.efndef]efndef_wrap.obs : [.modules.vms.efndef]efndef_wrap.c
 
@@ -1739,9 +1745,9 @@ SHA3_HEADERS = -
     @ pipe create/dir $(DIR $(MMS$TARGET)) | copy SYS$INPUT nl:
     $(LINK)$(LINKFLAGS)/SHARE=python$build_out:[$(DYNLOAD_DIR)]$(NOTDIR $(MMS$TARGET_NAME)).EXE $(MMS$SOURCE_LIST),[.opt]$(NOTDIR $(MMS$TARGET_NAME)).opt/OPT
 
-! [.modules.vms.dvsdef]dvsdef_wrap.c : [.modules.vms.dvsdef]dvsdef.i
-!     SWIG -python modules/vms/dvsdef/dvsdef.i
-!     purge [.modules.vms.dvsdef]dvsdef_wrap.c
+[.modules.vms.dvsdef]dvsdef_wrap.c : [.modules.vms.dvsdef]dvsdef.i
+    SWIG -python modules/vms/dvsdef/dvsdef.i
+    purge [.modules.vms.dvsdef]dvsdef_wrap.c
 
 [.$(OBJ_DIR).modules.vms.dvsdef]dvsdef_wrap.obs : [.modules.vms.dvsdef]dvsdef_wrap.c
 
@@ -1749,9 +1755,9 @@ SHA3_HEADERS = -
     @ pipe create/dir $(DIR $(MMS$TARGET)) | copy SYS$INPUT nl:
     $(LINK)$(LINKFLAGS)/SHARE=python$build_out:[$(DYNLOAD_DIR)]$(NOTDIR $(MMS$TARGET_NAME)).EXE $(MMS$SOURCE_LIST),[.opt]$(NOTDIR $(MMS$TARGET_NAME)).opt/OPT
 
-! [.modules.vms.eradef]eradef_wrap.c : [.modules.vms.eradef]eradef.i
-!     SWIG -python modules/vms/eradef/eradef.i
-!     purge [.modules.vms.eradef]eradef_wrap.c
+[.modules.vms.eradef]eradef_wrap.c : [.modules.vms.eradef]eradef.i
+    SWIG -python modules/vms/eradef/eradef.i
+    purge [.modules.vms.eradef]eradef_wrap.c
 
 [.$(OBJ_DIR).modules.vms.eradef]eradef_wrap.obs : [.modules.vms.eradef]eradef_wrap.c
 
@@ -1759,9 +1765,9 @@ SHA3_HEADERS = -
     @ pipe create/dir $(DIR $(MMS$TARGET)) | copy SYS$INPUT nl:
     $(LINK)$(LINKFLAGS)/SHARE=python$build_out:[$(DYNLOAD_DIR)]$(NOTDIR $(MMS$TARGET_NAME)).EXE $(MMS$SOURCE_LIST),[.opt]$(NOTDIR $(MMS$TARGET_NAME)).opt/OPT
 
-! [.modules.vms.iodef]iodef_wrap.c : [.modules.vms.iodef]iodef.i
-!     SWIG -python modules/vms/iodef/iodef.i
-!     purge [.modules.vms.iodef]iodef_wrap.c
+[.modules.vms.iodef]iodef_wrap.c : [.modules.vms.iodef]iodef.i
+    SWIG -python modules/vms/iodef/iodef.i
+    purge [.modules.vms.iodef]iodef_wrap.c
 
 [.$(OBJ_DIR).modules.vms.iodef]iodef_wrap.obs : [.modules.vms.iodef]iodef_wrap.c
 
@@ -1769,9 +1775,9 @@ SHA3_HEADERS = -
     @ pipe create/dir $(DIR $(MMS$TARGET)) | copy SYS$INPUT nl:
     $(LINK)$(LINKFLAGS)/SHARE=python$build_out:[$(DYNLOAD_DIR)]$(NOTDIR $(MMS$TARGET_NAME)).EXE $(MMS$SOURCE_LIST),[.opt]$(NOTDIR $(MMS$TARGET_NAME)).opt/OPT
 
-! [.modules.vms.initdef]initdef_wrap.c : [.modules.vms.initdef]initdef.i
-!     SWIG -python modules/vms/initdef/initdef.i
-!     purge [.modules.vms.initdef]initdef_wrap.c
+[.modules.vms.initdef]initdef_wrap.c : [.modules.vms.initdef]initdef.i
+    SWIG -python modules/vms/initdef/initdef.i
+    purge [.modules.vms.initdef]initdef_wrap.c
 
 [.$(OBJ_DIR).modules.vms.initdef]initdef_wrap.obs : [.modules.vms.initdef]initdef_wrap.c
 
@@ -1779,9 +1785,9 @@ SHA3_HEADERS = -
     @ pipe create/dir $(DIR $(MMS$TARGET)) | copy SYS$INPUT nl:
     $(LINK)$(LINKFLAGS)/SHARE=python$build_out:[$(DYNLOAD_DIR)]$(NOTDIR $(MMS$TARGET_NAME)).EXE $(MMS$SOURCE_LIST),[.opt]$(NOTDIR $(MMS$TARGET_NAME)).opt/OPT
 
-! [.modules.vms.issdef]issdef_wrap.c : [.modules.vms.issdef]issdef.i
-!     SWIG -python modules/vms/issdef/issdef.i
-!     purge [.modules.vms.issdef]issdef_wrap.c
+[.modules.vms.issdef]issdef_wrap.c : [.modules.vms.issdef]issdef.i
+    SWIG -python modules/vms/issdef/issdef.i
+    purge [.modules.vms.issdef]issdef_wrap.c
 
 [.$(OBJ_DIR).modules.vms.issdef]issdef_wrap.obs : [.modules.vms.issdef]issdef_wrap.c
 
@@ -1789,9 +1795,9 @@ SHA3_HEADERS = -
     @ pipe create/dir $(DIR $(MMS$TARGET)) | copy SYS$INPUT nl:
     $(LINK)$(LINKFLAGS)/SHARE=python$build_out:[$(DYNLOAD_DIR)]$(NOTDIR $(MMS$TARGET_NAME)).EXE $(MMS$SOURCE_LIST),[.opt]$(NOTDIR $(MMS$TARGET_NAME)).opt/OPT
 
-! [.modules.vms.impdef]impdef_wrap.c : [.modules.vms.impdef]impdef.i
-!     SWIG -python modules/vms/impdef/impdef.i
-!     purge [.modules.vms.impdef]impdef_wrap.c
+[.modules.vms.impdef]impdef_wrap.c : [.modules.vms.impdef]impdef.i
+    SWIG -python modules/vms/impdef/impdef.i
+    purge [.modules.vms.impdef]impdef_wrap.c
 
 [.$(OBJ_DIR).modules.vms.impdef]impdef_wrap.obs : [.modules.vms.impdef]impdef_wrap.c
 
@@ -1799,9 +1805,9 @@ SHA3_HEADERS = -
     @ pipe create/dir $(DIR $(MMS$TARGET)) | copy SYS$INPUT nl:
     $(LINK)$(LINKFLAGS)/SHARE=python$build_out:[$(DYNLOAD_DIR)]$(NOTDIR $(MMS$TARGET_NAME)).EXE $(MMS$SOURCE_LIST),[.opt]$(NOTDIR $(MMS$TARGET_NAME)).opt/OPT
 
-! [.modules.vms.mntdef]mntdef_wrap.c : [.modules.vms.mntdef]mntdef.i
-!     SWIG -python modules/vms/mntdef/mntdef.i
-!     purge [.modules.vms.mntdef]mntdef_wrap.c
+[.modules.vms.mntdef]mntdef_wrap.c : [.modules.vms.mntdef]mntdef.i
+    SWIG -python modules/vms/mntdef/mntdef.i
+    purge [.modules.vms.mntdef]mntdef_wrap.c
 
 [.$(OBJ_DIR).modules.vms.mntdef]mntdef_wrap.obs : [.modules.vms.mntdef]mntdef_wrap.c
 
@@ -1809,9 +1815,9 @@ SHA3_HEADERS = -
     @ pipe create/dir $(DIR $(MMS$TARGET)) | copy SYS$INPUT nl:
     $(LINK)$(LINKFLAGS)/SHARE=python$build_out:[$(DYNLOAD_DIR)]$(NOTDIR $(MMS$TARGET_NAME)).EXE $(MMS$SOURCE_LIST),[.opt]$(NOTDIR $(MMS$TARGET_NAME)).opt/OPT
 
-! [.modules.vms.nsadef]nsadef_wrap.c : [.modules.vms.nsadef]nsadef.i
-!     SWIG -python modules/vms/nsadef/nsadef.i
-!     purge [.modules.vms.nsadef]nsadef_wrap.c
+[.modules.vms.nsadef]nsadef_wrap.c : [.modules.vms.nsadef]nsadef.i
+    SWIG -python modules/vms/nsadef/nsadef.i
+    purge [.modules.vms.nsadef]nsadef_wrap.c
 
 [.$(OBJ_DIR).modules.vms.nsadef]nsadef_wrap.obs : [.modules.vms.nsadef]nsadef_wrap.c
 
@@ -1819,9 +1825,9 @@ SHA3_HEADERS = -
     @ pipe create/dir $(DIR $(MMS$TARGET)) | copy SYS$INPUT nl:
     $(LINK)$(LINKFLAGS)/SHARE=python$build_out:[$(DYNLOAD_DIR)]$(NOTDIR $(MMS$TARGET_NAME)).EXE $(MMS$SOURCE_LIST),[.opt]$(NOTDIR $(MMS$TARGET_NAME)).opt/OPT
 
-! [.modules.vms.ossdef]ossdef_wrap.c : [.modules.vms.ossdef]ossdef.i
-!     SWIG -python modules/vms/ossdef/ossdef.i
-!     purge [.modules.vms.ossdef]ossdef_wrap.c
+[.modules.vms.ossdef]ossdef_wrap.c : [.modules.vms.ossdef]ossdef.i
+    SWIG -python modules/vms/ossdef/ossdef.i
+    purge [.modules.vms.ossdef]ossdef_wrap.c
 
 [.$(OBJ_DIR).modules.vms.ossdef]ossdef_wrap.obs : [.modules.vms.ossdef]ossdef_wrap.c
 
@@ -1829,9 +1835,9 @@ SHA3_HEADERS = -
     @ pipe create/dir $(DIR $(MMS$TARGET)) | copy SYS$INPUT nl:
     $(LINK)$(LINKFLAGS)/SHARE=python$build_out:[$(DYNLOAD_DIR)]$(NOTDIR $(MMS$TARGET_NAME)).EXE $(MMS$SOURCE_LIST),[.opt]$(NOTDIR $(MMS$TARGET_NAME)).opt/OPT
 
-! [.modules.vms.pcbdef]pcbdef_wrap.c : [.modules.vms.pcbdef]pcbdef.i
-!     SWIG -python modules/vms/pcbdef/pcbdef.i
-!     purge [.modules.vms.pcbdef]pcbdef_wrap.c
+[.modules.vms.pcbdef]pcbdef_wrap.c : [.modules.vms.pcbdef]pcbdef.i
+    SWIG -python modules/vms/pcbdef/pcbdef.i
+    purge [.modules.vms.pcbdef]pcbdef_wrap.c
 
 [.$(OBJ_DIR).modules.vms.pcbdef]pcbdef_wrap.obs : [.modules.vms.pcbdef]pcbdef_wrap.c
 
@@ -1839,9 +1845,9 @@ SHA3_HEADERS = -
     @ pipe create/dir $(DIR $(MMS$TARGET)) | copy SYS$INPUT nl:
     $(LINK)$(LINKFLAGS)/SHARE=python$build_out:[$(DYNLOAD_DIR)]$(NOTDIR $(MMS$TARGET_NAME)).EXE $(MMS$SOURCE_LIST),[.opt]$(NOTDIR $(MMS$TARGET_NAME)).opt/OPT
 
-! [.modules.vms.prxdef]prxdef_wrap.c : [.modules.vms.prxdef]prxdef.i
-!     SWIG -python modules/vms/prxdef/prxdef.i
-!     purge [.modules.vms.prxdef]prxdef_wrap.c
+[.modules.vms.prxdef]prxdef_wrap.c : [.modules.vms.prxdef]prxdef.i
+    SWIG -python modules/vms/prxdef/prxdef.i
+    purge [.modules.vms.prxdef]prxdef_wrap.c
 
 [.$(OBJ_DIR).modules.vms.prxdef]prxdef_wrap.obs : [.modules.vms.prxdef]prxdef_wrap.c
 
@@ -1849,9 +1855,9 @@ SHA3_HEADERS = -
     @ pipe create/dir $(DIR $(MMS$TARGET)) | copy SYS$INPUT nl:
     $(LINK)$(LINKFLAGS)/SHARE=python$build_out:[$(DYNLOAD_DIR)]$(NOTDIR $(MMS$TARGET_NAME)).EXE $(MMS$SOURCE_LIST),[.opt]$(NOTDIR $(MMS$TARGET_NAME)).opt/OPT
 
-! [.modules.vms.prvdef]prvdef_wrap.c : [.modules.vms.prvdef]prvdef.i
-!     SWIG -python modules/vms/prvdef/prvdef.i
-!     purge [.modules.vms.prvdef]prvdef_wrap.c
+[.modules.vms.prvdef]prvdef_wrap.c : [.modules.vms.prvdef]prvdef.i
+    SWIG -python modules/vms/prvdef/prvdef.i
+    purge [.modules.vms.prvdef]prvdef_wrap.c
 
 [.$(OBJ_DIR).modules.vms.prvdef]prvdef_wrap.obs : [.modules.vms.prvdef]prvdef_wrap.c
 
@@ -1859,9 +1865,9 @@ SHA3_HEADERS = -
     @ pipe create/dir $(DIR $(MMS$TARGET)) | copy SYS$INPUT nl:
     $(LINK)$(LINKFLAGS)/SHARE=python$build_out:[$(DYNLOAD_DIR)]$(NOTDIR $(MMS$TARGET_NAME)).EXE $(MMS$SOURCE_LIST),[.opt]$(NOTDIR $(MMS$TARGET_NAME)).opt/OPT
 
-! [.modules.vms.pqldef]pqldef_wrap.c : [.modules.vms.pqldef]pqldef.i
-!     SWIG -python modules/vms/pqldef/pqldef.i
-!     purge [.modules.vms.pqldef]pqldef_wrap.c
+[.modules.vms.pqldef]pqldef_wrap.c : [.modules.vms.pqldef]pqldef.i
+    SWIG -python modules/vms/pqldef/pqldef.i
+    purge [.modules.vms.pqldef]pqldef_wrap.c
 
 [.$(OBJ_DIR).modules.vms.pqldef]pqldef_wrap.obs : [.modules.vms.pqldef]pqldef_wrap.c
 
@@ -1869,9 +1875,9 @@ SHA3_HEADERS = -
     @ pipe create/dir $(DIR $(MMS$TARGET)) | copy SYS$INPUT nl:
     $(LINK)$(LINKFLAGS)/SHARE=python$build_out:[$(DYNLOAD_DIR)]$(NOTDIR $(MMS$TARGET_NAME)).EXE $(MMS$SOURCE_LIST),[.opt]$(NOTDIR $(MMS$TARGET_NAME)).opt/OPT
 
-! [.modules.vms.prcdef]prcdef_wrap.c : [.modules.vms.prcdef]prcdef.i
-!     SWIG -python modules/vms/prcdef/prcdef.i
-!     purge [.modules.vms.prcdef]prcdef_wrap.c
+[.modules.vms.prcdef]prcdef_wrap.c : [.modules.vms.prcdef]prcdef.i
+    SWIG -python modules/vms/prcdef/prcdef.i
+    purge [.modules.vms.prcdef]prcdef_wrap.c
 
 [.$(OBJ_DIR).modules.vms.prcdef]prcdef_wrap.obs : [.modules.vms.prcdef]prcdef_wrap.c
 
@@ -1879,9 +1885,9 @@ SHA3_HEADERS = -
     @ pipe create/dir $(DIR $(MMS$TARGET)) | copy SYS$INPUT nl:
     $(LINK)$(LINKFLAGS)/SHARE=python$build_out:[$(DYNLOAD_DIR)]$(NOTDIR $(MMS$TARGET_NAME)).EXE $(MMS$SOURCE_LIST),[.opt]$(NOTDIR $(MMS$TARGET_NAME)).opt/OPT
 
-! [.modules.vms.lckdef]lckdef_wrap.c : [.modules.vms.lckdef]lckdef.i
-!     SWIG -python modules/vms/lckdef/lckdef.i
-!     purge [.modules.vms.lckdef]lckdef_wrap.c
+[.modules.vms.lckdef]lckdef_wrap.c : [.modules.vms.lckdef]lckdef.i
+    SWIG -python modules/vms/lckdef/lckdef.i
+    purge [.modules.vms.lckdef]lckdef_wrap.c
 
 [.$(OBJ_DIR).modules.vms.lckdef]lckdef_wrap.obs : [.modules.vms.lckdef]lckdef_wrap.c
 
@@ -1889,9 +1895,9 @@ SHA3_HEADERS = -
     @ pipe create/dir $(DIR $(MMS$TARGET)) | copy SYS$INPUT nl:
     $(LINK)$(LINKFLAGS)/SHARE=python$build_out:[$(DYNLOAD_DIR)]$(NOTDIR $(MMS$TARGET_NAME)).EXE $(MMS$SOURCE_LIST),[.opt]$(NOTDIR $(MMS$TARGET_NAME)).opt/OPT
 
-! [.modules.vms.kgbdef]kgbdef_wrap.c : [.modules.vms.kgbdef]kgbdef.i
-!     SWIG -python modules/vms/kgbdef/kgbdef.i
-!     purge [.modules.vms.kgbdef]kgbdef_wrap.c
+[.modules.vms.kgbdef]kgbdef_wrap.c : [.modules.vms.kgbdef]kgbdef.i
+    SWIG -python modules/vms/kgbdef/kgbdef.i
+    purge [.modules.vms.kgbdef]kgbdef_wrap.c
 
 [.$(OBJ_DIR).modules.vms.kgbdef]kgbdef_wrap.obs : [.modules.vms.kgbdef]kgbdef_wrap.c
 
@@ -1899,9 +1905,9 @@ SHA3_HEADERS = -
     @ pipe create/dir $(DIR $(MMS$TARGET)) | copy SYS$INPUT nl:
     $(LINK)$(LINKFLAGS)/SHARE=python$build_out:[$(DYNLOAD_DIR)]$(NOTDIR $(MMS$TARGET_NAME)).EXE $(MMS$SOURCE_LIST),[.opt]$(NOTDIR $(MMS$TARGET_NAME)).opt/OPT
 
-! [.modules.vms.pxbdef]pxbdef_wrap.c : [.modules.vms.pxbdef]pxbdef.i
-!     SWIG -python modules/vms/pxbdef/pxbdef.i
-!     purge [.modules.vms.pxbdef]pxbdef_wrap.c
+[.modules.vms.pxbdef]pxbdef_wrap.c : [.modules.vms.pxbdef]pxbdef.i
+    SWIG -python modules/vms/pxbdef/pxbdef.i
+    purge [.modules.vms.pxbdef]pxbdef_wrap.c
 
 [.$(OBJ_DIR).modules.vms.pxbdef]pxbdef_wrap.obs : [.modules.vms.pxbdef]pxbdef_wrap.c
 
@@ -1909,9 +1915,9 @@ SHA3_HEADERS = -
     @ pipe create/dir $(DIR $(MMS$TARGET)) | copy SYS$INPUT nl:
     $(LINK)$(LINKFLAGS)/SHARE=python$build_out:[$(DYNLOAD_DIR)]$(NOTDIR $(MMS$TARGET_NAME)).EXE $(MMS$SOURCE_LIST),[.opt]$(NOTDIR $(MMS$TARGET_NAME)).opt/OPT
 
-! [.modules.vms.sdvdef]sdvdef_wrap.c : [.modules.vms.sdvdef]sdvdef.i
-!     SWIG -python modules/vms/sdvdef/sdvdef.i
-!     purge [.modules.vms.sdvdef]sdvdef_wrap.c
+[.modules.vms.sdvdef]sdvdef_wrap.c : [.modules.vms.sdvdef]sdvdef.i
+    SWIG -python modules/vms/sdvdef/sdvdef.i
+    purge [.modules.vms.sdvdef]sdvdef_wrap.c
 
 [.$(OBJ_DIR).modules.vms.sdvdef]sdvdef_wrap.obs : [.modules.vms.sdvdef]sdvdef_wrap.c
 
@@ -1919,9 +1925,9 @@ SHA3_HEADERS = -
     @ pipe create/dir $(DIR $(MMS$TARGET)) | copy SYS$INPUT nl:
     $(LINK)$(LINKFLAGS)/SHARE=python$build_out:[$(DYNLOAD_DIR)]$(NOTDIR $(MMS$TARGET_NAME)).EXE $(MMS$SOURCE_LIST),[.opt]$(NOTDIR $(MMS$TARGET_NAME)).opt/OPT
 
-! [.modules.vms.stsdef]stsdef_wrap.c : [.modules.vms.stsdef]stsdef.i
-!     SWIG -python modules/vms/stsdef/stsdef.i
-!     purge [.modules.vms.stsdef]stsdef_wrap.c
+[.modules.vms.stsdef]stsdef_wrap.c : [.modules.vms.stsdef]stsdef.i
+    SWIG -python modules/vms/stsdef/stsdef.i
+    purge [.modules.vms.stsdef]stsdef_wrap.c
 
 [.$(OBJ_DIR).modules.vms.stsdef]stsdef_wrap.obs : [.modules.vms.stsdef]stsdef_wrap.c
 
@@ -1929,9 +1935,9 @@ SHA3_HEADERS = -
     @ pipe create/dir $(DIR $(MMS$TARGET)) | copy SYS$INPUT nl:
     $(LINK)$(LINKFLAGS)/SHARE=python$build_out:[$(DYNLOAD_DIR)]$(NOTDIR $(MMS$TARGET_NAME)).EXE $(MMS$SOURCE_LIST),[.opt]$(NOTDIR $(MMS$TARGET_NAME)).opt/OPT
 
-! [.modules.vms.lnmdef]lnmdef_wrap.c : [.modules.vms.lnmdef]lnmdef.i
-!     SWIG -python modules/vms/lnmdef/lnmdef.i
-!     purge [.modules.vms.lnmdef]lnmdef_wrap.c
+[.modules.vms.lnmdef]lnmdef_wrap.c : [.modules.vms.lnmdef]lnmdef.i
+    SWIG -python modules/vms/lnmdef/lnmdef.i
+    purge [.modules.vms.lnmdef]lnmdef_wrap.c
 
 [.$(OBJ_DIR).modules.vms.lnmdef]lnmdef_wrap.obs : [.modules.vms.lnmdef]lnmdef_wrap.c
 
@@ -1939,9 +1945,9 @@ SHA3_HEADERS = -
     @ pipe create/dir $(DIR $(MMS$TARGET)) | copy SYS$INPUT nl:
     $(LINK)$(LINKFLAGS)/SHARE=python$build_out:[$(DYNLOAD_DIR)]$(NOTDIR $(MMS$TARGET_NAME)).EXE $(MMS$SOURCE_LIST),[.opt]$(NOTDIR $(MMS$TARGET_NAME)).opt/OPT
 
-! [.modules.vms.iccdef]iccdef_wrap.c : [.modules.vms.iccdef]iccdef.i
-!     SWIG -python modules/vms/iccdef/iccdef.i
-!     purge [.modules.vms.iccdef]iccdef_wrap.c
+[.modules.vms.iccdef]iccdef_wrap.c : [.modules.vms.iccdef]iccdef.i
+    SWIG -python modules/vms/iccdef/iccdef.i
+    purge [.modules.vms.iccdef]iccdef_wrap.c
 
 [.$(OBJ_DIR).modules.vms.iccdef]iccdef_wrap.obs : [.modules.vms.iccdef]iccdef_wrap.c
 
@@ -1949,9 +1955,9 @@ SHA3_HEADERS = -
     @ pipe create/dir $(DIR $(MMS$TARGET)) | copy SYS$INPUT nl:
     $(LINK)$(LINKFLAGS)/SHARE=python$build_out:[$(DYNLOAD_DIR)]$(NOTDIR $(MMS$TARGET_NAME)).EXE $(MMS$SOURCE_LIST),[.opt]$(NOTDIR $(MMS$TARGET_NAME)).opt/OPT
 
-! [.modules.vms.dscdef]dscdef_wrap.c : [.modules.vms.dscdef]dscdef.i
-!     SWIG -python modules/vms/dscdef/dscdef.i
-!     purge [.modules.vms.dscdef]dscdef_wrap.c
+[.modules.vms.dscdef]dscdef_wrap.c : [.modules.vms.dscdef]dscdef.i
+    SWIG -python modules/vms/dscdef/dscdef.i
+    purge [.modules.vms.dscdef]dscdef_wrap.c
 
 [.$(OBJ_DIR).modules.vms.dscdef]dscdef_wrap.obs : [.modules.vms.dscdef]dscdef_wrap.c
 
@@ -1959,9 +1965,9 @@ SHA3_HEADERS = -
     @ pipe create/dir $(DIR $(MMS$TARGET)) | copy SYS$INPUT nl:
     $(LINK)$(LINKFLAGS)/SHARE=python$build_out:[$(DYNLOAD_DIR)]$(NOTDIR $(MMS$TARGET_NAME)).EXE $(MMS$SOURCE_LIST),[.opt]$(NOTDIR $(MMS$TARGET_NAME)).opt/OPT
 
-! [.modules.vms.dmtdef]dmtdef_wrap.c : [.modules.vms.dmtdef]dmtdef.i
-!     SWIG -python modules/vms/dmtdef/dmtdef.i
-!     purge [.modules.vms.dmtdef]dmtdef_wrap.c
+[.modules.vms.dmtdef]dmtdef_wrap.c : [.modules.vms.dmtdef]dmtdef.i
+    SWIG -python modules/vms/dmtdef/dmtdef.i
+    purge [.modules.vms.dmtdef]dmtdef_wrap.c
 
 [.$(OBJ_DIR).modules.vms.dmtdef]dmtdef_wrap.obs : [.modules.vms.dmtdef]dmtdef_wrap.c
 
@@ -1969,9 +1975,9 @@ SHA3_HEADERS = -
     @ pipe create/dir $(DIR $(MMS$TARGET)) | copy SYS$INPUT nl:
     $(LINK)$(LINKFLAGS)/SHARE=python$build_out:[$(DYNLOAD_DIR)]$(NOTDIR $(MMS$TARGET_NAME)).EXE $(MMS$SOURCE_LIST),[.opt]$(NOTDIR $(MMS$TARGET_NAME)).opt/OPT
 
-! [.modules.vms.cmbdef]cmbdef_wrap.c : [.modules.vms.cmbdef]cmbdef.i
-!     SWIG -python modules/vms/cmbdef/cmbdef.i
-!     purge [.modules.vms.cmbdef]cmbdef_wrap.c
+[.modules.vms.cmbdef]cmbdef_wrap.c : [.modules.vms.cmbdef]cmbdef.i
+    SWIG -python modules/vms/cmbdef/cmbdef.i
+    purge [.modules.vms.cmbdef]cmbdef_wrap.c
 
 [.$(OBJ_DIR).modules.vms.cmbdef]cmbdef_wrap.obs : [.modules.vms.cmbdef]cmbdef_wrap.c
 
@@ -1979,9 +1985,9 @@ SHA3_HEADERS = -
     @ pipe create/dir $(DIR $(MMS$TARGET)) | copy SYS$INPUT nl:
     $(LINK)$(LINKFLAGS)/SHARE=python$build_out:[$(DYNLOAD_DIR)]$(NOTDIR $(MMS$TARGET_NAME)).EXE $(MMS$SOURCE_LIST),[.opt]$(NOTDIR $(MMS$TARGET_NAME)).opt/OPT
 
-! [.modules.vms.iledef]iledef_wrap.c : [.modules.vms.iledef]iledef.i
-!     SWIG -python modules/vms/iledef/iledef.i
-!     purge [.modules.vms.iledef]iledef_wrap.c
+[.modules.vms.iledef]iledef_wrap.c : [.modules.vms.iledef]iledef.i
+    SWIG -python modules/vms/iledef/iledef.i
+    purge [.modules.vms.iledef]iledef_wrap.c
 
 [.$(OBJ_DIR).modules.vms.iledef]iledef_wrap.obs : [.modules.vms.iledef]iledef_wrap.c
 
@@ -1989,9 +1995,9 @@ SHA3_HEADERS = -
     @ pipe create/dir $(DIR $(MMS$TARGET)) | copy SYS$INPUT nl:
     $(LINK)$(LINKFLAGS)/SHARE=python$build_out:[$(DYNLOAD_DIR)]$(NOTDIR $(MMS$TARGET_NAME)).EXE $(MMS$SOURCE_LIST),[.opt]$(NOTDIR $(MMS$TARGET_NAME)).opt/OPT
 
-! [.modules.vms.lkidef]lkidef_wrap.c : [.modules.vms.lkidef]lkidef.i
-!     SWIG -python modules/vms/lkidef/lkidef.i
-!     purge [.modules.vms.lkidef]lkidef_wrap.c
+[.modules.vms.lkidef]lkidef_wrap.c : [.modules.vms.lkidef]lkidef.i
+    SWIG -python modules/vms/lkidef/lkidef.i
+    purge [.modules.vms.lkidef]lkidef_wrap.c
 
 [.$(OBJ_DIR).modules.vms.lkidef]lkidef_wrap.obs : [.modules.vms.lkidef]lkidef_wrap.c
 
@@ -1999,9 +2005,9 @@ SHA3_HEADERS = -
     @ pipe create/dir $(DIR $(MMS$TARGET)) | copy SYS$INPUT nl:
     $(LINK)$(LINKFLAGS)/SHARE=python$build_out:[$(DYNLOAD_DIR)]$(NOTDIR $(MMS$TARGET_NAME)).EXE $(MMS$SOURCE_LIST),[.opt]$(NOTDIR $(MMS$TARGET_NAME)).opt/OPT
 
-! [.modules.vms.sjcdef]sjcdef_wrap.c : [.modules.vms.sjcdef]sjcdef.i
-!     SWIG -python modules/vms/sjcdef/sjcdef.i
-!     purge [.modules.vms.sjcdef]sjcdef_wrap.c
+[.modules.vms.sjcdef]sjcdef_wrap.c : [.modules.vms.sjcdef]sjcdef.i
+    SWIG -python modules/vms/sjcdef/sjcdef.i
+    purge [.modules.vms.sjcdef]sjcdef_wrap.c
 
 [.$(OBJ_DIR).modules.vms.sjcdef]sjcdef_wrap.obs : [.modules.vms.sjcdef]sjcdef_wrap.c
 
@@ -2009,9 +2015,9 @@ SHA3_HEADERS = -
     @ pipe create/dir $(DIR $(MMS$TARGET)) | copy SYS$INPUT nl:
     $(LINK)$(LINKFLAGS)/SHARE=python$build_out:[$(DYNLOAD_DIR)]$(NOTDIR $(MMS$TARGET_NAME)).EXE $(MMS$SOURCE_LIST),[.opt]$(NOTDIR $(MMS$TARGET_NAME)).opt/OPT
 
-! [.modules.vms.ssdef]ssdef_wrap.c : [.modules.vms.ssdef]ssdef.i
-!     SWIG -python modules/vms/ssdef/ssdef.i
-!     purge [.modules.vms.ssdef]ssdef_wrap.c
+[.modules.vms.ssdef]ssdef_wrap.c : [.modules.vms.ssdef]ssdef.i
+    SWIG -python modules/vms/ssdef/ssdef.i
+    purge [.modules.vms.ssdef]ssdef_wrap.c
 
 [.$(OBJ_DIR).modules.vms.ssdef]ssdef_wrap.obs : [.modules.vms.ssdef]ssdef_wrap.c
 
@@ -2019,9 +2025,9 @@ SHA3_HEADERS = -
     @ pipe create/dir $(DIR $(MMS$TARGET)) | copy SYS$INPUT nl:
     $(LINK)$(LINKFLAGS)/SHARE=python$build_out:[$(DYNLOAD_DIR)]$(NOTDIR $(MMS$TARGET_NAME)).EXE $(MMS$SOURCE_LIST),[.opt]$(NOTDIR $(MMS$TARGET_NAME)).opt/OPT
 
-! [.modules.vms.ciadef]ciadef_wrap.c : [.modules.vms.ciadef]ciadef.i
-!     SWIG -python modules/vms/ciadef/ciadef.i
-!     purge [.modules.vms.ciadef]ciadef_wrap.c
+[.modules.vms.ciadef]ciadef_wrap.c : [.modules.vms.ciadef]ciadef.i
+    SWIG -python modules/vms/ciadef/ciadef.i
+    purge [.modules.vms.ciadef]ciadef_wrap.c
 
 [.$(OBJ_DIR).modules.vms.ciadef]ciadef_wrap.obs : [.modules.vms.ciadef]ciadef_wrap.c
 
@@ -2029,9 +2035,9 @@ SHA3_HEADERS = -
     @ pipe create/dir $(DIR $(MMS$TARGET)) | copy SYS$INPUT nl:
     $(LINK)$(LINKFLAGS)/SHARE=python$build_out:[$(DYNLOAD_DIR)]$(NOTDIR $(MMS$TARGET_NAME)).EXE $(MMS$SOURCE_LIST),[.opt]$(NOTDIR $(MMS$TARGET_NAME)).opt/OPT
 
-! [.modules.vms.capdef]capdef_wrap.c : [.modules.vms.capdef]capdef.i
-!     SWIG -python modules/vms/capdef/capdef.i
-!     purge [.modules.vms.capdef]capdef_wrap.c
+[.modules.vms.capdef]capdef_wrap.c : [.modules.vms.capdef]capdef.i
+    SWIG -python modules/vms/capdef/capdef.i
+    purge [.modules.vms.capdef]capdef_wrap.c
 
 [.$(OBJ_DIR).modules.vms.capdef]capdef_wrap.obs : [.modules.vms.capdef]capdef_wrap.c
 
@@ -2039,9 +2045,9 @@ SHA3_HEADERS = -
     @ pipe create/dir $(DIR $(MMS$TARGET)) | copy SYS$INPUT nl:
     $(LINK)$(LINKFLAGS)/SHARE=python$build_out:[$(DYNLOAD_DIR)]$(NOTDIR $(MMS$TARGET_NAME)).EXE $(MMS$SOURCE_LIST),[.opt]$(NOTDIR $(MMS$TARGET_NAME)).opt/OPT
 
-! [.modules.vms.chpdef]chpdef_wrap.c : [.modules.vms.chpdef]chpdef.i
-!     SWIG -python modules/vms/chpdef/chpdef.i
-!     purge [.modules.vms.chpdef]chpdef_wrap.c
+[.modules.vms.chpdef]chpdef_wrap.c : [.modules.vms.chpdef]chpdef.i
+    SWIG -python modules/vms/chpdef/chpdef.i
+    purge [.modules.vms.chpdef]chpdef_wrap.c
 
 [.$(OBJ_DIR).modules.vms.chpdef]chpdef_wrap.obs : [.modules.vms.chpdef]chpdef_wrap.c
 
@@ -2049,9 +2055,9 @@ SHA3_HEADERS = -
     @ pipe create/dir $(DIR $(MMS$TARGET)) | copy SYS$INPUT nl:
     $(LINK)$(LINKFLAGS)/SHARE=python$build_out:[$(DYNLOAD_DIR)]$(NOTDIR $(MMS$TARGET_NAME)).EXE $(MMS$SOURCE_LIST),[.opt]$(NOTDIR $(MMS$TARGET_NAME)).opt/OPT
 
-! [.modules.vms.uaidef]uaidef_wrap.c : [.modules.vms.uaidef]uaidef.i
-!     SWIG -python modules/vms/uaidef/uaidef.i
-!     purge [.modules.vms.uaidef]uaidef_wrap.c
+[.modules.vms.uaidef]uaidef_wrap.c : [.modules.vms.uaidef]uaidef.i
+    SWIG -python modules/vms/uaidef/uaidef.i
+    purge [.modules.vms.uaidef]uaidef_wrap.c
 
 [.$(OBJ_DIR).modules.vms.uaidef]uaidef_wrap.obs : [.modules.vms.uaidef]uaidef_wrap.c
 
@@ -2059,9 +2065,9 @@ SHA3_HEADERS = -
     @ pipe create/dir $(DIR $(MMS$TARGET)) | copy SYS$INPUT nl:
     $(LINK)$(LINKFLAGS)/SHARE=python$build_out:[$(DYNLOAD_DIR)]$(NOTDIR $(MMS$TARGET_NAME)).EXE $(MMS$SOURCE_LIST),[.opt]$(NOTDIR $(MMS$TARGET_NAME)).opt/OPT
 
-! [.modules.vms.uafdef]uafdef_wrap.c : [.modules.vms.uafdef]uafdef.i
-!     SWIG -python modules/vms/uafdef/uafdef.i
-!     purge [.modules.vms.uafdef]uafdef_wrap.c
+[.modules.vms.uafdef]uafdef_wrap.c : [.modules.vms.uafdef]uafdef.i
+    SWIG -python modules/vms/uafdef/uafdef.i
+    purge [.modules.vms.uafdef]uafdef_wrap.c
 
 [.$(OBJ_DIR).modules.vms.uafdef]uafdef_wrap.obs : [.modules.vms.uafdef]uafdef_wrap.c
 
@@ -2069,9 +2075,9 @@ SHA3_HEADERS = -
     @ pipe create/dir $(DIR $(MMS$TARGET)) | copy SYS$INPUT nl:
     $(LINK)$(LINKFLAGS)/SHARE=python$build_out:[$(DYNLOAD_DIR)]$(NOTDIR $(MMS$TARGET_NAME)).EXE $(MMS$SOURCE_LIST),[.opt]$(NOTDIR $(MMS$TARGET_NAME)).opt/OPT
 
-! [.modules.vms.rmidef]rmidef_wrap.c : [.modules.vms.rmidef]rmidef.i
-!     SWIG -python modules/vms/rmidef/rmidef.i
-!     purge [.modules.vms.rmidef]rmidef_wrap.c
+[.modules.vms.rmidef]rmidef_wrap.c : [.modules.vms.rmidef]rmidef.i
+    SWIG -python modules/vms/rmidef/rmidef.i
+    purge [.modules.vms.rmidef]rmidef_wrap.c
 
 [.$(OBJ_DIR).modules.vms.rmidef]rmidef_wrap.obs : [.modules.vms.rmidef]rmidef_wrap.c
 
@@ -2079,9 +2085,9 @@ SHA3_HEADERS = -
     @ pipe create/dir $(DIR $(MMS$TARGET)) | copy SYS$INPUT nl:
     $(LINK)$(LINKFLAGS)/SHARE=python$build_out:[$(DYNLOAD_DIR)]$(NOTDIR $(MMS$TARGET_NAME)).EXE $(MMS$SOURCE_LIST),[.opt]$(NOTDIR $(MMS$TARGET_NAME)).opt/OPT
 
-! [.modules.vms.regdef]regdef_wrap.c : [.modules.vms.regdef]regdef.i
-!     SWIG -python modules/vms/regdef/regdef.i
-!     purge [.modules.vms.regdef]regdef_wrap.c
+[.modules.vms.regdef]regdef_wrap.c : [.modules.vms.regdef]regdef.i
+    SWIG -python modules/vms/regdef/regdef.i
+    purge [.modules.vms.regdef]regdef_wrap.c
 
 [.$(OBJ_DIR).modules.vms.regdef]regdef_wrap.obs : [.modules.vms.regdef]regdef_wrap.c
 
@@ -2089,9 +2095,9 @@ SHA3_HEADERS = -
     @ pipe create/dir $(DIR $(MMS$TARGET)) | copy SYS$INPUT nl:
     $(LINK)$(LINKFLAGS)/SHARE=python$build_out:[$(DYNLOAD_DIR)]$(NOTDIR $(MMS$TARGET_NAME)).EXE $(MMS$SOURCE_LIST),[.opt]$(NOTDIR $(MMS$TARGET_NAME)).opt/OPT
 
-! [.modules.vms.rabdef]rabdef_wrap.c : [.modules.vms.rabdef]rabdef.i
-!     SWIG -python modules/vms/rabdef/rabdef.i
-!     purge [.modules.vms.rabdef]rabdef_wrap.c
+[.modules.vms.rabdef]rabdef_wrap.c : [.modules.vms.rabdef]rabdef.i
+    SWIG -python modules/vms/rabdef/rabdef.i
+    purge [.modules.vms.rabdef]rabdef_wrap.c
 
 [.$(OBJ_DIR).modules.vms.rabdef]rabdef_wrap.obs : [.modules.vms.rabdef]rabdef_wrap.c
 
@@ -2099,9 +2105,9 @@ SHA3_HEADERS = -
     @ pipe create/dir $(DIR $(MMS$TARGET)) | copy SYS$INPUT nl:
     $(LINK)$(LINKFLAGS)/SHARE=python$build_out:[$(DYNLOAD_DIR)]$(NOTDIR $(MMS$TARGET_NAME)).EXE $(MMS$SOURCE_LIST),[.opt]$(NOTDIR $(MMS$TARGET_NAME)).opt/OPT
 
-! [.modules.vms.accdef]accdef_wrap.c : [.modules.vms.accdef]accdef.i
-!     SWIG -python modules/vms/accdef/accdef.i
-!     purge [.modules.vms.accdef]accdef_wrap.c
+[.modules.vms.accdef]accdef_wrap.c : [.modules.vms.accdef]accdef.i
+    SWIG -python modules/vms/accdef/accdef.i
+    purge [.modules.vms.accdef]accdef_wrap.c
 
 [.$(OBJ_DIR).modules.vms.accdef]accdef_wrap.obs : [.modules.vms.accdef]accdef_wrap.c
 
@@ -2109,9 +2115,9 @@ SHA3_HEADERS = -
     @ pipe create/dir $(DIR $(MMS$TARGET)) | copy SYS$INPUT nl:
     $(LINK)$(LINKFLAGS)/SHARE=python$build_out:[$(DYNLOAD_DIR)]$(NOTDIR $(MMS$TARGET_NAME)).EXE $(MMS$SOURCE_LIST),[.opt]$(NOTDIR $(MMS$TARGET_NAME)).opt/OPT
 
-! [.modules.vms.acldef]acldef_wrap.c : [.modules.vms.acldef]acldef.i
-!     SWIG -python modules/vms/acldef/acldef.i
-!     purge [.modules.vms.acldef]acldef_wrap.c
+[.modules.vms.acldef]acldef_wrap.c : [.modules.vms.acldef]acldef.i
+    SWIG -python modules/vms/acldef/acldef.i
+    purge [.modules.vms.acldef]acldef_wrap.c
 
 [.$(OBJ_DIR).modules.vms.acldef]acldef_wrap.obs : [.modules.vms.acldef]acldef_wrap.c
 
@@ -2119,9 +2125,9 @@ SHA3_HEADERS = -
     @ pipe create/dir $(DIR $(MMS$TARGET)) | copy SYS$INPUT nl:
     $(LINK)$(LINKFLAGS)/SHARE=python$build_out:[$(DYNLOAD_DIR)]$(NOTDIR $(MMS$TARGET_NAME)).EXE $(MMS$SOURCE_LIST),[.opt]$(NOTDIR $(MMS$TARGET_NAME)).opt/OPT
 
-! [.modules.vms.acrdef]acrdef_wrap.c : [.modules.vms.acrdef]acrdef.i
-!     SWIG -python modules/vms/acrdef/acrdef.i
-!     purge [.modules.vms.acrdef]acrdef_wrap.c
+[.modules.vms.acrdef]acrdef_wrap.c : [.modules.vms.acrdef]acrdef.i
+    SWIG -python modules/vms/acrdef/acrdef.i
+    purge [.modules.vms.acrdef]acrdef_wrap.c
 
 [.$(OBJ_DIR).modules.vms.acrdef]acrdef_wrap.obs : [.modules.vms.acrdef]acrdef_wrap.c
 
@@ -2129,9 +2135,9 @@ SHA3_HEADERS = -
     @ pipe create/dir $(DIR $(MMS$TARGET)) | copy SYS$INPUT nl:
     $(LINK)$(LINKFLAGS)/SHARE=python$build_out:[$(DYNLOAD_DIR)]$(NOTDIR $(MMS$TARGET_NAME)).EXE $(MMS$SOURCE_LIST),[.opt]$(NOTDIR $(MMS$TARGET_NAME)).opt/OPT
 
-! [.modules.vms.armdef]armdef_wrap.c : [.modules.vms.armdef]armdef.i
-!     SWIG -python modules/vms/armdef/armdef.i
-!     purge [.modules.vms.armdef]armdef_wrap.c
+[.modules.vms.armdef]armdef_wrap.c : [.modules.vms.armdef]armdef.i
+    SWIG -python modules/vms/armdef/armdef.i
+    purge [.modules.vms.armdef]armdef_wrap.c
 
 [.$(OBJ_DIR).modules.vms.armdef]armdef_wrap.obs : [.modules.vms.armdef]armdef_wrap.c
 
@@ -2139,9 +2145,9 @@ SHA3_HEADERS = -
     @ pipe create/dir $(DIR $(MMS$TARGET)) | copy SYS$INPUT nl:
     $(LINK)$(LINKFLAGS)/SHARE=python$build_out:[$(DYNLOAD_DIR)]$(NOTDIR $(MMS$TARGET_NAME)).EXE $(MMS$SOURCE_LIST),[.opt]$(NOTDIR $(MMS$TARGET_NAME)).opt/OPT
 
-! [.modules.vms.stenvdef]stenvdef_wrap.c : [.modules.vms.stenvdef]stenvdef.i
-!     SWIG -python modules/vms/stenvdef/stenvdef.i
-!     purge [.modules.vms.stenvdef]stenvdef_wrap.c
+[.modules.vms.stenvdef]stenvdef_wrap.c : [.modules.vms.stenvdef]stenvdef.i
+    SWIG -python modules/vms/stenvdef/stenvdef.i
+    purge [.modules.vms.stenvdef]stenvdef_wrap.c
 
 [.$(OBJ_DIR).modules.vms.stenvdef]stenvdef_wrap.obs : [.modules.vms.stenvdef]stenvdef_wrap.c
 
@@ -2149,9 +2155,9 @@ SHA3_HEADERS = -
     @ pipe create/dir $(DIR $(MMS$TARGET)) | copy SYS$INPUT nl:
     $(LINK)$(LINKFLAGS)/SHARE=python$build_out:[$(DYNLOAD_DIR)]$(NOTDIR $(MMS$TARGET_NAME)).EXE $(MMS$SOURCE_LIST),[.opt]$(NOTDIR $(MMS$TARGET_NAME)).opt/OPT
 
-! [.modules.vms.statedef]statedef_wrap.c : [.modules.vms.statedef]statedef.i
-!     SWIG -python modules/vms/statedef/statedef.i
-!     purge [.modules.vms.statedef]statedef_wrap.c
+[.modules.vms.statedef]statedef_wrap.c : [.modules.vms.statedef]statedef.i
+    SWIG -python modules/vms/statedef/statedef.i
+    purge [.modules.vms.statedef]statedef_wrap.c
 
 [.$(OBJ_DIR).modules.vms.statedef]statedef_wrap.obs : [.modules.vms.statedef]statedef_wrap.c
 
@@ -2159,9 +2165,9 @@ SHA3_HEADERS = -
     @ pipe create/dir $(DIR $(MMS$TARGET)) | copy SYS$INPUT nl:
     $(LINK)$(LINKFLAGS)/SHARE=python$build_out:[$(DYNLOAD_DIR)]$(NOTDIR $(MMS$TARGET_NAME)).EXE $(MMS$SOURCE_LIST),[.opt]$(NOTDIR $(MMS$TARGET_NAME)).opt/OPT
 
-! [.modules.vms.brkdef]brkdef_wrap.c : [.modules.vms.brkdef]brkdef.i
-!     SWIG -python modules/vms/brkdef/brkdef.i
-!     purge [.modules.vms.brkdef]brkdef_wrap.c
+[.modules.vms.brkdef]brkdef_wrap.c : [.modules.vms.brkdef]brkdef.i
+    SWIG -python modules/vms/brkdef/brkdef.i
+    purge [.modules.vms.brkdef]brkdef_wrap.c
 
 [.$(OBJ_DIR).modules.vms.brkdef]brkdef_wrap.obs : [.modules.vms.brkdef]brkdef_wrap.c
 
@@ -2169,9 +2175,9 @@ SHA3_HEADERS = -
     @ pipe create/dir $(DIR $(MMS$TARGET)) | copy SYS$INPUT nl:
     $(LINK)$(LINKFLAGS)/SHARE=python$build_out:[$(DYNLOAD_DIR)]$(NOTDIR $(MMS$TARGET_NAME)).EXE $(MMS$SOURCE_LIST),[.opt]$(NOTDIR $(MMS$TARGET_NAME)).opt/OPT
 
-! [.modules.vms.sys]sys_wrap.c : [.modules.vms.sys]sys.i
-!     SWIG -python modules/vms/sys/sys.i
-!     purge [.modules.vms.sys]sys_wrap.c
+[.modules.vms.sys]sys_wrap.c : [.modules.vms.sys]sys.i
+    SWIG -python modules/vms/sys/sys.i
+    purge [.modules.vms.sys]sys_wrap.c
 
 [.$(OBJ_DIR).modules.vms.sys]sys_wrap.obs : [.modules.vms.sys]sys_wrap.c
    @ pipe create/dir $(DIR $(MMS$TARGET)) | copy SYS$INPUT nl:
@@ -2186,7 +2192,7 @@ SHA3_HEADERS = -
     @ pipe create/dir $(DIR $(MMS$TARGET)) | copy SYS$INPUT nl:
     $(LINK)$(LINKFLAGS)/SHARE=python$build_out:[$(DYNLOAD_DIR)]$(NOTDIR $(MMS$TARGET_NAME)).EXE $(MMS$SOURCE_LIST),[.opt]$(NOTDIR $(MMS$TARGET_NAME)).opt/OPT
 
-! RDB need sql$mod installed
+! ! RDB need sql$mod installed
 ! [.modules.rdb]rdb_wrap.c : [.modules.rdb]rdb.i
 !     SWIG -python modules/rdb/rdb.i
 !     purge [.modules.rdb]rdb_wrap.c
@@ -2205,13 +2211,9 @@ SHA3_HEADERS = -
 !     @ pipe create/dir $(DIR $(MMS$TARGET)) | copy SYS$INPUT nl:
 !     $(LINK)$(LINKFLAGS)/SHARE=python$build_out:[$(DYNLOAD_DIR)]$(NOTDIR $(MMS$TARGET_NAME)).EXE $(MMS$SOURCE_LIST),[.opt]$(NOTDIR $(MMS$TARGET_NAME)).opt/OPT
 
-! [.modules.vms.decc]decc_wrap.c : [.modules.vms.decc]decc.i
-!     SWIG -python modules/vms/decc/decc.i
-!     purge [.modules.vms.decc]decc_wrap.c
-
-! [.modules.vms.ile3]ile3_wrap.c : [.modules.vms.ile3]ile3.i
-!     SWIG -python modules/vms/ile3/ile3.i
-!     purge [.modules.vms.ile3]ile3_wrap.c
+[.modules.vms.ile3]ile3_wrap.c : [.modules.vms.ile3]ile3.i
+    SWIG -python modules/vms/ile3/ile3.i
+    purge [.modules.vms.ile3]ile3_wrap.c
 
 [.$(OBJ_DIR).modules.vms.ile3]ile3_wrap.obs : [.modules.vms.ile3]ile3_wrap.c
 
@@ -2222,9 +2224,9 @@ SHA3_HEADERS = -
     @ pipe create/dir $(DIR $(MMS$TARGET)) | copy SYS$INPUT nl:
     $(LINK)$(LINKFLAGS)/SHARE=python$build_out:[$(DYNLOAD_DIR)]$(NOTDIR $(MMS$TARGET_NAME)).EXE $(MMS$SOURCE_LIST),[.opt]$(NOTDIR $(MMS$TARGET_NAME)).opt/OPT
 
-! [.modules.vms.lib]lib_wrap.c : [.modules.vms.lib]lib.i
-!     SWIG -python modules/vms/lib/lib.i
-!     purge [.modules.vms.lib]lib_wrap.c
+[.modules.vms.lib]lib_wrap.c : [.modules.vms.lib]lib.i
+    SWIG -python modules/vms/lib/lib.i
+    purge [.modules.vms.lib]lib_wrap.c
 
 [.$(OBJ_DIR).modules.vms.lib]lib_wrap.obs : [.modules.vms.lib]lib_wrap.c
 
