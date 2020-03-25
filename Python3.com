@@ -1,4 +1,4 @@
-$ @Python3_names.com
+$ @WRK_DISK:[vorfolomeev.Python3]Python3_names.com
 $ if "''P1'" .eqs. "" 
 $ then
 $   CONFIG := DEBUG

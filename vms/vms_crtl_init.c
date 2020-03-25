@@ -46,7 +46,11 @@ static void set_coe ( void )
     ** The following is a bit brutal and is going to trump most of the above. Need to figure
     ** out a more accurate list... TBD
     */
-    set ("DECC$UNIX_LEVEL", 90);
+    set ("DECC$UNIX_LEVEL", 100);
+
+    /* Next is required to exec() */
+    set ("DECC$EXIT_AFTER_FAILED_EXEC", 1);
+    set ("DECC$DETACHED_CHILD_PROCESS", 0);
 }
 
 #pragma extern_model save
