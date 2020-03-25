@@ -240,10 +240,8 @@ typedef int32_t mpd_ssize_t;
 #endif
 /* END CONFIG */
 
-#ifndef __VMS		/* This will end badly and needs to be revisted (BRC 14-Jan-2016) */
 #if MPD_SIZE_MAX != MPD_UINT_MAX
   #error "unsupported platform: need mpd_size_t == mpd_uint_t"
-#endif
 #endif
 
 

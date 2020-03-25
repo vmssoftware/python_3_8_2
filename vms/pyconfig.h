@@ -1735,7 +1735,7 @@
 #endif
 
 #ifndef SIZE_MAX
-#define SIZE_MAX __INT32_MAX
+#define SIZE_MAX __UINT32_MAX
 #endif
 
 #ifndef LLONG_MIN
