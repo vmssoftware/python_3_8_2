@@ -39,10 +39,12 @@ unsigned int _asctim(long long timaddr, char **timbuf, char cvtflg)
 	sys$asctim(&len, &val_dsc, (struct _generic_64 *) &timaddr,
 		   cvtflg);
     if (OKAY(status)) {
-	val[len] = '\0';
-	assert((*timbuf = strdup(val)));
+        val[len] = '\0';
+        *timbuf = strdup(val);
+        assert(*timbuf);
     } else {
-	assert((*timbuf = strdup(nil)));
+        *timbuf = strdup(nil);
+    	assert(*timbuf);
     }
 
     return (status);
@@ -178,10 +180,12 @@ unsigned int _getmsg(unsigned int msgid, char **msg, unsigned int flags,
 	sys$getmsg(msgid, &len, &val_dsc, flags, (unsigned char *) outadr);
 
     if (OKAY(status)) {
-	val[len] = '\0';
-	assert((*msg = strdup(val)));
+        val[len] = '\0';
+        *msg = strdup(val)
+        assert(*msg);
     } else {
-	assert((*msg = strdup(nil)));
+        *msg = strdup(nil);
+    	assert(*msg);
     }
 
     return (status);
@@ -210,10 +214,12 @@ unsigned int _idtoasc(unsigned int id, char **nambuf, unsigned int *resid,
     status = sys$idtoasc(id, &len, &val_dsc, resid, attrib, ctxt);
 
     if (OKAY(status)) {
-	val[len] = '\0';
-	assert((*nambuf = strdup(val)));
+        val[len] = '\0';
+        *nambuf = strdup(val);
+        assert(*nambuf);
     } else {
-	assert((*nambuf = strdup(nil)));
+        *nambuf = strdup(nil);
+	    assert(*nambuf);
     }
 
     return (status);
@@ -476,10 +482,12 @@ unsigned int _device_scan(char **name, char *patt, void *addr,
 			(struct _generic_64 *) ctxt);
 
     if (OKAY(status)) {
-	val[len] = '\0';
-	assert((*name = strdup(val)));
+        val[len] = '\0';
+        *name = strdup(val);
+        assert(*name);
     } else {
-	assert((*name = strdup(nil)));
+        *name = strdup(nil);
+	    assert(*name);
     }
 
     return (status);
@@ -628,10 +636,12 @@ unsigned int _uicstr(long int val, char **res, int flag)
     str_dsc.dsc$a_pointer = str;
 
     if (OKAY((status = sys$fao(&fmt_dsc, &len, &str_dsc, val)))) {
-	str[len] = '\0';
-	assert((*res = strdup(str)));
+        str[len] = '\0';
+        *res = strdup(str);
+        assert(*res);
     } else {
-	assert((*res = strdup(nil)));
+        *res = strdup(nil);
+    	assert(*res);
     }
 
     return (status);
@@ -712,7 +722,8 @@ unsigned int _show_intrusion(char *criteria, char **intruder,
     	*type = blk.type;
     	*count = blk.count;
     	tmp[len] = '\0';
-    	assert((*intruder = strdup(tmp)));
+        *intruder = strdup(tmp);
+    	assert(*intruder);
     }
 
     return (status);

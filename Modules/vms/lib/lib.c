@@ -31,10 +31,12 @@ unsigned int _date_time(char **dt)
     status = lib$date_time(&val_dsc);
 
     if (OKAY(status)) {
-	val[23] = '\0';
-	assert((*dt = strdup(val)));
+        val[23] = '\0';
+        *dt = strdup(val);
+        assert(*dt);
     } else {
-	assert((*dt = strdup(nil)));
+        *dt = strdup(nil);
+    	assert(*dt);
     }
 
     return (status);
@@ -71,10 +73,12 @@ unsigned int _get_hostname(char **hostname, unsigned int flags)
     status = lib$get_hostname(&val_dsc, &len, flags);
 
     if (OKAY(status)) {
-	val[len] = '\0';
-	assert((*hostname = strdup(val)));
+        val[len] = '\0';
+        *hostname = strdup(val);
+        assert(*hostname);
     } else {
-	assert((*hostname = strdup(nil)));
+        *hostname = strdup(nil);
+	    assert(*hostname);
     }
 
     return (status);
@@ -107,10 +111,12 @@ unsigned int _getjpi(int item, unsigned int *pid, char *prn, char **ret)
 	lib$getjpi(&item, pid, (prn ? &prn_dsc : NULL), 0, &val_dsc, &len);
 
     if (OKAY(status)) {
-	val[len] = '\0';
-	assert((*ret = strdup(val)));
+        val[len] = '\0';
+        *ret = strdup(val);
+        assert(*ret);
     } else {
-	assert((*ret = strdup(nil)));
+        *ret = strdup(nil);
+	    assert(*ret);
     }
 
     return (status);
@@ -145,10 +151,12 @@ unsigned int _getsyi(int item, char **ret, unsigned int *csid, char *node)
 		   (node ? &node_dsc : NULL));
 
     if (OKAY(status)) {
-	val[len] = '\0';
-	assert((*ret = strdup(val)));
+        val[len] = '\0';
+        *ret = strdup(val);
+        assert(*ret);
     } else {
-	assert((*ret = strdup(nil)));
+        *ret = strdup(nil);
+        assert(*ret);
     }
 
     return (status);
