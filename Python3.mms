@@ -250,7 +250,7 @@ $(LIBDYNLOAD_VMS) -
 [.$(OUT_DIR).$(DYNLOAD_DIR)]_multiprocessing.exe -
 [.$(OUT_DIR).$(DYNLOAD_DIR)]_opcode.exe -
 [.$(OUT_DIR).$(DYNLOAD_DIR)]_pickle.exe -
-[.$(OUT_DIR).$(DYNLOAD_DIR)]_posixsubprocess.exe -
+- ! [.$(OUT_DIR).$(DYNLOAD_DIR)]_posixsubprocess.exe -
 [.$(OUT_DIR).$(DYNLOAD_DIR)]_queue.exe -
 [.$(OUT_DIR).$(DYNLOAD_DIR)]_random.exe -
 [.$(OUT_DIR).$(DYNLOAD_DIR)]_sha1.exe -
@@ -283,7 +283,8 @@ $(LIBDYNLOAD_VMS) -
 [.$(OUT_DIR).$(DYNLOAD_DIR)]select.exe -
 [.$(OUT_DIR).$(DYNLOAD_DIR)]syslog.exe -
 [.$(OUT_DIR).$(DYNLOAD_DIR)]unicodedata.exe -
-[.$(OUT_DIR).$(DYNLOAD_DIR)]zlib.exe
+[.$(OUT_DIR).$(DYNLOAD_DIR)]zlib.exe -
+[.$(OUT_DIR).$(DYNLOAD_DIR)]_iohelp.exe
 ! [.$(OUT_DIR).$(DYNLOAD_DIR)]_uuid.exe
 
 TARGET : [.$(OUT_DIR)]python3.exe [.$(OUT_DIR)]_testembed.exe $(LIBDYNLOAD)
@@ -623,7 +624,8 @@ MODOBJS = -
 [.$(OBJ_DIR).Modules]_tracemalloc.obj -
 [.$(OBJ_DIR).Modules]hashtable.obj -
 [.$(OBJ_DIR).Modules]symtablemodule.obj -
-[.$(OBJ_DIR).Modules]xxsubtype.obj
+[.$(OBJ_DIR).Modules]xxsubtype.obj -
+[.$(OBJ_DIR).Modules]_posixsubprocess.obj
 
 LIBRARY_OBJS_OMIT_FROZEN = -
 [.$(OBJ_DIR).Modules]getbuildinfo.obj -
@@ -793,6 +795,10 @@ DTRACE_DEPS = -
     $(CC) $(PY_CORE_CFLAGS_GETPLATFORM) /OBJECT=$(MMS$TARGET) $(MMS$SOURCE)
 
 ! PY_CORE_BUILTIN_CFLAGS
+
+[.$(OBJ_DIR).Modules]_posixsubprocess.obj : [.Modules]_posixsubprocess.c $(PYTHON_HEADERS)
+  @ pipe create/dir $(DIR $(MMS$TARGET)) | copy SYS$INPUT nl:
+    $(CC) $(PY_CORE_BUILTIN_CFLAGS) /OBJECT=$(MMS$TARGET) $(MMS$SOURCE)
 
 [.$(OBJ_DIR).Modules]posixmodule.obj : [.Modules]posixmodule.c [.Modules]posixmodule.h $(PYTHON_HEADERS)
   @ pipe create/dir $(DIR $(MMS$TARGET)) | copy SYS$INPUT nl:
@@ -1487,6 +1493,10 @@ SHA3_HEADERS = -
 [.$(OUT_DIR).$(DYNLOAD_DIR)]_sha3.exe : [.$(OBJ_DIR).Modules._sha3]sha3module.obm
     @ pipe create/dir $(DIR $(MMS$TARGET)) | copy SYS$INPUT nl:
     $(LINK)$(LINKFLAGS)/SHARE=python$build_out:[$(DYNLOAD_DIR)]$(NOTDIR $(MMS$TARGET_NAME)).EXE $(MMS$SOURCE_LIST),[.opt]$(NOTDIR $(MMS$TARGET_NAME)).opt/OPT
+
+! _iohelp _iohelp
+[.$(OBJ_DIR).Modules.vms.iohelp]_iohelp.obm : [.Modules.vms.iohelp]_iohelp.c $(PYTHON_HEADERS)
+[.$(OUT_DIR).$(DYNLOAD_DIR)]_iohelp.exe : [.$(OBJ_DIR).Modules.vms.iohelp]_iohelp.obm
 
 !! modulename modulesource
 ! [.$(OBJ_DIR).Modules]modulesource.obm : [.Modules]modulesource.c $(PYTHON_HEADERS)

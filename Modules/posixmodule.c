@@ -4637,9 +4637,6 @@ os_uname_impl(PyObject *module)
     struct utsname u;
     int res;
     PyObject *value;
-#ifdef __VMS
-    char *t;
-#endif
 
     Py_BEGIN_ALLOW_THREADS
     res = uname(&u);
@@ -4652,10 +4649,10 @@ os_uname_impl(PyObject *module)
         return NULL;
     
 #ifdef __VMS
-    t = u.machine;
+    char *t = u.machine;
     while (*t) {
-       if (! isalnum(*t) && (*t != '_')) *t = '_';
-       t++;
+       if (! isalnum(*t) ) *t = '_';
+       ++t;
     }
 #endif
 
@@ -4744,11 +4741,12 @@ typedef struct {
     } \
 
 #ifdef __VMS
+#pragma message save
 #pragma message disable (EXPANDEDDEFINED)
 #endif
 #if defined(HAVE_FUTIMESAT) || defined(HAVE_UTIMENSAT)
 #ifdef __VMS
-#pragma message enable (EXPANDEDDEFINED)
+#pragma message restore
 #endif
 
 static int
@@ -5028,6 +5026,7 @@ os_utime_impl(PyObject *module, path_t *path, PyObject *times, PyObject *ns,
 #endif
 
 #ifdef __VMS
+#pragma message save
 #pragma message disable (EXPANDEDDEFINED)
 #endif
 #if defined(HAVE_FUTIMESAT) || defined(HAVE_UTIMENSAT)
@@ -5042,7 +5041,7 @@ os_utime_impl(PyObject *module, path_t *path, PyObject *times, PyObject *ns,
     else
 #endif
 #ifdef __VMS
-#pragma message enable (EXPANDEDDEFINED)
+#pragma message restore
 #endif
 
     result = utime_default(&utime, path->narrow);
@@ -9445,9 +9444,6 @@ os_pipe_impl(PyObject *module)
 #else
     int res;
 #endif
-#ifdef __VMS
-    int one = 1;
-#endif
 
 #ifdef MS_WINDOWS
     attr.nLength = sizeof(attr);
@@ -9482,7 +9478,8 @@ os_pipe_impl(PyObject *module)
     {
 #endif
         Py_BEGIN_ALLOW_THREADS
-#ifdef __VMS
+// #define __VMS_PIPE_BY_SOCKETPAIR
+#ifdef __VMS_PIPE_BY_SOCKETPAIR
 	/* >>> BRC 26-Jul-2018 */
 	res = socketpair(AF_UNIX, SOCK_STREAM, 0, fds);
 #else

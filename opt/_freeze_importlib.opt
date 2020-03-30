@@ -12,6 +12,7 @@ python$build_obj:[Modules]_collectionsmodule.obj
 python$build_obj:[Modules]_functoolsmodule.obj
 python$build_obj:[Modules]_localemodule.obj
 python$build_obj:[Modules]_operator.obj
+python$build_obj:[Modules]_posixsubprocess.obj
 python$build_obj:[Modules]_sre.obj
 python$build_obj:[Modules]_stat.obj
 python$build_obj:[Modules]_threadmodule.obj

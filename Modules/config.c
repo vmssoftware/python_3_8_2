@@ -45,7 +45,8 @@ extern PyObject* PyInit_faulthandler(void);
 extern PyObject* PyInit__tracemalloc(void);
 extern PyObject* PyInit__symtable(void);
 extern PyObject* PyInit_xxsubtype(void);
-/* extern PyObject* PyInit__decc(void); */
+
+extern PyObject* PyInit__posixsubprocess(void);
 
 /* -- ADDMODULE MARKER 1 -- */
 
@@ -80,6 +81,8 @@ struct _inittab _PyImport_Inittab[] = {
     {"_tracemalloc", PyInit__tracemalloc},
     {"_symtable", PyInit__symtable},
     {"xxsubtype", PyInit_xxsubtype},
+
+    {"_posixsubprocess", PyInit__posixsubprocess},
 
 /* -- ADDMODULE MARKER 2 -- */
 

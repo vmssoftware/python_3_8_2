@@ -51,6 +51,8 @@ static void set_coe ( void )
     /* Next is required to exec() */
     set ("DECC$EXIT_AFTER_FAILED_EXEC", 1);
     set ("DECC$DETACHED_CHILD_PROCESS", 0);
+    // set ("DECC$STREAM_PIPE", 1);
+    // set ("DECC$POPEN_NO_CRLF_REC_ATTR", 1);
 }
 
 #pragma extern_model save
