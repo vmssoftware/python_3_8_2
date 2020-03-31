@@ -1876,12 +1876,12 @@ class Popen(object):
                                 '_check_timeout(..., skip_check_and_raise=True) '
                                 'failed to raise TimeoutExpired.')
 
-                        ready = helper.wait(timeout)
+                        ready = helper.wait_io(timeout)
                         self._check_timeout(endtime, orig_timeout, stdout, stderr)
 
                         for stream in ready:
                             if stream is self.stdin:
-                                self._input_offset += helper.written(stream)
+                                self._input_offset += helper.bytes_count(stream)
                                 if self._input_offset >= len(self._input):
                                     helper.unregister(stream)
                                     stream.close()
@@ -1889,7 +1889,7 @@ class Popen(object):
                                     helper.query_write(self.stdin, input_view[self._input_offset:])
                             elif stream in (self.stdout, self.stderr):
                                 data = helper.fetch(stream)
-                                if not data:
+                                if not data or helper.is_eof(stream):
                                     helper.unregister(stream)
                                     stream.close()
                                 self._fileobj2output[stream].append(data)

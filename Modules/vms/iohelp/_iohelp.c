@@ -1,5 +1,6 @@
 #define PY_SSIZE_T_CLEAN
 #include <Python.h>
+#include "stdio.h"
 #include "structmember.h"
 #include "iosbdef.h"
 #include "descrip.h"
@@ -9,6 +10,7 @@
 #include "unixlib.h"
 #include "lib$routines.h"
 #include "iodef.h"
+#include "gen64def.h"
 
 #include "Modules/_io/_iomodule.h"
 
@@ -207,6 +209,12 @@ IOHelp_query_write(IOHelpObject *self, PyObject *args)
     if (!PyArg_ParseTuple(args, "Oy*", &source, &data)) {
         Py_RETURN_FALSE;
     }
+    if (data.ndim > 1) {
+        PyErr_SetString(PyExc_BufferError,
+                        "Buffer must be single dimension");
+        PyBuffer_Release(&data);
+        Py_RETURN_FALSE;
+    }
     FileWrap *wrapper = _find_wrapper(self, source);
     if (!wrapper) {
         PyBuffer_Release(&data);
@@ -274,21 +282,163 @@ IOHelp_query_read(IOHelpObject *self, PyObject *source)
 static PyObject *
 IOHelp_wait_io(IOHelpObject *self, PyObject *timeout)
 {
-    int min, sec, msec;
-    if (PyFloat_Check(timeout)) {
-        double dtimeout = PyFloat_AsDouble(timeout);
-        msec = ((int)(dtimeout * 1000)) % 1000;
-        sec = (int)dtimeout;
-    } else if (PyLong_Check(timeout)) {
-        msec = 0;
-        sec = (int) PyLong_AS_LONG(timeout);
+    PyObject* result = NULL;
+    if (self->num == 0) {
+        goto egress;
     }
-    min = sec / 60;
-    sec = sec % 60;
-    if (min >= 60) {
-        min = 60;
+    int timerEfn = 0;
+    struct _generic_64 timerOffset;
+    int status;
+    if (timeout != Py_None) {
+        int min, sec, msec;
+        if (PyFloat_Check(timeout)) {
+            double dtimeout = PyFloat_AsDouble(timeout);
+            msec = ((int)(dtimeout * 1000)) % 1000;
+            sec = (int)dtimeout;
+        } else if (PyLong_Check(timeout)) {
+            msec = 0;
+            sec = (int) PyLong_AS_LONG(timeout);
+        } else {
+            PyErr_Format(PyExc_TypeError,
+                "wait_io requires float or int");
+            goto egress;
+        }
+        min = sec / 60;
+        sec = sec % 60;
+        if (min >= 60) {
+            min = 60;
+        }
+        char timeStr[32];
+        snprintf(timeStr, sizeof(timeStr), "0 00:%d:%d.%d", min, sec, msec);
+        struct dsc$descriptor_s descriptor;
+        descriptor.dsc$w_length = strlen(timeStr);
+        descriptor.dsc$b_dtype = DSC$K_DTYPE_T;
+        descriptor.dsc$b_class = DSC$K_CLASS_S;
+        descriptor.dsc$a_pointer = timeStr;
+        status = SYS$BINTIM(&descriptor, &timerOffset);
+        if (!$VMS_STATUS_SUCCESS(status)) {
+            PyErr_Format(PyExc_OSError,
+                "SYS$BINTIM failed: %d ", status);
+            goto egress;
+        }
+        status = LIB$GET_EF(&timerEfn);
+        if (!$VMS_STATUS_SUCCESS(status)) {
+            PyErr_Format(PyExc_OSError,
+                "LIB$GET_EF failed: %d ", status);
+            goto egress;
+        }
     }
-    Py_RETURN_TRUE;
+
+    int claster = self->wrappers[0].efn & ~0x1f;
+    int mask = 1 << (self->wrappers[0].efn & 0x1f);
+    for (int i = 1; i < self->num; ++i) {
+        if (claster != self->wrappers[i].efn & ~0x1f) {
+            PyErr_SetString(PyExc_OSError,
+                "EF in different clusters");
+            goto egress_timer;
+        }
+        mask |= 1 << (self->wrappers[i].efn & 0x1f);
+    }
+    if (timerEfn) {
+        if (claster != timerEfn & ~0x1f) {
+            PyErr_SetString(PyExc_OSError,
+                "EF in different clusters");
+            goto egress_timer;
+        }
+        mask |= 1 << (timerEfn & 0x1f);
+        status = SYS$SETIMR(timerEfn, &timerOffset, 0, 0, 0);
+        if (!$VMS_STATUS_SUCCESS(status)) {
+            PyErr_Format(PyExc_OSError,
+                "SYS$SETIMR failed: %d ", status);
+            goto egress_timer;
+        }
+    }
+
+    status = SYS$WFLOR(self->wrappers[0].efn, mask);
+    if (!$VMS_STATUS_SUCCESS(status)) {
+        PyErr_Format(PyExc_OSError,
+            "SYS$WFLOR failed: %d", status);
+        goto egress_timer;
+    }
+
+    int efnCluster;
+    int ready_num = 0;
+    PyObject **ready_obj = PyMem_MALLOC(sizeof(PyObject*) * self->num);
+    for (int i = 0; i < self->num; ++i) {
+        status = SYS$READEF(self->wrappers[i].efn, &efnCluster);
+        if (status == SS$_WASSET && self->wrappers[i].iosb.iosb$w_status) {
+            // io done, add to ready
+            ready_obj[ready_num++] = self->wrappers[i].source;
+        }
+    }
+
+    if (ready_num) {
+        result = PyTuple_New(ready_num);
+        if (result == NULL) {
+            PyErr_NoMemory();
+            goto egress_ready_obj;
+        }
+        for (int i = 0; i < ready_num; ++i) {
+            Py_INCREF(ready_obj[i]);
+            PyTuple_SET_ITEM(result, i, ready_obj[i]);
+        }
+    }
+
+egress_ready_obj:
+    PyMem_FREE(ready_obj);
+
+egress_timer:
+    if (timerEfn) {
+        LIB$FREE_EF(&timerEfn);
+    }
+
+egress:
+    if (!result) {
+        Py_RETURN_NONE;
+    }
+    return result;
+}
+
+static PyObject *
+IOHelp_bytes_count(IOHelpObject *self, PyObject *source)
+{
+    FileWrap *wrapper = _find_wrapper(self, source);
+    if (!wrapper) {
+        PyErr_SetString(PyExc_KeyError,
+            "Unregistered source");
+        Py_RETURN_NONE;
+    }
+    return PyLong_FromUnsignedLong(wrapper->iosb.iosb$w_bcnt);
+}
+
+static PyObject *
+IOHelp_is_eof(IOHelpObject *self, PyObject *source)
+{
+    FileWrap *wrapper = _find_wrapper(self, source);
+    if (!wrapper) {
+        PyErr_SetString(PyExc_KeyError,
+            "Unregistered source");
+        Py_RETURN_NONE;
+    }
+    if (SS$_ENDOFFILE == wrapper->iosb.iosb$w_status) {
+        Py_RETURN_TRUE;
+    }
+    Py_RETURN_FALSE;
+}
+
+static PyObject *
+IOHelp_fetch(IOHelpObject *self, PyObject *source)
+{
+    FileWrap *wrapper = _find_wrapper(self, source);
+    if (!wrapper) {
+        PyErr_SetString(PyExc_KeyError,
+            "Unregistered source");
+        Py_RETURN_NONE;
+    }
+    if (wrapper->iosb.iosb$w_bcnt) {
+        return PyBytes_FromStringAndSize(wrapper->buf, wrapper->iosb.iosb$w_bcnt);
+    }
+    Py_RETURN_NONE;
 }
 
 static PyMethodDef IOHelp_methods[] = {
@@ -306,6 +456,15 @@ static PyMethodDef IOHelp_methods[] = {
     },
     {"wait_io", (PyCFunction) IOHelp_wait_io, METH_O,
      "Wait an IO operation"
+    },
+    {"bytes_count", (PyCFunction) IOHelp_bytes_count, METH_O,
+     "Get count of read/written bytes"
+    },
+    {"is_eof", (PyCFunction) IOHelp_is_eof, METH_O,
+     "Test if EOF is read"
+    },
+    {"fetch", (PyCFunction) IOHelp_fetch, METH_O,
+     "Fetch data from stream after read operation is completed"
     },
     {NULL}  /* Sentinel */
 };
