@@ -6,13 +6,19 @@
 #include "starlet.h"
 #include "stsdef.h"
 #include "unixio.h"
+#include "unixlib.h"
 #include "lib$routines.h"
+#include "iodef.h"
+
+#include "Modules/_io/_iomodule.h"
 
 typedef struct {
     int                         fd;
     int                         efn;
     unsigned short int          channel;
     struct _iosb                iosb;
+    PyObject                   *source;
+    char                       *buf;
 } FileWrap;
 
 typedef struct {
@@ -20,12 +26,20 @@ typedef struct {
     FileWrap   *wrappers;
     int         size;
     int         num;
+    int         bufSize;
 } IOHelpObject;
 
 static void
 _clean_warpper(FileWrap *wrapper) {
+    wrapper->fd = -1;
     SYS$DASSGN(wrapper->channel);
+    wrapper->channel = 0;
     LIB$FREE_EF(&wrapper->efn);
+    wrapper->efn = 0;
+    PyMem_FREE(wrapper->buf);
+    wrapper->buf = NULL;
+    Py_DECREF(wrapper->source);
+    wrapper->source = NULL;
 }
 
 static void
@@ -47,6 +61,7 @@ IOHelp_new(PyTypeObject *type, PyObject *args, PyObject *kwds)
         self->num = 0;
         self->size = 0;
         self->wrappers = NULL;
+        self->bufSize = decc$feature_get("DECC$PIPE_BUFFER_SIZE", __FEATURE_MODE_CURVAL);
     }
     return (PyObject *) self;
 }
@@ -57,9 +72,41 @@ static PyMemberDef IOHelp_members[] = {
     {NULL}  /* Sentinel */
 };
 
+static int
+_fileno_from_source(PyObject *source) {
+    int fd_int = -1;
+    if (PyLong_CheckExact(source)) {
+        fd_int = PyLong_AsLong(source);
+    } else if (PyObject_IsInstance(source, (PyObject *)&PyIOBase_Type)) {
+        PyObject* result = PyObject_CallMethod(source, "fileno", NULL);
+        if (result != NULL) {
+            fd_int = PyLong_AsLong(result);
+            Py_DECREF(result);
+        }
+    }
+    return fd_int;
+}
+
+static FileWrap*
+_find_wrapper(IOHelpObject *self, PyObject *source) {
+    int num = self->num;
+    while(num--) {
+        if (self->wrappers[num].source == source) {
+            return &self->wrappers[num];
+        }
+    }
+    return NULL;
+}
+
 static PyObject *
-IOHelp_register(IOHelpObject *self, PyObject *fd)
+IOHelp_register(IOHelpObject *self, PyObject *source)
 {
+    int fd_int = _fileno_from_source(source);
+    if (fd_int == -1) {
+        PyErr_SetString(PyExc_RuntimeError,
+            "Source has invalid fileno");
+        Py_RETURN_FALSE;
+    }
     // find place
     int new_pos = self->num;
     // allocate place
@@ -82,8 +129,6 @@ IOHelp_register(IOHelpObject *self, PyObject *fd)
         self->wrappers = new_wrappers;
         self->size = new_size;
     }
-    // ----------------------------------------------------------------
-    int fd_int = PyLong_AsLong(fd);
 
     // get name
     char *name = PyMem_MALLOC(PATH_MAX + 1);
@@ -112,6 +157,8 @@ IOHelp_register(IOHelpObject *self, PyObject *fd)
                         0 );           /* flags */ 
     PyMem_FREE(name);
     if (!$VMS_STATUS_SUCCESS(status)) {
+        PyErr_Format(PyExc_OSError,
+            "Cannot assign channel: %d", status);
         Py_RETURN_FALSE;
     }
     // get EFN
@@ -119,23 +166,27 @@ IOHelp_register(IOHelpObject *self, PyObject *fd)
     status = LIB$GET_EF(&efn);
     if (!$VMS_STATUS_SUCCESS(status)) {
         SYS$DASSGN(channel);
+        PyErr_Format(PyExc_OSError,
+            "Cannot get EF: %d", status);
         Py_RETURN_FALSE;
     }
     // save
     self->wrappers[new_pos].fd = fd_int;
     self->wrappers[new_pos].channel = channel;
     self->wrappers[new_pos].efn = efn;
+    self->wrappers[new_pos].source = source;
+    self->wrappers[new_pos].buf = NULL;
+    Py_INCREF(source);
     ++self->num;
     Py_RETURN_TRUE;
 }
 
 static PyObject *
-IOHelp_unregister(IOHelpObject *self, PyObject *fd)
+IOHelp_unregister(IOHelpObject *self, PyObject *source)
 {
-    int fd_int = PyLong_AsLong(fd);
     int num = self->num;
     while(num--) {
-        if (self->wrappers[num].fd == fd_int) {
+        if (self->wrappers[num].source == source) {
             _clean_warpper(&self->wrappers[num]);
             --self->num;
             int tail = self->num - num;
@@ -148,12 +199,113 @@ IOHelp_unregister(IOHelpObject *self, PyObject *fd)
     Py_RETURN_FALSE;
 }
 
+static PyObject *
+IOHelp_query_write(IOHelpObject *self, PyObject *args)
+{
+    PyObject *source;
+    Py_buffer data;
+    if (!PyArg_ParseTuple(args, "Oy*", &source, &data)) {
+        Py_RETURN_FALSE;
+    }
+    FileWrap *wrapper = _find_wrapper(self, source);
+    if (!wrapper) {
+        PyBuffer_Release(&data);
+        PyErr_SetString(PyExc_KeyError,
+            "Unregistered source");
+        Py_RETURN_FALSE;
+    }
+    if (!wrapper->buf) {
+        wrapper->buf = PyMem_MALLOC(self->bufSize);
+    }
+    int len = self->bufSize;
+    if (len > data.len) {
+        len = data.len;
+    }
+    memmove(wrapper->buf, data.buf, len);
+    PyBuffer_Release(&data);
+    int status = SYS$QIO(
+        wrapper->efn,       /* efn - event flag */ 
+        wrapper->channel,   /* chan - channel number */ 
+        IO$_WRITEVBLK,      /* func - function modifier */ 
+        &wrapper->iosb,     /* iosb - I/O status block */ 
+        0,                  /* astadr - AST routine */ 
+        0,                  /* astprm - AST parameter */ 
+        wrapper->buf,       /* p1 - output buffer */ 
+        len,                /* p2 - length of data */
+        0,0,0,0);           /* p3-p6 are required*/
+    if (!$VMS_STATUS_SUCCESS(status)) {
+        PyErr_Format(PyExc_OSError,
+            "SYS$QIO failed: %d", status);
+        Py_RETURN_FALSE;
+    }
+    Py_RETURN_TRUE;
+}
+
+static PyObject *
+IOHelp_query_read(IOHelpObject *self, PyObject *source)
+{
+    FileWrap *wrapper = _find_wrapper(self, source);
+    if (!wrapper) {
+        PyErr_SetString(PyExc_KeyError,
+            "Unregistered source");
+        Py_RETURN_FALSE;
+    }
+    if (!wrapper->buf) {
+        wrapper->buf = PyMem_MALLOC(self->bufSize);
+    }
+    int status = SYS$QIO(
+        wrapper->efn,               /* efn - event flag */ 
+        wrapper->channel,           /* chan - channel number */ 
+        IO$_READVBLK | IO$M_STREAM, /* func - function modifier */ 
+        &wrapper->iosb,             /* iosb - I/O status block */ 
+        0,                          /* astadr - AST routine */ 
+        0,                          /* astprm - AST parameter */ 
+        wrapper->buf,               /* p1 - input buffer */ 
+        self->bufSize,              /* p2 - size of buffer */
+        0,0,0,0);                   /* p3-p6 are required*/
+    if (!$VMS_STATUS_SUCCESS(status)) {
+        PyErr_Format(PyExc_OSError,
+            "SYS$QIO failed: %d", status);
+        Py_RETURN_FALSE;
+    }
+    Py_RETURN_TRUE;
+}
+
+static PyObject *
+IOHelp_wait_io(IOHelpObject *self, PyObject *timeout)
+{
+    int min, sec, msec;
+    if (PyFloat_Check(timeout)) {
+        double dtimeout = PyFloat_AsDouble(timeout);
+        msec = ((int)(dtimeout * 1000)) % 1000;
+        sec = (int)dtimeout;
+    } else if (PyLong_Check(timeout)) {
+        msec = 0;
+        sec = (int) PyLong_AS_LONG(timeout);
+    }
+    min = sec / 60;
+    sec = sec % 60;
+    if (min >= 60) {
+        min = 60;
+    }
+    Py_RETURN_TRUE;
+}
+
 static PyMethodDef IOHelp_methods[] = {
     {"register", (PyCFunction) IOHelp_register, METH_O,
-     "Register file descriptor"
+     "Register file"
     },
     {"unregister", (PyCFunction) IOHelp_unregister, METH_O,
-     "Unregister file descriptor"
+     "Unregister file"
+    },
+    {"query_read", (PyCFunction) IOHelp_query_read, METH_O,
+     "Query read"
+    },
+    {"query_write", (PyCFunction) IOHelp_query_write, METH_VARARGS,
+     "Query write"
+    },
+    {"wait_io", (PyCFunction) IOHelp_wait_io, METH_O,
+     "Wait an IO operation"
     },
     {NULL}  /* Sentinel */
 };

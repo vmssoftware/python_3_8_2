@@ -1853,49 +1853,90 @@ class Popen(object):
             if self._input:
                 input_view = memoryview(self._input)
 
-            with _PopenSelector() as selector:
-                if self.stdin and input:
-                    selector.register(self.stdin, selectors.EVENT_WRITE)
-                if self.stdout and not self.stdout.closed:
-                    selector.register(self.stdout, selectors.EVENT_READ)
-                if self.stderr and not self.stderr.closed:
-                    selector.register(self.stderr, selectors.EVENT_READ)
+            if _openvms:
+                import _iohelper
+                with _iohelper.IOHelp() as helper:
+                    if self.stdin and input:
+                        helper.register(self.stdin)
+                        helper.query_write(self.stdin, input_view)
+                    if self.stdout and not self.stdout.closed:
+                        helper.register(self.stdout)
+                        helper.query_read(self.stdout)
+                    if self.stderr and not self.stderr.closed:
+                        helper.register(self.stderr)
+                        helper.query_read(self.stderr)
 
-                while selector.get_map():
-                    timeout = self._remaining_time(endtime)
-                    if timeout is not None and timeout < 0:
-                        self._check_timeout(endtime, orig_timeout,
-                                            stdout, stderr,
-                                            skip_check_and_raise=True)
-                        raise RuntimeError(  # Impossible :)
-                            '_check_timeout(..., skip_check_and_raise=True) '
-                            'failed to raise TimeoutExpired.')
+                    while helper.num > 0:
+                        timeout = self._remaining_time(endtime)
+                        if timeout is not None and timeout < 0:
+                            self._check_timeout(endtime, orig_timeout,
+                                                stdout, stderr,
+                                                skip_check_and_raise=True)
+                            raise RuntimeError(  # Impossible :)
+                                '_check_timeout(..., skip_check_and_raise=True) '
+                                'failed to raise TimeoutExpired.')
 
-                    ready = selector.select(timeout)
-                    self._check_timeout(endtime, orig_timeout, stdout, stderr)
+                        ready = helper.wait(timeout)
+                        self._check_timeout(endtime, orig_timeout, stdout, stderr)
 
-                    # XXX Rewrite these to use non-blocking I/O on the file
-                    # objects; they are no longer using C stdio!
-
-                    for key, events in ready:
-                        if key.fileobj is self.stdin:
-                            chunk = input_view[self._input_offset :
-                                               self._input_offset + _PIPE_BUF]
-                            try:
-                                self._input_offset += os.write(key.fd, chunk)
-                            except BrokenPipeError:
-                                selector.unregister(key.fileobj)
-                                key.fileobj.close()
-                            else:
+                        for stream in ready:
+                            if stream is self.stdin:
+                                self._input_offset += helper.written(stream)
                                 if self._input_offset >= len(self._input):
+                                    helper.unregister(stream)
+                                    stream.close()
+                                else:
+                                    helper.query_write(self.stdin, input_view[self._input_offset:])
+                            elif stream in (self.stdout, self.stderr):
+                                data = helper.fetch(stream)
+                                if not data:
+                                    helper.unregister(stream)
+                                    stream.close()
+                                self._fileobj2output[stream].append(data)
+            else:
+                with _PopenSelector() as selector:
+                    if self.stdin and input:
+                        selector.register(self.stdin, selectors.EVENT_WRITE)
+                    if self.stdout and not self.stdout.closed:
+                        selector.register(self.stdout, selectors.EVENT_READ)
+                    if self.stderr and not self.stderr.closed:
+                        selector.register(self.stderr, selectors.EVENT_READ)
+
+                    while selector.get_map():
+                        timeout = self._remaining_time(endtime)
+                        if timeout is not None and timeout < 0:
+                            self._check_timeout(endtime, orig_timeout,
+                                                stdout, stderr,
+                                                skip_check_and_raise=True)
+                            raise RuntimeError(  # Impossible :)
+                                '_check_timeout(..., skip_check_and_raise=True) '
+                                'failed to raise TimeoutExpired.')
+
+                        ready = selector.select(timeout)
+                        self._check_timeout(endtime, orig_timeout, stdout, stderr)
+
+                        # XXX Rewrite these to use non-blocking I/O on the file
+                        # objects; they are no longer using C stdio!
+
+                        for key, events in ready:
+                            if key.fileobj is self.stdin:
+                                chunk = input_view[self._input_offset :
+                                                self._input_offset + _PIPE_BUF]
+                                try:
+                                    self._input_offset += os.write(key.fd, chunk)
+                                except BrokenPipeError:
                                     selector.unregister(key.fileobj)
                                     key.fileobj.close()
-                        elif key.fileobj in (self.stdout, self.stderr):
-                            data = os.read(key.fd, 32768)
-                            if not data:
-                                selector.unregister(key.fileobj)
-                                key.fileobj.close()
-                            self._fileobj2output[key.fileobj].append(data)
+                                else:
+                                    if self._input_offset >= len(self._input):
+                                        selector.unregister(key.fileobj)
+                                        key.fileobj.close()
+                            elif key.fileobj in (self.stdout, self.stderr):
+                                data = os.read(key.fd, 32768)
+                                if not data:
+                                    selector.unregister(key.fileobj)
+                                    key.fileobj.close()
+                                self._fileobj2output[key.fileobj].append(data)
 
             self.wait(timeout=self._remaining_time(endtime))
 
