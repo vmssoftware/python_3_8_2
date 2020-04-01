@@ -284,7 +284,7 @@ $(LIBDYNLOAD_VMS) -
 [.$(OUT_DIR).$(DYNLOAD_DIR)]syslog.exe -
 [.$(OUT_DIR).$(DYNLOAD_DIR)]unicodedata.exe -
 [.$(OUT_DIR).$(DYNLOAD_DIR)]zlib.exe -
-[.$(OUT_DIR).$(DYNLOAD_DIR)]_iohelp.exe
+[.$(OUT_DIR).$(DYNLOAD_DIR)]_pipeqio.exe
 ! [.$(OUT_DIR).$(DYNLOAD_DIR)]_uuid.exe
 
 TARGET : [.$(OUT_DIR)]python3.exe [.$(OUT_DIR)]_testembed.exe $(LIBDYNLOAD)
@@ -1494,9 +1494,9 @@ SHA3_HEADERS = -
     @ pipe create/dir $(DIR $(MMS$TARGET)) | copy SYS$INPUT nl:
     $(LINK)$(LINKFLAGS)/SHARE=python$build_out:[$(DYNLOAD_DIR)]$(NOTDIR $(MMS$TARGET_NAME)).EXE $(MMS$SOURCE_LIST),[.opt]$(NOTDIR $(MMS$TARGET_NAME)).opt/OPT
 
-! _iohelp _iohelp
-[.$(OBJ_DIR).Modules.vms.iohelp]_iohelp.obm : [.Modules.vms.iohelp]_iohelp.c $(PYTHON_HEADERS)
-[.$(OUT_DIR).$(DYNLOAD_DIR)]_iohelp.exe : [.$(OBJ_DIR).Modules.vms.iohelp]_iohelp.obm
+! _pipeqio _pipeqio
+[.$(OBJ_DIR).Modules.vms.pipeqio]_pipeqio.obm : [.Modules.vms.pipeqio]_pipeqio.c $(PYTHON_HEADERS)
+[.$(OUT_DIR).$(DYNLOAD_DIR)]_pipeqio.exe : [.$(OBJ_DIR).Modules.vms.pipeqio]_pipeqio.obm
 
 !! modulename modulesource
 ! [.$(OBJ_DIR).Modules]modulesource.obm : [.Modules]modulesource.c $(PYTHON_HEADERS)

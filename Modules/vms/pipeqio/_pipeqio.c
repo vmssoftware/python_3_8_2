@@ -29,7 +29,13 @@ typedef struct {
     int         size;
     int         num;
     int         bufSize;
-} IOHelpObject;
+} SelectorObject;
+
+static PyMemberDef Selector_members[] = {
+    {"num", T_INT, offsetof(SelectorObject, num), 0,
+     "number of streams"},
+    {NULL}  /* Sentinel */
+};
 
 static void
 _clean_warpper(FileWrap *wrapper) {
@@ -43,36 +49,6 @@ _clean_warpper(FileWrap *wrapper) {
     Py_DECREF(wrapper->source);
     wrapper->source = NULL;
 }
-
-static void
-IOHelp_dealloc(IOHelpObject *self)
-{
-    while(self->num--) {
-        _clean_warpper(&self->wrappers[self->num]);
-    }
-    PyMem_FREE(self->wrappers);
-    Py_TYPE(self)->tp_free((PyObject *) self);
-}
-
-static PyObject *
-IOHelp_new(PyTypeObject *type, PyObject *args, PyObject *kwds)
-{
-    IOHelpObject *self;
-    self = (IOHelpObject *) type->tp_alloc(type, 0);
-    if (self != NULL) {
-        self->num = 0;
-        self->size = 0;
-        self->wrappers = NULL;
-        self->bufSize = decc$feature_get("DECC$PIPE_BUFFER_SIZE", __FEATURE_MODE_CURVAL);
-    }
-    return (PyObject *) self;
-}
-
-static PyMemberDef IOHelp_members[] = {
-    {"num", T_INT, offsetof(IOHelpObject, num), 0,
-     "number of streams"},
-    {NULL}  /* Sentinel */
-};
 
 static int
 _fileno_from_source(PyObject *source) {
@@ -90,7 +66,7 @@ _fileno_from_source(PyObject *source) {
 }
 
 static FileWrap*
-_find_wrapper(IOHelpObject *self, PyObject *source) {
+_find_wrapper(SelectorObject *self, PyObject *source) {
     int num = self->num;
     while(num--) {
         if (self->wrappers[num].source == source) {
@@ -100,12 +76,36 @@ _find_wrapper(IOHelpObject *self, PyObject *source) {
     return NULL;
 }
 
+static void
+Selector_dealloc(SelectorObject *self)
+{
+    while(self->num--) {
+        _clean_warpper(&self->wrappers[self->num]);
+    }
+    PyMem_FREE(self->wrappers);
+    Py_TYPE(self)->tp_free((PyObject *) self);
+}
+
 static PyObject *
-IOHelp_register(IOHelpObject *self, PyObject *source)
+Selector_new(PyTypeObject *type, PyObject *args, PyObject *kwds)
+{
+    SelectorObject *self;
+    self = (SelectorObject *) type->tp_alloc(type, 0);
+    if (self != NULL) {
+        self->num = 0;
+        self->size = 0;
+        self->wrappers = NULL;
+        self->bufSize = decc$feature_get("DECC$PIPE_BUFFER_SIZE", __FEATURE_MODE_CURVAL);
+    }
+    return (PyObject *) self;
+}
+
+static PyObject *
+Selector_register(SelectorObject *self, PyObject *source)
 {
     int fd_int = _fileno_from_source(source);
     if (fd_int == -1) {
-        PyErr_SetString(PyExc_RuntimeError,
+        PyErr_SetString(PyExc_TypeError,
             "Source has invalid fileno");
         Py_RETURN_FALSE;
     }
@@ -184,7 +184,7 @@ IOHelp_register(IOHelpObject *self, PyObject *source)
 }
 
 static PyObject *
-IOHelp_unregister(IOHelpObject *self, PyObject *source)
+Selector_unregister(SelectorObject *self, PyObject *source)
 {
     int num = self->num;
     while(num--) {
@@ -202,7 +202,7 @@ IOHelp_unregister(IOHelpObject *self, PyObject *source)
 }
 
 static PyObject *
-IOHelp_query_write(IOHelpObject *self, PyObject *args)
+Selector_query_write(SelectorObject *self, PyObject *args)
 {
     PyObject *source;
     Py_buffer data;
@@ -250,7 +250,7 @@ IOHelp_query_write(IOHelpObject *self, PyObject *args)
 }
 
 static PyObject *
-IOHelp_query_read(IOHelpObject *self, PyObject *source)
+Selector_query_read(SelectorObject *self, PyObject *source)
 {
     FileWrap *wrapper = _find_wrapper(self, source);
     if (!wrapper) {
@@ -280,7 +280,7 @@ IOHelp_query_read(IOHelpObject *self, PyObject *source)
 }
 
 static PyObject *
-IOHelp_wait_io(IOHelpObject *self, PyObject *timeout)
+Selector_wait_io(SelectorObject *self, PyObject *timeout)
 {
     PyObject* result = NULL;
     if (self->num == 0) {
@@ -400,7 +400,7 @@ egress:
 }
 
 static PyObject *
-IOHelp_bytes_count(IOHelpObject *self, PyObject *source)
+Selector_bytes_count(SelectorObject *self, PyObject *source)
 {
     FileWrap *wrapper = _find_wrapper(self, source);
     if (!wrapper) {
@@ -412,7 +412,7 @@ IOHelp_bytes_count(IOHelpObject *self, PyObject *source)
 }
 
 static PyObject *
-IOHelp_is_eof(IOHelpObject *self, PyObject *source)
+Selector_is_eof(SelectorObject *self, PyObject *source)
 {
     FileWrap *wrapper = _find_wrapper(self, source);
     if (!wrapper) {
@@ -427,7 +427,7 @@ IOHelp_is_eof(IOHelpObject *self, PyObject *source)
 }
 
 static PyObject *
-IOHelp_fetch(IOHelpObject *self, PyObject *source)
+Selector_fetch(SelectorObject *self, PyObject *source)
 {
     FileWrap *wrapper = _find_wrapper(self, source);
     if (!wrapper) {
@@ -441,68 +441,83 @@ IOHelp_fetch(IOHelpObject *self, PyObject *source)
     Py_RETURN_NONE;
 }
 
-static PyMethodDef IOHelp_methods[] = {
-    {"register", (PyCFunction) IOHelp_register, METH_O,
+static PyObject *
+Selector__enter__(PyObject *self, PyObject *Py_UNUSED(ignored))
+{
+    Py_INCREF(self);
+    return self;
+}
+
+static PyObject *
+Selector__exit__(PyObject *self, PyObject *Py_UNUSED(ignored))
+{
+    Py_RETURN_NONE;
+}
+
+static PyMethodDef Selector_methods[] = {
+    {"register", (PyCFunction) Selector_register, METH_O,
      "Register file"
     },
-    {"unregister", (PyCFunction) IOHelp_unregister, METH_O,
+    {"unregister", (PyCFunction) Selector_unregister, METH_O,
      "Unregister file"
     },
-    {"query_read", (PyCFunction) IOHelp_query_read, METH_O,
+    {"query_read", (PyCFunction) Selector_query_read, METH_O,
      "Query read"
     },
-    {"query_write", (PyCFunction) IOHelp_query_write, METH_VARARGS,
+    {"query_write", (PyCFunction) Selector_query_write, METH_VARARGS,
      "Query write"
     },
-    {"wait_io", (PyCFunction) IOHelp_wait_io, METH_O,
+    {"wait_io", (PyCFunction) Selector_wait_io, METH_O,
      "Wait an IO operation"
     },
-    {"bytes_count", (PyCFunction) IOHelp_bytes_count, METH_O,
+    {"bytes_count", (PyCFunction) Selector_bytes_count, METH_O,
      "Get count of read/written bytes"
     },
-    {"is_eof", (PyCFunction) IOHelp_is_eof, METH_O,
+    {"is_eof", (PyCFunction) Selector_is_eof, METH_O,
      "Test if EOF is read"
     },
-    {"fetch", (PyCFunction) IOHelp_fetch, METH_O,
+    {"fetch", (PyCFunction) Selector_fetch, METH_O,
      "Fetch data from stream after read operation is completed"
     },
-    {NULL}  /* Sentinel */
+    {"__enter__", Selector__enter__, METH_NOARGS, NULL},
+    {"__exit__",  Selector__exit__, METH_VARARGS, NULL},
+    {NULL, NULL}    /* sentinel */
 };
 
-static PyTypeObject IOHelpType = {
+static PyTypeObject SelectorType = {
     PyVarObject_HEAD_INIT(NULL, 0)
-    .tp_name = "_iohelp.IOHelp",
-    .tp_doc = "IOHelp objects",
-    .tp_basicsize = sizeof(IOHelpObject),
+    .tp_name = "_pipeqio.selector",
+    .tp_doc = "PipeQIO selector object",
+    .tp_basicsize = sizeof(SelectorObject),
     .tp_itemsize = 0,
     .tp_flags = Py_TPFLAGS_DEFAULT, // | Py_TPFLAGS_BASETYPE,
-    .tp_new = IOHelp_new,
-    .tp_dealloc = (destructor) IOHelp_dealloc,
-    .tp_members = IOHelp_members,
-    .tp_methods = IOHelp_methods,
+    .tp_new = Selector_new,
+    .tp_dealloc = (destructor) Selector_dealloc,
+    .tp_members = Selector_members,
+    .tp_methods = Selector_methods,
 };
 
-static PyModuleDef iohelpmodule = {
+static PyModuleDef PipeQIOmodule = {
     PyModuleDef_HEAD_INIT,
-    .m_name = "_iohelp",
-    .m_doc = "IOHelp doc.",
+    .m_name = "_pipeqio",
+    .m_doc = "OpenVMS pipe $QIO module.",
     .m_size = -1,
 };
 
 PyMODINIT_FUNC
-PyInit__iohelp(void)
+PyInit__pipeqio(void)
 {
     PyObject *m;
-    if (PyType_Ready(&IOHelpType) < 0)
+    if (PyType_Ready(&SelectorType) < 0)
         return NULL;
 
-    m = PyModule_Create(&iohelpmodule);
+    m = PyModule_Create(&PipeQIOmodule);
     if (m == NULL)
         return NULL;
 
-    Py_INCREF(&IOHelpType);
-    if (PyModule_AddObject(m, "IOHelp", (PyObject *) &IOHelpType) < 0) {
-        Py_DECREF(&IOHelpType);
+    Py_INCREF(&SelectorType);
+    if (PyModule_AddObject(m, "selector", (PyObject *) &SelectorType) < 0) {
+        Py_DECREF(&SelectorType);
         Py_DECREF(m);
         return NULL;
     }

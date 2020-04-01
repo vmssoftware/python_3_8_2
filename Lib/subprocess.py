@@ -1854,19 +1854,19 @@ class Popen(object):
                 input_view = memoryview(self._input)
 
             if _openvms:
-                import _iohelper
-                with _iohelper.IOHelp() as helper:
+                import _pipeqio
+                with _pipeqio.selector() as selector:
                     if self.stdin and input:
-                        helper.register(self.stdin)
-                        helper.query_write(self.stdin, input_view)
+                        selector.register(self.stdin)
+                        selector.query_write(self.stdin, input_view)
                     if self.stdout and not self.stdout.closed:
-                        helper.register(self.stdout)
-                        helper.query_read(self.stdout)
+                        selector.register(self.stdout)
+                        selector.query_read(self.stdout)
                     if self.stderr and not self.stderr.closed:
-                        helper.register(self.stderr)
-                        helper.query_read(self.stderr)
+                        selector.register(self.stderr)
+                        selector.query_read(self.stderr)
 
-                    while helper.num > 0:
+                    while selector.num > 0:
                         timeout = self._remaining_time(endtime)
                         if timeout is not None and timeout < 0:
                             self._check_timeout(endtime, orig_timeout,
@@ -1876,21 +1876,21 @@ class Popen(object):
                                 '_check_timeout(..., skip_check_and_raise=True) '
                                 'failed to raise TimeoutExpired.')
 
-                        ready = helper.wait_io(timeout)
+                        ready = selector.wait_io(timeout)
                         self._check_timeout(endtime, orig_timeout, stdout, stderr)
 
                         for stream in ready:
                             if stream is self.stdin:
-                                self._input_offset += helper.bytes_count(stream)
+                                self._input_offset += selector.bytes_count(stream)
                                 if self._input_offset >= len(self._input):
-                                    helper.unregister(stream)
+                                    selector.unregister(stream)
                                     stream.close()
                                 else:
-                                    helper.query_write(self.stdin, input_view[self._input_offset:])
+                                    selector.query_write(self.stdin, input_view[self._input_offset:])
                             elif stream in (self.stdout, self.stderr):
-                                data = helper.fetch(stream)
-                                if not data or helper.is_eof(stream):
-                                    helper.unregister(stream)
+                                data = selector.fetch(stream)
+                                if not data or selector.is_eof(stream):
+                                    selector.unregister(stream)
                                     stream.close()
                                 self._fileobj2output[stream].append(data)
             else:
