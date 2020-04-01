@@ -435,10 +435,10 @@ Selector_fetch(SelectorObject *self, PyObject *source)
             "Unregistered source");
         Py_RETURN_NONE;
     }
-    if (wrapper->iosb.iosb$w_bcnt) {
+    if (wrapper->iosb.iosb$w_bcnt && wrapper->buf) {
         return PyBytes_FromStringAndSize(wrapper->buf, wrapper->iosb.iosb$w_bcnt);
     }
-    Py_RETURN_NONE;
+    return PyBytes_FromStringAndSize(NULL, 0);
 }
 
 static PyObject *
