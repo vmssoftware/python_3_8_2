@@ -100,8 +100,8 @@ class PipeQIOTestCase(unittest.TestCase):
         input = b'12345\nabcde\n' * 1000
         input_view = memoryview(input)
         r, w = os.pipe()
-        read_stream = io.open(r, 'rb')
-        write_stream = io.open(w, 'wb')
+        read_stream = io.open(r, 'rb', 512)
+        write_stream = io.open(w, 'wb', 512)
         # create selector
         input_offset = 0
         fileobj2output = {}
@@ -139,6 +139,82 @@ class PipeQIOTestCase(unittest.TestCase):
 
         stdout = b''.join(fileobj2output[read_stream])
         self.assertEqual(stdout, input)
+    
+    def test_vfork_exec_communicate(self):
+        import _pipeqio
+        data = b'123\nABC'
+        stdout, stderr = _pipeqio.vfork_exec_communicate(
+            [b'/DSA20/VORFOLOMEEV/child/out/RELEASE/child.exe'],    #executable (list of bytes)
+            ['/DSA20/VORFOLOMEEV/child/out/RELEASE/child.exe'],     #args (list of strings)
+            None,           #cwd
+            None,           #env (list of bytes)
+            data)           #stdin override
+        self.assertEqual(stdout, data)
+
+    # def test_pipe_subprocess(self):
+    #     import _pipeqio
+    #     import os
+
+    #     pid, p2cwrite, c2pread, errread = _pipeqio.vfork_exec(
+    #         [b'/DSA20/VORFOLOMEEV/child/out/RELEASE/child.exe'],    #executable (list of bytes)
+    #         ['/DSA20/VORFOLOMEEV/child/out/RELEASE/child.exe'],     #args (list of strings)
+    #         None,       #cwd
+    #         None,       #env (list of bytes)
+    #         True,       #stdin override
+    #         True,       #stdout override
+    #         False)       #stderr override
+
+    #     input = b'12345\nabcde\n' * 10
+    #     input_view = memoryview(input)
+
+    #     # create selector
+    #     input_offset = 0
+    #     fileobj2output = {}
+    #     if c2pread == -1:
+    #         c2pread = None
+    #     else:
+    #         fileobj2output[c2pread] = []
+    #     if errread == -1:
+    #         errread = None
+    #     else:
+    #         fileobj2output[errread] = []
+    #     with _pipeqio.selector() as selector:
+    #         if p2cwrite and input:
+    #             selector.register(p2cwrite)
+    #             selector.query_write(p2cwrite, input_view)
+    #         if c2pread:
+    #             selector.register(c2pread)
+    #             selector.query_read(c2pread)
+    #         if errread:
+    #             selector.register(errread)
+    #             selector.query_read(errread)
+
+    #         while selector.num > 0:
+    #             ready = selector.wait_io(None)
+    #             for stream in ready:
+    #                 if stream is p2cwrite:
+    #                     input_offset += selector.bytes_count(stream)
+    #                     if input_offset >= len(input):
+    #                         selector.unregister(stream)
+    #                         os.close(stream)
+    #                     else:
+    #                         selector.query_write(p2cwrite, input_view[input_offset:])
+    #                 elif stream in (c2pread, errread):
+    #                     data = selector.fetch(stream)
+    #                     fileobj2output[stream].append(data)
+    #                     if selector.is_eof(stream):
+    #                         selector.unregister(stream)
+    #                         os.close(stream)
+    #                     else:
+    #                         selector.query_read(stream)
+
+    #     if c2pread:
+    #         stdout = b''.join(fileobj2output[c2pread])
+    #         self.assertEqual(stdout, input)
+    #     if errread:
+    #         stderr = b''.join(fileobj2output[errread])
+    #         pass
+    #     pass
 
 if __name__ == "__main__":
     unittest.main()
