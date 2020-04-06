@@ -702,31 +702,54 @@ cleanup:
 }
 
 static PyObject *
-PipeQIOmodule_vfork_exec_communicate(SelectorObject *self, PyObject *args)
+PipeQIOmodule_vfork_exec_communicate(SelectorObject *self, PyObject *args, PyObject *kw)
 {
     PyObject* result = NULL;
     int pid = -1;
-    PyObject *executable_list;
-    PyObject *env_list;
-    PyObject *process_args, *converted_args = NULL, *fast_args = NULL;
-    PyObject *cwd_obj, *cwd_obj2;
-    const char *cwd;
-    char *const *exec_array, *const *argv = NULL, *const *envp = NULL;
-    Py_ssize_t arg_num;
+    PyObject *executable_list = NULL;
+    PyObject *env_list = NULL;
+    PyObject *process_args = NULL;
+    PyObject *converted_args = NULL;
+    PyObject *fast_args = NULL;
+    PyObject *cwd_obj = NULL;
+    PyObject *cwd_obj2 = NULL;
+    const char *cwd = NULL;
+    char *const *exec_array = NULL, 
+         *const *argv = NULL, 
+         *const *envp = NULL;
+    Py_ssize_t arg_num = 0;
     int saved_errno = 0;
-    int fdin[2], fdout[2], fderr[2];
-    Py_buffer data;
+    int fd[2];
+    Py_buffer data = {0};
     PyObject *timeout = NULL;
+    int p2cread = -1, 
+        p2cwrite = -1,
+        c2pread = -1,
+        c2pwrite = -1,
+        e2pread = -1,
+        e2pwrite = -1;
+    static char *keywords[] = {
+        "executable",
+        "args",
+        "cwd",
+        "env",
+        "data",
+        "timeout",
+        "p2cread",
+        "p2cwrite",
+        "c2pread",
+        "c2pwrite",
+        NULL
+    };
 
-    if (!PyArg_ParseTuple(
-            args, "OOOOs*|O:vfork_exec_communicate",
+    if (!PyArg_ParseTupleAndKeywords(
+            args, kw, "OO|OOs*Oiiii:vfork_exec_communicate", keywords,
             &executable_list, &process_args, 
-            &cwd_obj, &env_list,
-            &data, &timeout)) {
+            &cwd_obj, &env_list, &data, &timeout, &p2cread, &p2cwrite, &c2pread, &c2pwrite)) {
         Py_RETURN_NONE;
     }
     
-    if (data.ndim > 1) {
+    if (data.len && data.ndim > 1) {
         PyErr_SetString(PyExc_BufferError,
                         "Buffer must be single dimension");
         PyBuffer_Release(&data);
@@ -775,14 +798,14 @@ PipeQIOmodule_vfork_exec_communicate(SelectorObject *self, PyObject *args)
         }
     }
 
-    if (env_list != Py_None) {
+    if (env_list != NULL && env_list != Py_None) {
         envp = _PySequence_BytesToCharpArray(env_list);
         if (!envp) {
             goto cleanup;
         }
     }
 
-    if (cwd_obj != Py_None) {
+    if (cwd_obj != NULL && cwd_obj != Py_None) {
         if (PyUnicode_FSConverter(cwd_obj, &cwd_obj2) == 0) {
             goto cleanup;
         }
@@ -793,18 +816,33 @@ PipeQIOmodule_vfork_exec_communicate(SelectorObject *self, PyObject *args)
     }
 
     if (data.len) {
-        pipe(fdin);
-        fcntl(fdin[TO_WRITE], F_SETFD, FD_CLOEXEC);
-    } else {
-        fdin[TO_READ] = -1;
-        fdin[TO_WRITE] = -1;
+        if (p2cwrite == -1 || p2cread == -1) {
+            pipe(fd);
+            p2cread = fd[TO_READ];
+            p2cwrite = fd[TO_WRITE];
+        }
+        fcntl(p2cwrite, F_SETFD, FD_CLOEXEC);
+        // fcntl(p2cread, F_SETFD, FD_CLOEXEC);
+        // fcntl(p2cread, F_SETFD, 0);
     }
 
-    pipe(fdout);
-    fcntl(fdout[TO_READ], F_SETFD, FD_CLOEXEC);
+    if (c2pwrite == -1 || c2pread == -1) {
+        pipe(fd);
+        c2pread = fd[TO_READ];
+        c2pwrite = fd[TO_WRITE];
+    }
+    fcntl(c2pread, F_SETFD, FD_CLOEXEC);
+    // fcntl(c2pwrite, F_SETFD, FD_CLOEXEC);
+    // fcntl(c2pwrite, F_SETFD, 0);
 
-    pipe(fderr);
-    fcntl(fderr[TO_READ], F_SETFD, FD_CLOEXEC);
+    if (e2pwrite == -1 || e2pread == -1) {
+        pipe(fd);
+        e2pread = fd[TO_READ];
+        e2pwrite = fd[TO_WRITE];
+    }
+    fcntl(e2pread, F_SETFD, FD_CLOEXEC);
+    // fcntl(e2pwrite, F_SETFD, FD_CLOEXEC);
+    // fcntl(e2pwrite, F_SETFD, 0);
 
     pid = vfork();
 
@@ -814,7 +852,7 @@ PipeQIOmodule_vfork_exec_communicate(SelectorObject *self, PyObject *args)
             decc$set_child_default_dir(cwd);
         }
 
-        decc$set_child_standard_streams(fdin[TO_READ], fdout[TO_WRITE], fderr[TO_WRITE]);
+        decc$set_child_standard_streams(p2cread, c2pwrite, e2pwrite);
 
         for (int i = 0; exec_array[i] != NULL; ++i) {
             const char *executable = exec_array[i];
@@ -873,21 +911,21 @@ PipeQIOmodule_vfork_exec_communicate(SelectorObject *self, PyObject *args)
 
         int bufSize = decc$feature_get("DECC$PIPE_BUFFER_SIZE", __FEATURE_MODE_CURVAL);
 
-        if (fdin[TO_WRITE] != -1) {
-            if (!_init_wrapper(&wrapIn, fdin[TO_WRITE], bufSize)) {
+        if (p2cwrite != -1) {
+            if (!_init_wrapper(&wrapIn, p2cwrite, bufSize)) {
                 goto communicate_end;
             }
             wrappers[num_wrappers++] = &wrapIn;
             _query_write(&wrapIn, &data, write_pos);
         }
 
-        if (!_init_wrapper(&wrapOut, fdout[TO_READ], bufSize)) {
+        if (!_init_wrapper(&wrapOut, c2pread, bufSize)) {
             goto communicate_end;
         }
         wrappers[num_wrappers++] = &wrapOut;
         _query_read(&wrapOut);
 
-        if (!_init_wrapper(&wrapErr, fderr[TO_READ], bufSize)) {
+        if (!_init_wrapper(&wrapErr, e2pread, bufSize)) {
             goto communicate_end;
         }
         wrappers[num_wrappers++] = &wrapErr;
@@ -923,6 +961,7 @@ PipeQIOmodule_vfork_exec_communicate(SelectorObject *self, PyObject *args)
             }
         }
 
+        int timerElapsed = 0;
         while (num_wrappers) {
             status = SYS$WFLOR(wrappers[0]->efn, mask);
             if (!$VMS_STATUS_SUCCESS(status)) {
@@ -987,13 +1026,36 @@ PipeQIOmodule_vfork_exec_communicate(SelectorObject *self, PyObject *args)
                 status = SYS$READEF(timerEfn, &efnCluster);
                 if (status == SS$_WASSET) {
                     // exit loop by timer
+                    timerElapsed = 1;
                     break;
                 }
             }
         }
 
+        int cstatus;
+        if (timerElapsed) {
+            status = waitpid(pid, &cstatus, WNOHANG);
+            if (status != pid) {
+                kill(pid, SIGKILL);
+            }
+        } else {
+            // TODO: wait remained time?
+            status = waitpid(pid, &cstatus, 0);
+        }
+        
+
 communicate_end:
         
+        if (p2cread != -1) {
+            close(p2cread);
+        }
+        if (c2pwrite != -1) {
+            close(c2pwrite);
+        }
+        if (e2pwrite) {
+            close(e2pwrite);
+        }
+
         PyBuffer_Release(&data);
 
         if (timerEfn != -1) {
@@ -1083,10 +1145,12 @@ static PyTypeObject SelectorType = {
 };
 
 static struct PyMethodDef PipeQIOmodule_methods[] = {
-    {"vfork_exec", (PyCFunction) PipeQIOmodule_vfork_exec, METH_VARARGS,
+    {"vfork_exec", (PyCFunction) PipeQIOmodule_vfork_exec,
+     METH_VARARGS,
      "Do vfork() and exec()"
     },
-    {"vfork_exec_communicate", (PyCFunction) PipeQIOmodule_vfork_exec_communicate, METH_VARARGS,
+    {"vfork_exec_communicate", (PyCFunction) PipeQIOmodule_vfork_exec_communicate,
+     METH_VARARGS|METH_KEYWORDS,
      "Do vfork() and exec() and communicate"
     },
     {NULL,       NULL}          /* sentinel */

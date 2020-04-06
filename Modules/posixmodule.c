@@ -9487,6 +9487,8 @@ os_pipe_impl(PyObject *module)
 #endif
         Py_END_ALLOW_THREADS
 
+#ifndef __VMS
+        /* For VMS: do not set FD_CLOEXEC for all ends of pipe - it cause removing CR from streams */
         if (res == 0) {
             if (_Py_set_inheritable(fds[0], 0, NULL) < 0) {
                 close(fds[0]);
@@ -9499,6 +9501,7 @@ os_pipe_impl(PyObject *module)
                 return NULL;
             }
         }
+#endif
 #ifdef HAVE_PIPE2
     }
 #endif

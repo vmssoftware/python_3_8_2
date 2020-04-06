@@ -1854,21 +1854,17 @@ class Popen(object):
                 input_view = memoryview(self._input)
 
             if _openvms:
-                print('OpenVMS pipeqio')
                 import _pipeqio
                 with _pipeqio.selector() as selector:
                     if self.stdin and input:
                         selector.register(self.stdin)
                         selector.query_write(self.stdin, input_view)
-                        print('query_write self.stdin')
                     if self.stdout and not self.stdout.closed:
                         selector.register(self.stdout)
                         selector.query_read(self.stdout)
-                        print('query_read self.stdout')
                     if self.stderr and not self.stderr.closed:
                         selector.register(self.stderr)
                         selector.query_read(self.stderr)
-                        print('query_read self.stderr')
 
                     while selector.num > 0:
                         timeout = self._remaining_time(endtime)
@@ -1880,36 +1876,29 @@ class Popen(object):
                                 '_check_timeout(..., skip_check_and_raise=True) '
                                 'failed to raise TimeoutExpired.')
 
-                        print('wait_io %s' % repr(timeout))
                         ready = selector.wait_io(timeout)
-                        print('wait_io ends')
                         self._check_timeout(endtime, orig_timeout, stdout, stderr)
 
                         for stream in ready:
                             if stream is self.stdin:
-                                print('self.stdin is ready')
                                 self._input_offset += selector.bytes_count(stream)
-                                print('self._input_offset now is %s' % repr(self._input_offset))
                                 if self._input_offset >= len(self._input):
                                     selector.unregister(stream)
                                     stream.close()
-                                    print('closed self.stdin')
                                 else:
                                     selector.query_write(self.stdin, input_view[self._input_offset:])
-                                    print('query_write self.stdin')
                             elif stream in (self.stdout, self.stderr):
                                 data = selector.fetch(stream)
                                 self._fileobj2output[stream].append(data)
-                                print('received data len %s' % repr(len(data)))
-                                if selector.is_eof(stream):
-                                    selector.unregister(stream)
-                                    print('closed %s' % repr(stream.fileno()))
-                                    stream.close()
-                                else:
-                                    selector.query_read(stream)
-                                    print('query_read %s' % repr(stream.fileno()))
+                                print('received data: %s' % repr(data))
+                                print('is eof: %s' % repr(selector.is_eof(stream)))
+                                selector.query_read(stream)
+                                # if selector.is_eof(stream):
+                                #     selector.unregister(stream)
+                                #     stream.close()
+                                # else:
+                                #     selector.query_read(stream)
 
-                    print('OpenVMS pipeqio done')
             else:
                 with _PopenSelector() as selector:
                     if self.stdin and input:
