@@ -408,39 +408,50 @@ child_exec(char *const exec_array[],
 {
     int i;
 
-    /* When duping fds, if there arises a situation where one of the fds is
-       either 0, 1 or 2, it is possible that it is overwritten (#12607). */
-    if (c2pwrite == 0) {
-        POSIX_CALL(c2pwrite = dup(c2pwrite));
-        /* issue32270 */
-        if (_Py_set_inheritable_async_safe(c2pwrite, 0, NULL) < 0) {
-            goto error;
-        }
-    }
-    while (errwrite == 0 || errwrite == 1) {
-        POSIX_CALL(errwrite = dup(errwrite));
-        /* issue32270 */
-        if (_Py_set_inheritable_async_safe(errwrite, 0, NULL) < 0) {
-            goto error;
-        }
-    }
+    // /* When duping fds, if there arises a situation where one of the fds is
+    //    either 0, 1 or 2, it is possible that it is overwritten (#12607). */
+    // if (c2pwrite == 0) {
+    //     POSIX_CALL(c2pwrite = dup(c2pwrite));
+    //     /* issue32270 */
+    //     if (_Py_set_inheritable_async_safe(c2pwrite, 0, NULL) < 0) {
+    //         goto error;
+    //     }
+    // }
+    // while (errwrite == 0 || errwrite == 1) {
+    //     POSIX_CALL(errwrite = dup(errwrite));
+    //     /* issue32270 */
+    //     if (_Py_set_inheritable_async_safe(errwrite, 0, NULL) < 0) {
+    //         goto error;
+    //     }
+    // }
 
-    /* Dup fds for child.
-       dup2() removes the CLOEXEC flag but we must do it ourselves if dup2()
-       would be a no-op (issue #10806). */
-    if (p2cread == 0) {
-        if (_Py_set_inheritable_async_safe(p2cread, 1, NULL) < 0)
-            goto error;
-    }
+    // /* Dup fds for child.
+    //    dup2() removes the CLOEXEC flag but we must do it ourselves if dup2()
+    //    would be a no-op (issue #10806). */
+    // if (p2cread == 0) {
+    //     if (_Py_set_inheritable_async_safe(p2cread, 1, NULL) < 0)
+    //         goto error;
+    // }
 
-    if (c2pwrite == 1) {
-        if (_Py_set_inheritable_async_safe(c2pwrite, 1, NULL) < 0)
-            goto error;
-    }
+    // if (c2pwrite == 1) {
+    //     if (_Py_set_inheritable_async_safe(c2pwrite, 1, NULL) < 0)
+    //         goto error;
+    // }
 
-    if (errwrite == 2) {
-        if (_Py_set_inheritable_async_safe(errwrite, 1, NULL) < 0)
-            goto error;
+    // if (errwrite == 2) {
+    //     if (_Py_set_inheritable_async_safe(errwrite, 1, NULL) < 0)
+    //         goto error;
+    // }
+
+    // close parents ends on exec()
+    if (p2cwrite != -1) {
+        fcntl(p2cwrite, F_SETFD, FD_CLOEXEC);
+    }
+    if (c2pread != -1) {
+        fcntl(c2pread, F_SETFD, FD_CLOEXEC);
+    }
+    if (errread != -1) {
+        fcntl(errread, F_SETFD, FD_CLOEXEC);
     }
 
     if (cwd)

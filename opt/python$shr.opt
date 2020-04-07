@@ -1976,5 +1976,6 @@ _Py_wreadlink=PROCEDURE,-
 _Py_wrealpath=PROCEDURE,-
 _Py_write=PROCEDURE,-
 _Py_write_noraise=PROCEDURE,-
-vms__StdioReadline=PROCEDURE-
+vms__StdioReadline=PROCEDURE,-
+g_vms_select=PROCEDURE-
 )

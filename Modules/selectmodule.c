@@ -325,7 +325,12 @@ select_select_impl(PyObject *module, PyObject *rlist, PyObject *wlist,
     do {
         Py_BEGIN_ALLOW_THREADS
         errno = 0;
+#ifdef __VMS
+        int g_vms_select (int nfds, fd_set *readfds, fd_set *writefds, fd_set *exceptfds, struct timeval *timeout);
+        n = g_vms_select(max, &ifdset, &ofdset, &efdset, tvp);
+#else
         n = select(max, &ifdset, &ofdset, &efdset, tvp);
+#endif
         Py_END_ALLOW_THREADS
 
         if (errno != EINTR)

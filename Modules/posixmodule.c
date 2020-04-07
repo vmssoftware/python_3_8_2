@@ -9445,9 +9445,6 @@ os_pipe_impl(PyObject *module)
 #else
     int res;
 #endif
-#ifdef __VMS
-    int one = 1;
-#endif
 
 #ifdef MS_WINDOWS
     attr.nLength = sizeof(attr);
@@ -9482,14 +9479,13 @@ os_pipe_impl(PyObject *module)
     {
 #endif
         Py_BEGIN_ALLOW_THREADS
-#ifdef __VMS
+#if defined(__VMS) && defined(__VMS_USE_SOCKETPAIR_AS_PIPE)
 	/* >>> BRC 26-Jul-2018 */
 	res = socketpair(AF_UNIX, SOCK_STREAM, 0, fds);
 #else
         res = pipe(fds);
 #endif
         Py_END_ALLOW_THREADS
-
         if (res == 0) {
             if (_Py_set_inheritable(fds[0], 0, NULL) < 0) {
                 close(fds[0]);
@@ -9511,6 +9507,26 @@ os_pipe_impl(PyObject *module)
 #endif /* !MS_WINDOWS */
     return Py_BuildValue("(ii)", fds[0], fds[1]);
 }
+
+#ifdef __VMS
+
+static PyObject *
+os_pipe_inherited(PyObject *module)
+{
+    int fds[2];
+    int res;
+
+    Py_BEGIN_ALLOW_THREADS
+    res = pipe(fds);
+    Py_END_ALLOW_THREADS
+
+    if (res != 0)
+        return PyErr_SetFromErrno(PyExc_OSError);
+    return Py_BuildValue("(ii)", fds[0], fds[1]);
+}
+
+#endif /* __VMS */
+
 #endif  /* HAVE_PIPE */
 
 
@@ -13888,6 +13904,9 @@ static PyMethodDef posix_methods[] = {
     OS_FSTAT_METHODDEF
     OS_ISATTY_METHODDEF
     OS_PIPE_METHODDEF
+#if defined(__VMS)
+    {"pipe_inherited", (PyCFunction)os_pipe_inherited, METH_NOARGS, os_pipe__doc__},
+#endif
     OS_PIPE2_METHODDEF
     OS_MKFIFO_METHODDEF
     OS_MKNOD_METHODDEF

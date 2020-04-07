@@ -627,6 +627,7 @@ MODOBJS = -
 
 LIBRARY_OBJS_OMIT_FROZEN = -
 [.$(OBJ_DIR).Modules]getbuildinfo.obj -
+[.$(OBJ_DIR).vms]vms_poll_select_hack.obj -
 $(PARSER_OBJS) -
 $(OBJECT_OBJS) -
 $(PYTHON_OBJS) -
@@ -755,6 +756,7 @@ DTRACE_DEPS = -
 [.$(OBJ_DIR).Python]traceback.obj : [.Python]traceback.c $(PYTHON_HEADERS)
 [.$(OBJ_DIR).vms]vms_crtl_init.obj : [.vms]vms_crtl_init.c
 [.$(OBJ_DIR).vms]stdioreadline.obj : [.vms]stdioreadline.c
+[.$(OBJ_DIR).vms]vms_poll_select_hack.obj : [.vms]vms_poll_select_hack.c
 
 [.$(OBJ_DIR).Objects]interpreteridobject.obj : [.Objects]interpreteridobject.c $(PYTHON_HEADERS) [.vms]format_macros.h
   @ pipe create/dir $(DIR $(MMS$TARGET)) | copy SYS$INPUT nl:
