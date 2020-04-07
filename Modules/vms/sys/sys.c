@@ -181,7 +181,7 @@ unsigned int _getmsg(unsigned int msgid, char **msg, unsigned int flags,
 
     if (OKAY(status)) {
         val[len] = '\0';
-        *msg = strdup(val)
+        *msg = strdup(val);
         assert(*msg);
     } else {
         *msg = strdup(nil);
