@@ -32,6 +32,7 @@
 #define VPATH ""
 #endif
 
+#define _POSIX_EXIT 1
 
 // #ifndef HGVERSION
 // #define HGVERSION ""
