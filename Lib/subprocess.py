@@ -1473,7 +1473,10 @@ class Popen(object):
             if stdin is None:
                 pass
             elif stdin == PIPE:
-                p2cread, p2cwrite = os.pipe_inherited()
+                if _openvms:
+                    p2cread, p2cwrite = os.pipe_inherited()
+                else:
+                    p2cread, p2cwrite = os.pipe()
             elif stdin == DEVNULL:
                 p2cread = self._get_devnull()
             elif isinstance(stdin, int):
@@ -1485,7 +1488,10 @@ class Popen(object):
             if stdout is None:
                 pass
             elif stdout == PIPE:
-                c2pread, c2pwrite = os.pipe_inherited()
+                if _openvms:
+                    c2pread, c2pwrite = os.pipe_inherited()
+                else:
+                    c2pread, c2pwrite = os.pipe()
             elif stdout == DEVNULL:
                 c2pwrite = self._get_devnull()
             elif isinstance(stdout, int):
@@ -1497,7 +1503,10 @@ class Popen(object):
             if stderr is None:
                 pass
             elif stderr == PIPE:
-                errread, errwrite = os.pipe_inherited()
+                if _openvms:
+                    errread, errwrite = os.pipe_inherited()
+                else:
+                    errread, errwrite = os.pipe()
             elif stderr == STDOUT:
                 if c2pwrite != -1:
                     errwrite = c2pwrite
