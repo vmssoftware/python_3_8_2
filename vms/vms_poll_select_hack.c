@@ -833,7 +833,7 @@ const char * select_ignores_invalid_fd = "DECC$SELECT_IGNORES_INVALID_FD";
         /* printf (" in g_vms_select\n"); */
 
         /* Find all of the terminals and pipe fds  for polling */
-        for (i = 0, pi = 0, ti = 0, xi = 0; i <= nfds; i++) {
+        for (i = 0, pi = 0, ti = 0, xi = 0, si = 0; i <= nfds; i++) {
             /* printf ("fds : %d\n", i); */
             /* Copy file descriptor arrays into a poll structure */
             poll_array[i].fd = i;

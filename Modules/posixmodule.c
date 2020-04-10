@@ -25,6 +25,7 @@
 #define PY_SSIZE_T_CLEAN
 
 #ifdef __VMS
+#define __VMS_USE_SOCKETPAIR_AS_PIPE
 #include <tcp.h>
 #include <unistd.h>
 #endif
@@ -9517,7 +9518,11 @@ os_pipe_inherited(PyObject *module)
     int res;
 
     Py_BEGIN_ALLOW_THREADS
+#ifdef __VMS_USE_SOCKETPAIR_AS_PIPE
+    res = socketpair(AF_UNIX, SOCK_STREAM, 0, fds);
+#else
     res = pipe(fds);
+#endif
     Py_END_ALLOW_THREADS
 
     if (res != 0)
