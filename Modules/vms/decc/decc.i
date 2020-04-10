@@ -5,8 +5,19 @@
 %}
 
 %include "typemaps.i"
-%typemap(argout) char **
-%{  lua_pushstring(L,(const char *)*$1); free(*$1); SWIG_arg++;%}
+%include <cstring.i>
+%cstring_output_allocate(char **OUTPUT, free(*$1));
+
+%typemap(out) char *
+{
+   if (result) {
+      resultobj = PyUnicode_DecodeUTF8(result, strlen(result), "surrogateescape");
+      free(result);
+   } else {
+      resultobj = Py_None;
+      Py_INCREF(resultobj);
+   }
+}
 
 %constant int _SC_ARG_MAX = 100;
 %constant int _SC_CHILD_MAX = 101;
