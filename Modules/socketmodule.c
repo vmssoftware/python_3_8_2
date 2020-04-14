@@ -100,6 +100,9 @@ Local naming conventions:
 #endif
 
 #define PY_SSIZE_T_CLEAN
+#include "Python.h"
+#include "structmember.h"
+
 #ifdef __VMS
 #include <tcp.h>
 #include <socket.h>
@@ -108,8 +111,6 @@ Local naming conventions:
 #define socklen_t unsigned
 #endif
 #endif
-#include "Python.h"
-#include "structmember.h"
 
 #ifdef _Py_MEMORY_SANITIZER
 # include <sanitizer/msan_interface.h>
@@ -3380,7 +3381,11 @@ sock_listen(PySocketSockObject *s, PyObject *args)
 {
     /* We try to choose a default backlog high enough to avoid connection drops
      * for common workloads, yet not too high to limit resource usage. */
+#ifdef  SOMAXCONN
     int backlog = Py_MIN(SOMAXCONN, 128);
+#else
+    int backlog = 128;
+#endif
     int res;
 
     if (!PyArg_ParseTuple(args, "|i:listen", &backlog))

@@ -1019,6 +1019,9 @@
 
 /* Define if sockaddr has sa_len member */
 #undef HAVE_SOCKADDR_SA_LEN
+#undef _SOCKADDR_LEN
+#define HAVE_SOCKADDR_SA_LEN
+#define _SOCKADDR_LEN
 
 /* struct sockaddr_storage (sys/socket.h) */
 #define HAVE_SOCKADDR_STORAGE 1
