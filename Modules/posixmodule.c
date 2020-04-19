@@ -24,6 +24,7 @@
 
 #define PY_SSIZE_T_CLEAN
 
+// include VMS before Python.h to allow VMS specific function prototypes
 #ifdef __VMS
 #define __VMS_USE_SOCKETPAIR_AS_PIPE
 #include <tcp.h>
@@ -31,6 +32,7 @@
 #endif
 
 #include "Python.h"
+
 #ifdef MS_WINDOWS
    /* include <windows.h> early to avoid conflict with pycore_condvar.h:
 
@@ -4638,9 +4640,6 @@ os_uname_impl(PyObject *module)
     struct utsname u;
     int res;
     PyObject *value;
-#ifdef __VMS
-    char *t;
-#endif
 
     Py_BEGIN_ALLOW_THREADS
     res = uname(&u);
@@ -4653,7 +4652,7 @@ os_uname_impl(PyObject *module)
         return NULL;
     
 #ifdef __VMS
-    t = u.machine;
+    char *t = u.machine;
     while (*t) {
        if (! isalnum(*t) && (*t != '_')) *t = '_';
        t++;
@@ -8570,7 +8569,6 @@ os_open_impl(PyObject *module, path_t *path, int flags, int mode, int dir_fd)
     return fd;
 }
 
-
 /*[clinic input]
 os.close
 
@@ -9481,8 +9479,8 @@ os_pipe_impl(PyObject *module)
 #endif
         Py_BEGIN_ALLOW_THREADS
 #if defined(__VMS) && defined(__VMS_USE_SOCKETPAIR_AS_PIPE)
-	/* >>> BRC 26-Jul-2018 */
-	res = socketpair(AF_UNIX, SOCK_STREAM, 0, fds);
+        /* >>> BRC 26-Jul-2018 */
+        res = socketpair(AF_UNIX, SOCK_STREAM, 0, fds);
 #else
         res = pipe(fds);
 #endif
@@ -9508,29 +9506,6 @@ os_pipe_impl(PyObject *module)
 #endif /* !MS_WINDOWS */
     return Py_BuildValue("(ii)", fds[0], fds[1]);
 }
-
-#ifdef __VMS
-
-static PyObject *
-os_pipe_inherited(PyObject *module)
-{
-    int fds[2];
-    int res;
-
-    Py_BEGIN_ALLOW_THREADS
-#ifdef __VMS_USE_SOCKETPAIR_AS_PIPE
-    res = socketpair(AF_UNIX, SOCK_STREAM, 0, fds);
-#else
-    res = pipe(fds);
-#endif
-    Py_END_ALLOW_THREADS
-
-    if (res != 0)
-        return PyErr_SetFromErrno(PyExc_OSError);
-    return Py_BuildValue("(ii)", fds[0], fds[1]);
-}
-
-#endif /* __VMS */
 
 #endif  /* HAVE_PIPE */
 
@@ -13909,9 +13884,6 @@ static PyMethodDef posix_methods[] = {
     OS_FSTAT_METHODDEF
     OS_ISATTY_METHODDEF
     OS_PIPE_METHODDEF
-#if defined(__VMS)
-    {"pipe_inherited", (PyCFunction)os_pipe_inherited, METH_NOARGS, os_pipe__doc__},
-#endif
     OS_PIPE2_METHODDEF
     OS_MKFIFO_METHODDEF
     OS_MKNOD_METHODDEF

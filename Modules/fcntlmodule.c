@@ -3,10 +3,6 @@
 
 #define PY_SSIZE_T_CLEAN
 
-#ifdef __VMS
-#include <tcp.h>
-#endif
-
 #include "Python.h"
 
 #ifdef HAVE_SYS_FILE_H

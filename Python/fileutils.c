@@ -1190,6 +1190,22 @@ set_inheritable(int fd, int inheritable, int raise, int *atomic_flag_works)
     }
 #endif
 
+#ifdef __VMS
+    if (inheritable) {
+        // the only way to set inheritable safely
+        int _dup_ = dup(fd);
+        fd = dup2(_dup_, fd);
+        close(_dup_);
+    }
+    else {
+        res = fcntl(fd, F_SETFD, FD_CLOEXEC);
+        if (res < 0) {
+            if (raise)
+                PyErr_SetFromErrno(PyExc_OSError);
+            return -1;
+        }
+    }
+#else
     /* slow-path: fcntl() requires two syscalls */
     flags = fcntl(fd, F_GETFD);
     if (flags < 0) {
@@ -1216,6 +1232,7 @@ set_inheritable(int fd, int inheritable, int raise, int *atomic_flag_works)
             PyErr_SetFromErrno(PyExc_OSError);
         return -1;
     }
+#endif
     return 0;
 #endif
 }

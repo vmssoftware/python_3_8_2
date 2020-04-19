@@ -62,7 +62,7 @@
 #if defined(_MSC_VER)
   #define ALWAYS_INLINE __forceinline
 #elif defined(__VMS)
-#define ALWAYS_INLINE inline
+  #define ALWAYS_INLINE inline
 #elif defined(LEGACY_COMPILER)
   #define ALWAYS_INLINE
   #undef inline

@@ -1160,7 +1160,7 @@ rlhandler(char *text)
 }
 
 /* HP OpenVMS systems documentation: The select() function cannot be used on normal files. */
-#ifndef __VMS
+// #ifndef __VMS
 static char *
 readline_until_enter_or_signal(const char *prompt, int *signal)
 {
@@ -1197,8 +1197,15 @@ readline_until_enter_or_signal(const char *prompt, int *signal)
 #endif
             FD_SET(fileno(rl_instream), &selectset);
             /* select resets selectset if no input was available */
+#define __VMS_USE_SELECT_HACK
+#if defined(__VMS) && defined(__VMS_USE_SELECT_HACK)
+            int g_vms_select (int nfds, fd_set *readfds, fd_set *writefds, fd_set *exceptfds, struct timeval *timeout);
+            has_input = g_vms_select(fileno(rl_instream) + 1, &selectset,
+                               NULL, NULL, timeoutp);
+#else
             has_input = select(fileno(rl_instream) + 1, &selectset,
                                NULL, NULL, timeoutp);
+#endif
             err = errno;
             if(PyOS_InputHook) PyOS_InputHook();
         }
@@ -1226,43 +1233,43 @@ readline_until_enter_or_signal(const char *prompt, int *signal)
 
     return completed_input_string;
 }
-#else
-/* Interrupt handler */
+// #else
+// /* Interrupt handler */
 
-static jmp_buf jbuf;
+// static jmp_buf jbuf;
 
-/* ARGSUSED */
-static void
-onintr(int sig)
-{
-    longjmp(jbuf, 1);
-}
+// /* ARGSUSED */
+// static void
+// onintr(int sig)
+// {
+//     longjmp(jbuf, 1);
+// }
 
-static char *
-readline_until_enter_or_signal(const char *prompt, int *signal)
-{
-    PyOS_sighandler_t old_inthandler;
-    char *p;
+// static char *
+// readline_until_enter_or_signal(const char *prompt, int *signal)
+// {
+//     PyOS_sighandler_t old_inthandler;
+//     char *p;
 
-    *signal = 0;
+//     *signal = 0;
 
-    old_inthandler = PyOS_setsig(SIGINT, onintr);
-    if (setjmp(jbuf)) {
-#ifdef HAVE_SIGRELSE
-        /* This seems necessary on SunOS 4.1 (Rasmus Hahn) */
-        sigrelse(SIGINT);
-#endif
-        PyOS_setsig(SIGINT, old_inthandler);
-        *signal = 1;
-        return NULL;
-    }
-    rl_event_hook = PyOS_InputHook;
-    p = readline(prompt);
-    PyOS_setsig(SIGINT, old_inthandler);
+//     old_inthandler = PyOS_setsig(SIGINT, onintr);
+//     if (setjmp(jbuf)) {
+// #ifdef HAVE_SIGRELSE
+//         /* This seems necessary on SunOS 4.1 (Rasmus Hahn) */
+//         sigrelse(SIGINT);
+// #endif
+//         PyOS_setsig(SIGINT, old_inthandler);
+//         *signal = 1;
+//         return NULL;
+//     }
+//     rl_event_hook = PyOS_InputHook;
+//     p = readline(prompt);
+//     PyOS_setsig(SIGINT, old_inthandler);
 
-    return p;
-}
-#endif
+//     return p;
+// }
+// #endif
 
 
 static char *
