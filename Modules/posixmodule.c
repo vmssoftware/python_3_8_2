@@ -26,7 +26,7 @@
 
 // include VMS before Python.h to allow VMS specific function prototypes
 #ifdef __VMS
-#define __VMS_USE_SOCKETPAIR_AS_PIPE
+// #define __VMS_USE_SOCKETPAIR_AS_PIPE
 #include <tcp.h>
 #include <unistd.h>
 #endif
@@ -9421,6 +9421,22 @@ os_isatty_impl(PyObject *module, int fd)
     return return_value;
 }
 
+#ifdef __VMS
+static PyObject *
+os_pipe_socket(PyObject *module, PyObject *Py_UNUSED(ignored))
+{
+    int fds[2];
+    int res;
+
+    res = socketpair(AF_UNIX, SOCK_STREAM, 0, fds);
+    
+    if (res != 0)
+        return PyErr_SetFromErrno(PyExc_OSError);
+
+    return Py_BuildValue("(ii)", fds[0], fds[1]);
+}
+#endif
+
 
 #ifdef HAVE_PIPE
 /*[clinic input]
@@ -13884,6 +13900,9 @@ static PyMethodDef posix_methods[] = {
     OS_FSTAT_METHODDEF
     OS_ISATTY_METHODDEF
     OS_PIPE_METHODDEF
+#ifdef __VMS
+    {"pipe_socket", (PyCFunction)os_pipe_socket, METH_NOARGS, os_pipe__doc__},
+#endif
     OS_PIPE2_METHODDEF
     OS_MKFIFO_METHODDEF
     OS_MKNOD_METHODDEF

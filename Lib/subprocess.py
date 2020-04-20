@@ -1473,7 +1473,10 @@ class Popen(object):
             if stdin is None:
                 pass
             elif stdin == PIPE:
-                p2cread, p2cwrite = os.pipe()
+                if _openvms:
+                    p2cread, p2cwrite = os.pipe_socket()
+                else:
+                    p2cread, p2cwrite = os.pipe()
             elif stdin == DEVNULL:
                 p2cread = self._get_devnull()
             elif isinstance(stdin, int):
@@ -1947,3 +1950,16 @@ class Popen(object):
             """Kill the process with SIGKILL
             """
             self.send_signal(signal.SIGKILL)
+
+if __name__ == "__main__":
+        code = 'import _testcapi; print(_testcapi.pymem_getallocatorsname())'
+        env = dict(os.environ)
+        env.pop('PYTHONDEVMODE', None)
+        env.pop('PYTHONMALLOC', None)
+        args = (sys.executable, '-c', code)
+        proc = run(args,
+            stdout=PIPE,
+            stderr=STDOUT,
+            universal_newlines=True,
+            env=env)
+        print(repr(proc))

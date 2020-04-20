@@ -450,7 +450,7 @@ child_exec_vfork(char *const exec_array[],
         decc$set_child_default_dir(cwd);
     
     if (close_fds) {
-        /* TODO not close but set them non-inheritable */
+        /* TODO do not close but do set them non-inheritable */
         // _close_open_fds(3, py_fds_to_keep);
     }
 
