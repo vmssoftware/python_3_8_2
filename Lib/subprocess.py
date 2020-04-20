@@ -1950,16 +1950,3 @@ class Popen(object):
             """Kill the process with SIGKILL
             """
             self.send_signal(signal.SIGKILL)
-
-if __name__ == "__main__":
-        code = 'import _testcapi; print(_testcapi.pymem_getallocatorsname())'
-        env = dict(os.environ)
-        env.pop('PYTHONDEVMODE', None)
-        env.pop('PYTHONMALLOC', None)
-        args = (sys.executable, '-c', code)
-        proc = run(args,
-            stdout=PIPE,
-            stderr=STDOUT,
-            universal_newlines=True,
-            env=env)
-        print(repr(proc))

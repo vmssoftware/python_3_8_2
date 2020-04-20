@@ -446,8 +446,8 @@ child_exec_vfork(char *const exec_array[],
     //     POSIX_CALL(setsid());
 #endif
 
-    if (cwd)
-        decc$set_child_default_dir(cwd);
+    // we should always set CWD, even if it is NULL - to restore default value
+    decc$set_child_default_dir(cwd);
     
     if (close_fds) {
         /* TODO do not close but do set them non-inheritable */
