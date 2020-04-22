@@ -54,6 +54,8 @@ import contextlib
 from time import monotonic as _time
 
 _openvms = (sys.platform == "OpenVMS")
+if _openvms:
+    import tempfile
 
 __all__ = ["Popen", "PIPE", "STDOUT", "call", "check_call", "getstatusoutput",
            "getoutput", "check_output", "run", "CalledProcessError", "DEVNULL",
@@ -760,12 +762,12 @@ class Popen(object):
             if preexec_fn is not None:
                 raise ValueError("preexec_fn is not supported on Windows "
                                  "platforms")
-        elif _openvms:
-            if preexec_fn is not None:
-                raise ValueError("preexec_fn is not supported on OpenVMS "
-                                 "platforms")
         else:
             # POSIX
+            if _openvms:
+                if preexec_fn is not None:
+                    raise ValueError("preexec_fn is not supported on OpenVMS "
+                                    "platforms")
             if pass_fds and not close_fds:
                 warnings.warn("pass_fds overriding close_fds.", RuntimeWarning)
                 close_fds = True
@@ -784,6 +786,7 @@ class Popen(object):
         self.returncode = None
         self.encoding = encoding
         self.errors = errors
+        self._openvms_cmd = None
 
         # Validate the combinations of text and universal_newlines
         if (text is not None and universal_newlines is not None
@@ -921,6 +924,12 @@ class Popen(object):
             if self.stdin:
                 self.stdin.close()
         finally:
+            if self._openvms_cmd:
+                # delete temporary command file
+                try:
+                    os.unlink(self._openvms_cmd.name)
+                except:
+                    pass
             if exc_type == KeyboardInterrupt:
                 # https://bugs.python.org/issue25942
                 # In the case of a KeyboardInterrupt we assume the SIGINT
@@ -1578,12 +1587,24 @@ class Popen(object):
                 args = list(args)
 
             if shell:
-                # On Android the default shell is at '/system/bin/sh'.
-                unix_shell = ('/system/bin/sh' if
-                          hasattr(sys, 'getandroidapilevel') else '/bin/sh')
-                args = [unix_shell, "-c"] + args
-                if executable:
-                    args[0] = executable
+                if _openvms:
+                    # set executable = temporary command file
+                    self._openvms_cmd = tempfile.NamedTemporaryFile(delete=False, suffix='.com')
+                    # write argumets to it
+                    self._openvms_cmd.write(b'$ ')
+                    self._openvms_cmd.write(args[0].encode('ASCII'))
+                    for i in range(1, len(args)):
+                        self._openvms_cmd.write(("\"" + args[i].replace("\"", "\"\"") + "\"").encode('ASCII'))
+                    self._openvms_cmd.close()
+                    executable = self._openvms_cmd.name
+                    args = list()
+                else:
+                    # On Android the default shell is at '/system/bin/sh'.
+                    unix_shell = ('/system/bin/sh' if hasattr(sys, 'getandroidapilevel') 
+                        else '/bin/sh')
+                    args = [unix_shell, "-c"] + args
+                    if executable:
+                        args[0] = executable
 
             if executable is None:
                 executable = args[0]
@@ -1636,7 +1657,7 @@ class Popen(object):
                     else:
                         env_list = None  # Use execv instead of execve.
                     executable = os.fsencode(executable)
-                    if os.path.dirname(executable):
+                    if os.path.dirname(executable) or (_openvms and shell):
                         executable_list = (executable,)
                     else:
                         # This matches the behavior of os._execvpe().
