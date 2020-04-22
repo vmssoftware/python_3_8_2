@@ -40,10 +40,21 @@ static int _Py_HashSecret_Initialized = 0;
 //	Author:	James Sainsbury
 //		toves@sdf.lonestar.org
 //
+#include <timers.h>
+
 static
 int getentropy (char entropy[], size_t entropy_size)
 {
-	unsigned short	seed[3];
+	static unsigned short   seed[3] = {0};
+    static unsigned short   seed_init = 0;
+
+    if (!seed_init) {
+        struct timespec tv;
+        getclock(TIMEOFDAY, &tv);
+        memcpy(&seed, ((unsigned char*)&tv) + (sizeof(tv) - sizeof(seed)), sizeof(seed));
+        seed_init = 1;
+    }
+
 	int	i	= 0;
 	int	step	= sizeof(RAND_MAX); // Xrand48 return 32 bit "longs"
 	long	r	= jrand48(seed);

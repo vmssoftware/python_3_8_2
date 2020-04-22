@@ -368,7 +368,7 @@ class CmdLineTest(unittest.TestCase):
     # Issue #7111: Python should work without standard streams
 
     @unittest.skipIf(os.name != 'posix', "test needs POSIX semantics")
-    @unittest.skipIf(sys.platform == "vxworks",
+    @unittest.skipIf(sys.platform in ("vxworks", "OpenVMS"),
                          "test needs preexec support in subprocess.Popen")
     def _test_no_stdio(self, streams):
         code = """if 1:
