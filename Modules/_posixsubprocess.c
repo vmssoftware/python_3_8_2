@@ -416,11 +416,12 @@ child_exec_vfork(char *const exec_array[],
            PyObject *preexec_fn,
            PyObject *preexec_fn_args_tuple)
 {
-    int i;
     int pid = -1;
+    int exec_error = 0;
 
-    if (make_inheritable(py_fds_to_keep, errpipe_write) < 0)
-        goto error;
+    if (make_inheritable(py_fds_to_keep, errpipe_write) < 0) {
+        goto egress;
+    }
 
     if (p2cwrite != -1)
         fcntl(p2cwrite, F_SETFD, FD_CLOEXEC);
@@ -433,15 +434,17 @@ child_exec_vfork(char *const exec_array[],
     if (errpipe_write != -1)
         fcntl(errpipe_write, F_SETFD, FD_CLOEXEC);
 
-    // safe make them inherited
+    // make them inherited safely
     safe_make_inherit(p2cread);
     safe_make_inherit(c2pwrite);
     safe_make_inherit(errwrite);
 
+    // Do not restore signals - we are in the parent process so far
     // if (restore_signals)
     //     _Py_RestoreSignals();
 
 #ifdef HAVE_SETSID
+    // Do not create a new session - we are in the parent process so far
     // if (call_setsid)
     //     POSIX_CALL(setsid());
 #endif
@@ -458,7 +461,7 @@ child_exec_vfork(char *const exec_array[],
 
     pid = vfork();
     if (pid == 0) {
-        for (i = 0; exec_array[i] != NULL; ++i) {
+        for (int i = 0; exec_array[i] != NULL; ++i) {
             const char *executable = exec_array[i];
             if (envp) {
                 execve(executable, argv, envp);
@@ -469,11 +472,24 @@ child_exec_vfork(char *const exec_array[],
                 break;
             }
         }
-        pid = -1;
+        exec_error = errno;
+        if (!exec_error) {
+            exec_error = -1;
+        }
+        exit(EXIT_FAILURE);
     }
 
-error:
+egress:
     // No report, we are at parent process
+
+    // Test if exec() is failed
+    if (exec_error) {
+        if (pid > 0) {
+            waitpid(pid, NULL, 0);
+        }
+        pid = -1;
+        errno = exec_error;
+    }
 
     return pid;
 }
