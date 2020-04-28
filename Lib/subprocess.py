@@ -924,12 +924,6 @@ class Popen(object):
             if self.stdin:
                 self.stdin.close()
         finally:
-            if self._openvms_cmd:
-                # delete temporary command file
-                try:
-                    os.unlink(self._openvms_cmd.name)
-                except:
-                    pass
             if exc_type == KeyboardInterrupt:
                 # https://bugs.python.org/issue25942
                 # In the case of a KeyboardInterrupt we assume the SIGINT
@@ -1026,6 +1020,8 @@ class Popen(object):
                 self._stdin_write(input)
             elif self.stdout:
                 stdout = self.stdout.read()
+                # if not self._openvms_cmd or not stdout:
+                #     stdout = self.stdout.read()
                 self.stdout.close()
             elif self.stderr:
                 stderr = self.stderr.read()
@@ -1600,7 +1596,7 @@ class Popen(object):
                     args = list()
                 else:
                     # On Android the default shell is at '/system/bin/sh'.
-                    unix_shell = ('/system/bin/sh' if hasattr(sys, 'getandroidapilevel') 
+                    unix_shell = ('/system/bin/sh' if hasattr(sys, 'getandroidapilevel')
                         else '/bin/sh')
                     args = [unix_shell, "-c"] + args
                     if executable:
@@ -1657,7 +1653,7 @@ class Popen(object):
                     else:
                         env_list = None  # Use execv instead of execve.
                     executable = os.fsencode(executable)
-                    if os.path.dirname(executable) or (_openvms and shell):
+                    if os.path.dirname(executable) or self._openvms_cmd:
                         executable_list = (executable,)
                     else:
                         # This matches the behavior of os._execvpe().
@@ -1839,6 +1835,13 @@ class Popen(object):
                         # http://bugs.python.org/issue14396.
                         if pid == self.pid:
                             self._handle_exitstatus(sts)
+            if self._openvms_cmd:
+                # delete temporary command file
+                try:
+                    os.unlink(self._openvms_cmd.name)
+                    self._openvms_cmd.name = None
+                except:
+                    pass
             return self.returncode
 
 
@@ -1917,6 +1920,8 @@ class Popen(object):
                         elif key.fileobj in (self.stdout, self.stderr):
                             data = os.read(key.fd, 32768)
                             if not data:
+                                # # give the second chance in case of openvms com implementation
+                                # if not self._openvms_cmd or len(self._fileobj2output[key.fileobj]): # or key.fileobj != self.stdout
                                 selector.unregister(key.fileobj)
                                 key.fileobj.close()
                             self._fileobj2output[key.fileobj].append(data)

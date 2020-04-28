@@ -11,6 +11,7 @@
 #include <efndef.h>
 #include <string.h>
 #include <iodef.h>
+#include <iosbdef.h>
 #include <unixlib.h>
 #include <unixio.h>
 #include <unistd.h>
@@ -48,16 +49,16 @@ unsigned long SYS$QIOW
 
 int SYS$READEF(unsigned long efn, unsigned long * state);
 
-int SYS$GETDVIW 
-        (unsigned int efn, 
-        unsigned short int chan, 
-        void *devnam, 
-        void *itmlst, 
-        void *iosb, 
-        void (*astadr)(void *), 
-        int astprm, 
+int SYS$GETDVIW
+        (unsigned int efn,
+        unsigned short int chan,
+        void *devnam,
+        void *itmlst,
+        void *iosb,
+        void (*astadr)(void *),
+        int astprm,
         void *nullarg,
-        ...); 
+        ...);
 
 static int g_vms_channel_lookup(int fd, unsigned short *channel)
 {
@@ -226,6 +227,21 @@ struct mbx_gmif_iosb_st {
                     /* There is data to read */
                     pipe_array[i].fd_desc_ptr->revents =
                         pipe_array[i].fd_desc_ptr->events & POLL_IN;
+                    // struct _iosb iosb;
+                    // char * buf = malloc(1024);
+                    // int in_status = SYS$QIOW(
+                    //     EFN$C_ENF,
+                    //     pipe_array[i].channel,
+                    //     IO$_READVBLK | IO$M_STREAM,
+                    //     &iosb,
+                    //     NULL,
+                    //     NULL,
+                    //     buf, 1024,
+                    //     0, 0, 0, 0);
+                    // int fd_check = pipe_array[i].fd_desc_ptr->fd;
+                    // int read_count = iosb.iosb$w_bcnt;
+                    // int read_state = iosb.iosb$w_status;
+                    // free(buf);
                 }
                 else {
                     /* Pipe is empty, ok to write */
@@ -411,7 +427,7 @@ struct vms_pollfd_st *xefn_array;
                     sfd_array[si] = fd_array[i];
                     sock_array[si].fd_desc_ptr = &fd_array[i];
                     si++;
-                } 
+                }
                 else {
 /**** WAP 24 Nov 2015 *********/
             /* see if it is a mailbox and then treat as a pipe or X11 event if not mailbox */
@@ -420,7 +436,7 @@ struct vms_pollfd_st *xefn_array;
                 /* Only care about something with read/write events */
                     mbx_char = 0;
                     if (fd_array[i].events & (POLL_IN | POLL_OUT)) {
-                      pipe_array[pi].fd_desc_ptr = &fd_array[i]; 
+                      pipe_array[pi].fd_desc_ptr = &fd_array[i];
                       status = g_vms_channel_lookup(i, &pipe_array[pi].channel);
                       if (status == 0){
                         item_list.buf_len = 4;
@@ -577,7 +593,7 @@ struct vms_pollfd_st *xefn_array;
  Python API to the VMS select routine.
 
  Python gives us the max number of fds in a given array of fds, this is
- different than the max_fd which is used by select which is the 
+ different than the max_fd which is used by select which is the
  highest value of the fd's.
 
  The arrays are just integer arrays of with the file numbers.
@@ -585,7 +601,7 @@ struct vms_pollfd_st *xefn_array;
  "tout" is the pointer to the time sent by Python, which we need to
  put into a timeval structure for the call to g_vms_select.
 
- On return we test the file number values which are returned and we 
+ On return we test the file number values which are returned and we
  update the arrays so we identity the channel to then do the IO on
  for the Python code.
 
@@ -621,7 +637,7 @@ struct timeval tv ,*tvp;
         timeout = PyFloat_AS_DOUBLE(tout);
         if (timeout == -1)
             return 0;
-        if (timeout > (double)LONG_MAX) 
+        if (timeout > (double)LONG_MAX)
             return 0;
 
         seconds = (long)timeout;
@@ -668,8 +684,8 @@ struct timeval tv ,*tvp;
                 }
         }
 
-        /* printf ("max_fd: %d, readfds: %x, writefsd: %x, exceptfds: %x, tvp: %x\n", 
-                        max_fd, readfds, writefds, exceptfds,  tvp); 
+        /* printf ("max_fd: %d, readfds: %x, writefsd: %x, exceptfds: %x, tvp: %x\n",
+                        max_fd, readfds, writefds, exceptfds,  tvp);
         */
         ret_stat =  g_vms_select (max_fd, readfds, writefds,
                         exceptfds,  tvp);
@@ -708,7 +724,7 @@ struct timeval tv ,*tvp;
 
 int py_g_vms_buffer_data (int fd)
 {
-int ret_stat; 
+int ret_stat;
 unsigned short channel;
 int status;
 #pragma member_alignment save
@@ -775,7 +791,7 @@ int old_siif_value;
 int new_siif_value;
 int i;
 
-struct {                
+struct {
     short   int             buf_len;
     short   int             item;
     char                    *buf_addr;
@@ -912,7 +928,7 @@ const char * select_ignores_invalid_fd = "DECC$SELECT_IGNORES_INVALID_FD";
                             item_list.ret_len = (void *)&mbx_len;
                             item_list.end = 0;
 
-                        SYS$GETDVIW(	0, 
+                        SYS$GETDVIW(	0,
                                         pipe_array[pi].channel,
                                         0,
                                         &item_list,
