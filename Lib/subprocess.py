@@ -54,8 +54,6 @@ import contextlib
 from time import monotonic as _time
 
 _openvms = (sys.platform == "OpenVMS")
-if _openvms:
-    import tempfile
 
 __all__ = ["Popen", "PIPE", "STDOUT", "call", "check_call", "getstatusoutput",
            "getoutput", "check_output", "run", "CalledProcessError", "DEVNULL",
@@ -786,7 +784,6 @@ class Popen(object):
         self.returncode = None
         self.encoding = encoding
         self.errors = errors
-        self._openvms_cmd = None
 
         # Validate the combinations of text and universal_newlines
         if (text is not None and universal_newlines is not None
@@ -1019,12 +1016,40 @@ class Popen(object):
             if self.stdin:
                 self._stdin_write(input)
             elif self.stdout:
-                stdout = self.stdout.read()
-                # if not self._openvms_cmd or not stdout:
-                #     stdout = self.stdout.read()
+                if _openvms:
+                    stdout = []
+                    while True:
+                        data, pid = os.read_pipe(self.stdout.fileno())
+                        if self.pid != pid:
+                            continue
+                        if not data:
+                            break
+                        stdout.append(data)
+                    stdout = b''.join(stdout)
+                    if self.text_mode:
+                        stdout = self._translate_newlines(stdout,
+                                    self.stdout.encoding,
+                                    self.stdout.errors)
+                else:
+                    stdout = self.stdout.read()
                 self.stdout.close()
             elif self.stderr:
-                stderr = self.stderr.read()
+                if _openvms:
+                    stderr = []
+                    while True:
+                        data, pid = os.read_pipe(self.stderr.fileno())
+                        if self.pid != pid:
+                            continue
+                        if not data:
+                            break
+                        stderr.append(data)
+                    stderr = b''.join(stderr)
+                    if self.text_mode:
+                        stderr = self._translate_newlines(stderr,
+                                    self.stderr.encoding,
+                                    self.stderr.errors)
+                else:
+                    stderr = self.stderr.read()
                 self.stderr.close()
             self.wait()
         else:
@@ -1584,23 +1609,18 @@ class Popen(object):
 
             if shell:
                 if _openvms:
-                    # set executable = temporary command file
-                    self._openvms_cmd = tempfile.NamedTemporaryFile(delete=False, suffix='.com')
-                    # write argumets to it
-                    self._openvms_cmd.write(b'$ ')
-                    self._openvms_cmd.write(args[0].encode('ASCII'))
-                    for i in range(1, len(args)):
-                        self._openvms_cmd.write(("\"" + args[i].replace("\"", "\"\"") + "\"").encode('ASCII'))
-                    self._openvms_cmd.close()
-                    executable = self._openvms_cmd.name
-                    args = list()
+                    # DCL is a keyword :)
+                    args = ["DCL"] + args
+                    if self.stderr:
+                        self.stderr.close()
+                        self.stderr = None
                 else:
                     # On Android the default shell is at '/system/bin/sh'.
                     unix_shell = ('/system/bin/sh' if hasattr(sys, 'getandroidapilevel')
                         else '/bin/sh')
                     args = [unix_shell, "-c"] + args
-                    if executable:
-                        args[0] = executable
+                if executable:
+                    args[0] = executable
 
             if executable is None:
                 executable = args[0]
@@ -1653,7 +1673,7 @@ class Popen(object):
                     else:
                         env_list = None  # Use execv instead of execve.
                     executable = os.fsencode(executable)
-                    if os.path.dirname(executable) or self._openvms_cmd:
+                    if os.path.dirname(executable) or (_openvms and shell):
                         executable_list = (executable,)
                     else:
                         # This matches the behavior of os._execvpe().
@@ -1835,13 +1855,6 @@ class Popen(object):
                         # http://bugs.python.org/issue14396.
                         if pid == self.pid:
                             self._handle_exitstatus(sts)
-            if self._openvms_cmd:
-                # delete temporary command file
-                try:
-                    os.unlink(self._openvms_cmd.name)
-                    self._openvms_cmd.name = None
-                except:
-                    pass
             return self.returncode
 
 
@@ -1918,10 +1931,13 @@ class Popen(object):
                                     selector.unregister(key.fileobj)
                                     key.fileobj.close()
                         elif key.fileobj in (self.stdout, self.stderr):
-                            data = os.read(key.fd, 32768)
+                            if _openvms:
+                                data, pid = os.read_pipe(key.fd)
+                                if self.pid != pid:
+                                    continue
+                            else:
+                                data = os.read(key.fd, 32768)
                             if not data:
-                                # # give the second chance in case of openvms com implementation
-                                # if not self._openvms_cmd or len(self._fileobj2output[key.fileobj]): # or key.fileobj != self.stdout
                                 selector.unregister(key.fileobj)
                                 key.fileobj.close()
                             self._fileobj2output[key.fileobj].append(data)

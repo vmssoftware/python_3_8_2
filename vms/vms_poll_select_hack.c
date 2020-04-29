@@ -71,12 +71,11 @@ unsigned short chan;
 
     status = -1;
 
-     /* get the name */
+    /* get the name */
     /*--------------*/
     retname = getname(fd, devicename, 1);
     if (retname != NULL) {
-        /* printf ("fd: %d dev: %s\n", fd, retname); */
-         /* Assign the channel */
+        /* Assign the channel */
         /*--------------------*/
         dev_desc.dsc$a_pointer = devicename;
         dev_desc.dsc$w_length = strlen(devicename);
@@ -102,19 +101,54 @@ unsigned short chan;
 
     status = -1;
 
-     /* get the name */
+    /* get the name */
     /*--------------*/
     retname = getname(fd, devicename, 1);
     if (retname != NULL) {
-        /* printf ("fd: %d dev: %s\n", fd, retname); */
-            strcpy(channel, devicename);
-            status = 0;
+        strcpy(channel, devicename);
+        status = 0;
     }
     else
         status = 1;
     return status;
 }
 
+unsigned long
+read_pipe_bytes(int fd, char *buf, int size, int* pid_ptr) {
+    unsigned short channel;
+    int nbytes = 0;
+    if (g_vms_channel_lookup(fd, &channel) == 0) {
+        struct {
+            unsigned short sts;
+            unsigned short bytes_read;
+            unsigned long  pid;
+        } mbx_iosb_read;
+        int status = SYS$QIOW(
+            EFN$C_ENF,
+            channel,
+            IO$_READVBLK,
+            &mbx_iosb_read,
+            NULL, NULL,
+            buf, size,
+            0, 0, 0, 0);
+        if ($VMS_STATUS_SUCCESS(status)) {
+            if (mbx_iosb_read.sts == SS$_ENDOFFILE) {
+                nbytes = 0;
+            } else {
+                nbytes = mbx_iosb_read.bytes_read;
+                if (nbytes == 0) {
+                    nbytes = 1;
+                    buf[0] = '\n';
+                }
+            }
+        }
+        SYS$DASSGN(channel);
+        if (pid_ptr) {
+            *pid_ptr = mbx_iosb_read.pid;
+        }
+    }
+    return nbytes;
+}
 
 struct vms_pollfd_st {
     struct pollfd *fd_desc_ptr;
@@ -227,21 +261,6 @@ struct mbx_gmif_iosb_st {
                     /* There is data to read */
                     pipe_array[i].fd_desc_ptr->revents =
                         pipe_array[i].fd_desc_ptr->events & POLL_IN;
-                    // struct _iosb iosb;
-                    // char * buf = malloc(1024);
-                    // int in_status = SYS$QIOW(
-                    //     EFN$C_ENF,
-                    //     pipe_array[i].channel,
-                    //     IO$_READVBLK | IO$M_STREAM,
-                    //     &iosb,
-                    //     NULL,
-                    //     NULL,
-                    //     buf, 1024,
-                    //     0, 0, 0, 0);
-                    // int fd_check = pipe_array[i].fd_desc_ptr->fd;
-                    // int read_count = iosb.iosb$w_bcnt;
-                    // int read_state = iosb.iosb$w_status;
-                    // free(buf);
                 }
                 else {
                     /* Pipe is empty, ok to write */

@@ -140,3 +140,4 @@ python$build_obj:[Python]sysmodule.obj
 python$build_obj:[Python]thread.obj
 python$build_obj:[Python]traceback.obj
 python$build_obj:[vms]stdioreadline.obj
+python$build_obj:[vms]vms_poll_select_hack.obj

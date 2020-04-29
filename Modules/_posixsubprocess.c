@@ -391,6 +391,63 @@ _close_open_fds_maybe_unsafe(long start_fd, PyObject* py_fds_to_keep)
 #include <unixlib.h>
 #include <errno.h>
 #include <unixio.h>
+#include <efndef.h>
+#include <clidef.h>
+#include <stsdef.h>
+#include <descrip.h>
+#include <lib$routines.h>
+
+static int
+exec_dcl(char *const argv[], int p2cread, int c2pwrite) {
+    int status = -1;
+    int pid = -1;
+    unsigned char efn = EFN$C_ENF;
+    int flags = CLI$M_NOWAIT;
+    struct dsc$descriptor_s execute = {0, DSC$K_DTYPE_T, DSC$K_CLASS_S, 0};
+    struct dsc$descriptor_s input = {0, DSC$K_DTYPE_T, DSC$K_CLASS_S, 0};
+    struct dsc$descriptor_s output = {0, DSC$K_DTYPE_T, DSC$K_CLASS_S, 0};
+    char input_name[PATH_MAX + 1] = "";
+    char output_name[PATH_MAX + 1] = "";
+    struct dsc$descriptor_s *input_ptr = NULL;
+    struct dsc$descriptor_s *output_ptr = NULL;
+    char execute_str[1024];
+
+    if (p2cread != -1) {
+        if (getname(p2cread, input_name, 1)) {
+            input.dsc$w_length = strlen(input_name);
+            input.dsc$a_pointer = (char *)input_name;
+            input_ptr = &input;
+        }
+    }
+
+    if (c2pwrite != -1) {
+        if (getname(c2pwrite, output_name, 1)) {
+            output.dsc$w_length = strlen(output_name);
+            output.dsc$a_pointer = (char *)output_name;
+            output_ptr = &output;
+        }
+    }
+
+    execute_str[0] = 0;
+    int i = 1;  // skip DCL
+    while (argv[i]) {
+        if (i > 1) {
+            strcat(execute_str, " ");
+        }
+        strcat(execute_str, argv[i]);
+        i++;
+    }
+
+    execute.dsc$w_length = strlen(execute_str);
+    execute.dsc$a_pointer = (char *)execute_str;
+
+    status = lib$spawn(&execute, input_ptr, output_ptr, &flags, NULL, &pid, NULL, &efn);
+    if (!$VMS_STATUS_SUCCESS(status)) {
+        pid = -1;
+    }
+
+    return (pid);
+}
 
 static void
 safe_make_inherit(int fd) {
@@ -451,32 +508,35 @@ child_exec_vfork(char *const exec_array[],
 
     // we should always set CWD, even if it is NULL - to restore default value
     decc$set_child_default_dir(cwd);
-    
+
     if (close_fds) {
         /* TODO do not close but do set them non-inheritable */
         // _close_open_fds(3, py_fds_to_keep);
     }
 
-    decc$set_child_standard_streams(p2cread, c2pwrite, errwrite);
-
-    pid = vfork();
-    if (pid == 0) {
-        for (int i = 0; exec_array[i] != NULL; ++i) {
-            const char *executable = exec_array[i];
-            if (envp) {
-                execve(executable, argv, envp);
-            } else {
-                execv(executable, argv);
+    if (argv && *argv && strcmp(*argv, "DCL") == 0) {
+        pid = exec_dcl(argv, p2cread, c2pwrite);
+    } else {
+        decc$set_child_standard_streams(p2cread, c2pwrite, errwrite);
+        pid = vfork();
+        if (pid == 0) {
+            for (int i = 0; exec_array[i] != NULL; ++i) {
+                const char *executable = exec_array[i];
+                if (envp) {
+                    execve(executable, argv, envp);
+                } else {
+                    execv(executable, argv);
+                }
+                if (errno != ENOENT && errno != ENOTDIR) {
+                    break;
+                }
             }
-            if (errno != ENOENT && errno != ENOTDIR) {
-                break;
+            exec_error = errno;
+            if (!exec_error) {
+                exec_error = -1;
             }
+            exit(EXIT_FAILURE);
         }
-        exec_error = errno;
-        if (!exec_error) {
-            exec_error = -1;
-        }
-        exit(EXIT_FAILURE);
     }
 
 egress:

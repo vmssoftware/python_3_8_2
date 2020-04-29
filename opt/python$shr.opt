@@ -1977,5 +1977,6 @@ _Py_wrealpath=PROCEDURE,-
 _Py_write=PROCEDURE,-
 _Py_write_noraise=PROCEDURE,-
 vms__StdioReadline=PROCEDURE,-
-g_vms_select=PROCEDURE-
+g_vms_select=PROCEDURE,-
+read_pipe_bytes=PROCEDURE-
 )

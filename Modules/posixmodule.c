@@ -1461,7 +1461,7 @@ convertenviron(void)
         "PYTHONCASEOK",
         NULL
         };
-    const char**ppName = prefillNames;  
+    const char**ppName = prefillNames;
     for (; *ppName != NULL; ppName++) {
         PyObject *k;
         PyObject *v;
@@ -4650,7 +4650,7 @@ os_uname_impl(PyObject *module)
     value = PyStructSequence_New(UnameResultType);
     if (value == NULL)
         return NULL;
-    
+
 #ifdef __VMS
     char *t = u.machine;
     while (*t) {
@@ -8887,6 +8887,66 @@ os_read_impl(PyObject *module, int fd, Py_ssize_t length)
     return buffer;
 }
 
+#ifdef __VMS
+unsigned long read_pipe_bytes(int fd, char *buf, int size, int* pid_ptr);
+int decc$feature_get(const char*, int);
+
+static PyObject *
+os_read_pipe_impl(PyObject *module, int fd)
+{
+    Py_ssize_t n;
+    PyObject *buffer;
+    Py_ssize_t length;
+
+    length = decc$feature_get("DECC$PIPE_BUFFER_SIZE", 1);
+
+    buffer = PyBytes_FromStringAndSize((char *)NULL, length);
+    if (buffer == NULL)
+        return NULL;
+
+    int pid = -1;
+    n = read_pipe_bytes(fd, PyBytes_AS_STRING(buffer), length, &pid);
+    if (n == -1) {
+        Py_DECREF(buffer);
+        return NULL;
+    }
+
+    if (n != length)
+        _PyBytes_Resize(&buffer, n);
+
+    return Py_BuildValue("(Ni)", buffer, pid);
+
+}
+
+#define OS_READ_PIPE_METHODDEF    \
+    {"read_pipe", (PyCFunction)(void(*)(void))os_read_pipe, METH_FASTCALL, os_read__doc__},
+
+static PyObject *
+os_read_pipe(PyObject *module, PyObject *const *args, Py_ssize_t nargs)
+{
+    PyObject *return_value = NULL;
+    int fd;
+    Py_ssize_t length;
+
+    if (!_PyArg_CheckPositional("read_pipe", nargs, 1, 1)) {
+        goto exit;
+    }
+    if (PyFloat_Check(args[0])) {
+        PyErr_SetString(PyExc_TypeError,
+                        "integer argument expected, got float" );
+        goto exit;
+    }
+    fd = _PyLong_AsInt(args[0]);
+    if (fd == -1 && PyErr_Occurred()) {
+        goto exit;
+    }
+    return_value = os_read_pipe_impl(module, fd);
+
+exit:
+    return return_value;
+}
+#endif
+
 #if (defined(HAVE_SENDFILE) && (defined(__FreeBSD__) || defined(__DragonFly__) \
                                 || defined(__APPLE__))) \
     || defined(HAVE_READV) || defined(HAVE_PREADV) || defined (HAVE_PREADV2) \
@@ -9429,7 +9489,7 @@ os_pipe_socket(PyObject *module, PyObject *Py_UNUSED(ignored))
     int res;
 
     res = socketpair(AF_UNIX, SOCK_STREAM, 0, fds);
-    
+
     if (res != 0)
         return PyErr_SetFromErrno(PyExc_OSError);
 
@@ -13886,6 +13946,9 @@ static PyMethodDef posix_methods[] = {
     OS_LOCKF_METHODDEF
     OS_LSEEK_METHODDEF
     OS_READ_METHODDEF
+#ifdef __VMS
+    OS_READ_PIPE_METHODDEF
+#endif
     OS_READV_METHODDEF
     OS_PREAD_METHODDEF
     OS_PREADV_METHODDEF
