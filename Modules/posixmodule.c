@@ -26,7 +26,6 @@
 
 // include VMS before Python.h to allow VMS specific function prototypes
 #ifdef __VMS
-// #define __VMS_USE_SOCKETPAIR_AS_PIPE
 #include <tcp.h>
 #include <unistd.h>
 #endif
@@ -9481,6 +9480,16 @@ os_isatty_impl(PyObject *module, int fd)
     return return_value;
 }
 
+PyDoc_STRVAR(os_pipe_socket__doc__,
+"pipe_socket($module, /)\n"
+"--\n"
+"\n"
+"Create a pipe using socketpair().\n"
+"No reset inheritance.\n"
+"\n"
+"Returns a tuple of two file descriptors:\n"
+"  (read_fd, write_fd)");
+
 #ifdef __VMS
 static PyObject *
 os_pipe_socket(PyObject *module, PyObject *Py_UNUSED(ignored))
@@ -9488,10 +9497,60 @@ os_pipe_socket(PyObject *module, PyObject *Py_UNUSED(ignored))
     int fds[2];
     int res;
 
+    Py_BEGIN_ALLOW_THREADS
     res = socketpair(AF_UNIX, SOCK_STREAM, 0, fds);
+    Py_END_ALLOW_THREADS
 
     if (res != 0)
         return PyErr_SetFromErrno(PyExc_OSError);
+
+    // if (_Py_set_inheritable(fds[0], 0, NULL) < 0) {
+    //     close(fds[0]);
+    //     close(fds[1]);
+    //     return NULL;
+    // }
+    // if (_Py_set_inheritable(fds[1], 0, NULL) < 0) {
+    //     close(fds[0]);
+    //     close(fds[1]);
+    //     return NULL;
+    // }
+
+    return Py_BuildValue("(ii)", fds[0], fds[1]);
+}
+
+PyDoc_STRVAR(os_pipe_mbx__doc__,
+"pipe_mbx($module, /)\n"
+"--\n"
+"\n"
+"Create a pipe using pipe() via OpenVMS mailbox.\n"
+"No reset inheritance.\n"
+"\n"
+"Returns a tuple of two file descriptors:\n"
+"  (read_fd, write_fd)");
+
+static PyObject *
+os_pipe_mbx(PyObject *module, PyObject *Py_UNUSED(ignored))
+{
+    int fds[2];
+    int res;
+
+    Py_BEGIN_ALLOW_THREADS
+    res = pipe(fds);
+    Py_END_ALLOW_THREADS
+
+    if (res != 0)
+        return PyErr_SetFromErrno(PyExc_OSError);
+
+    // if (_Py_set_inheritable(fds[0], 0, NULL) < 0) {
+    //     close(fds[0]);
+    //     close(fds[1]);
+    //     return NULL;
+    // }
+    // if (_Py_set_inheritable(fds[1], 0, NULL) < 0) {
+    //     close(fds[0]);
+    //     close(fds[1]);
+    //     return NULL;
+    // }
 
     return Py_BuildValue("(ii)", fds[0], fds[1]);
 }
@@ -9554,6 +9613,7 @@ os_pipe_impl(PyObject *module)
     {
 #endif
         Py_BEGIN_ALLOW_THREADS
+#define __VMS_USE_SOCKETPAIR_AS_PIPE
 #if defined(__VMS) && defined(__VMS_USE_SOCKETPAIR_AS_PIPE)
         /* >>> BRC 26-Jul-2018 */
         res = socketpair(AF_UNIX, SOCK_STREAM, 0, fds);
@@ -13964,7 +14024,8 @@ static PyMethodDef posix_methods[] = {
     OS_ISATTY_METHODDEF
     OS_PIPE_METHODDEF
 #ifdef __VMS
-    {"pipe_socket", (PyCFunction)os_pipe_socket, METH_NOARGS, os_pipe__doc__},
+    {"pipe_socket", (PyCFunction)os_pipe_socket, METH_NOARGS, os_pipe_socket__doc__},
+    {"pipe_mbx", (PyCFunction)os_pipe_mbx, METH_NOARGS, os_pipe_mbx__doc__},
 #endif
     OS_PIPE2_METHODDEF
     OS_MKFIFO_METHODDEF
