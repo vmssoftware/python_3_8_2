@@ -430,7 +430,8 @@ PYTHON_HEADERS = -
 [.Include]warnings.h -
 [.Include]weakrefobject.h -
 pyconfig.h -
-[.vms]py_vms.h -
+py_vms.h -
+format_macros.h -
 $(PARSER_HEADERS) -
 [.Include]Python-ast.h -
 [.Include.cpython]abstract.h -
