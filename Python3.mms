@@ -87,7 +87,7 @@ PY_CORE_BUILTIN_CFLAGS_IO = $(PY_CFLAGS_Q)/DEFINE=("Py_BUILD_CORE_BUILTIN",$(PY_
 PY_OSF_CFLAGS = $(PY_CFLAGS_Q)/DEFINE=(_OSF_SOURCE,$(PY_CFLAGS_DEF))/INCLUDE_DIRECTORY=($(PY_CFLAGS_INC))
 
 .FIRST
-    ! defines for nested includes, like: 
+    ! defines for nested includes, like:
     ! #include "clinic/transmogrify.h.h"
     define clinic [.Objects.clinic],[.Python.clinic],[.Modules.clinic],[.Modules._io.clinic],[.Modules.cjkcodecs.clinic],[.Objects.stringlib.clinic],[.Modules._blake2.clinic],[.Modules._sha3.clinic]
     define stringlib [.Objects.stringlib]
@@ -294,6 +294,12 @@ CLEAN :
 
 pyconfig.h : [.vms]pyconfig.h
     copy [.vms]pyconfig.h []
+
+py_vms.h : [.vms]py_vms.h
+    copy [.vms]py_vms.h []
+
+format_macros.h : [.vms]format_macros.h
+    copy [.vms]format_macros.h []
 
 IO_HEADERS = -
 [.Modules._io]_iomodule.h
@@ -921,7 +927,7 @@ DTRACE_DEPS = -
 ! python3.exe
 [.$(OUT_DIR)]python3.exe : [.$(OBJ_DIR).Programs]python.obj,[.$(OBJ_DIR).vms]vms_crtl_init.obj,[.$(OUT_DIR)]python$shr.exe
    @ pipe create/dir $(DIR $(MMS$TARGET)) | copy SYS$INPUT nl:
-    $(LINK)$(LINKFLAGS)/EXECUTABLE=python$build_out:[000000]$(NOTDIR $(MMS$TARGET_NAME)).EXE [.$(OBJ_DIR).vms]vms_crtl_init.obj,[.$(OBJ_DIR).Programs]python.obj,[.opt]$(NOTDIR $(MMS$TARGET_NAME)).opt/OPT
+    $(LINK)$(LINKFLAGS)/THREADS/EXECUTABLE=python$build_out:[000000]$(NOTDIR $(MMS$TARGET_NAME)).EXE [.$(OBJ_DIR).vms]vms_crtl_init.obj,[.$(OBJ_DIR).Programs]python.obj,[.opt]$(NOTDIR $(MMS$TARGET_NAME)).opt/OPT
     ! [.$(OUT_DIR)]python3.exe is built => python$build_out:[000000]$(NOTDIR $(MMS$TARGET_NAME)).EXE
 
 ! _testembed.exe
@@ -936,7 +942,7 @@ DTRACE_DEPS = -
 ! _freeze_importlib
 [.$(OUT_DIR).Programs]_freeze_importlib.exe : [.$(OBJ_DIR).Programs]_freeze_importlib.obj $(LIBRARY_OBJS_OMIT_FROZEN)
   @ pipe create/dir $(DIR $(MMS$TARGET)) | copy SYS$INPUT nl:
-    $(LINK)/NODEBUG/NOMAP/EXEC=python$build_out:[Programs]$(NOTDIR $(MMS$TARGET_NAME)).EXE [.opt]$(NOTDIR $(MMS$TARGET_NAME)).opt/OPT
+    $(LINK)/NODEBUG/NOMAP/EXECUTABLE=python$build_out:[Programs]$(NOTDIR $(MMS$TARGET_NAME)).EXE [.opt]$(NOTDIR $(MMS$TARGET_NAME)).opt/OPT
 
 [.Python]importlib_external.h : [.Lib.importlib]_bootstrap_external.py [.$(OUT_DIR).Programs]_freeze_importlib.exe
     mcr [.$(OUT_DIR).Programs]_freeze_importlib.exe importlib._bootstrap_external Lib/importlib/_bootstrap_external.py Python/importlib_external.h
@@ -1151,7 +1157,7 @@ DTRACE_DEPS = -
 
 ! _sqlite3
 SQL_OBJ_LIST = -
-[.$(OBJ_DIR).Modules._sqlite]cache.obm - 
+[.$(OBJ_DIR).Modules._sqlite]cache.obm -
 [.$(OBJ_DIR).Modules._sqlite]connection.obm -
 [.$(OBJ_DIR).Modules._sqlite]cursor.obm -
 [.$(OBJ_DIR).Modules._sqlite]microprotocols.obm -
@@ -1228,8 +1234,8 @@ SQL_OBJ_LIST = -
 
 ! pyexpat
 EXPAT_OBJ_LIST = -
-[.$(OBJ_DIR).Modules.expat]xmlparse.obm - 
-[.$(OBJ_DIR).Modules.expat]xmlrole.obm - 
+[.$(OBJ_DIR).Modules.expat]xmlparse.obm -
+[.$(OBJ_DIR).Modules.expat]xmlrole.obm -
 [.$(OBJ_DIR).Modules.expat]xmltok.obm
 
 EXPAT_HEADERS = -
@@ -1321,9 +1327,9 @@ EXPAT_HEADERS = -
 
 ! _ctypes
 CTYPES_OBJ_LIST = -
-[.$(OBJ_DIR).Modules._ctypes]callbacks.obm - 
-[.$(OBJ_DIR).Modules._ctypes]callproc.obm - 
-[.$(OBJ_DIR).Modules._ctypes]stgdict.obm - 
+[.$(OBJ_DIR).Modules._ctypes]callbacks.obm -
+[.$(OBJ_DIR).Modules._ctypes]callproc.obm -
+[.$(OBJ_DIR).Modules._ctypes]stgdict.obm -
 [.$(OBJ_DIR).Modules._ctypes]cfield.obm
 
 CTYPES_HEADERS = -
@@ -1393,7 +1399,7 @@ DECIMAL_HEADERS = -
 [.$(OBJ_DIR).Modules._decimal.libmpdec]transpose.obd : [.Modules._decimal.libmpdec]transpose.c $(DECIMAL_HEADERS) $(PYTHON_HEADERS)
 [.$(OUT_DIR).$(DYNLOAD_DIR)]_decimal.exe : [.$(OBJ_DIR).Modules._decimal]_decimal.obd,$(DECIMAL_OBJ_LIST)
 
-! _ssl 
+! _ssl
 [.$(OBJ_DIR).Modules]_ssl.obm : [.Modules]_ssl.c [.Modules]socketmodule.h $(PYTHON_HEADERS)
 [.$(OUT_DIR).$(DYNLOAD_DIR)]_ssl.exe : [.$(OBJ_DIR).Modules]_ssl.obm
 

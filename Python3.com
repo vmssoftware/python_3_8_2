@@ -13,6 +13,8 @@ $ backup WRK_DISK:[vorfolomeev.Python3.out.'CONFIG']python3.exe python$root:[bin
 $
 $ backup WRK_DISK:[vorfolomeev.Python3.include]*.h python$root:[include]
 $ backup WRK_DISK:[vorfolomeev.Python3]pyconfig.h python$root:[include]
+$ backup WRK_DISK:[vorfolomeev.Python3]py_vms.h python$root:[include]
+$ backup WRK_DISK:[vorfolomeev.Python3]format_macros.h python$root:[include]
 $
 $ backup WRK_DISK:[vorfolomeev.Python3.lib...]*.* python$root:[lib.python3^.8...]
 $ ! pipe delete/tree python$root:[lib...]*.exe;* | copy SYS$INPUT nl:

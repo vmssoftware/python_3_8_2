@@ -1,4 +1,4 @@
--- � Copyright 2020 VMS Software Inc.
+-- (C) Copyright 2020 VMS Software Inc.
 --
 product VSI I64VMS PYTHON V3.8-2a FULL ;
 
@@ -268,6 +268,10 @@ product VSI I64VMS PYTHON V3.8-2a FULL ;
    file "[python.include]unicodeobject.h" source "[python.include]unicodeobject.h";
    file "[python.include]warnings.h" source "[python.include]warnings.h";
    file "[python.include]weakrefobject.h" source "[python.include]weakrefobject.h";
+
+   file "[python.include]py_vms.h" source "[python.include]py_vms.h";
+   file "[python.include]format_macros.h" source "[python.include]format_macros.h";
+
    file "[python.lib]python$shr.EXE" source "[python.lib]python$shr.EXE";
    file "[python.lib.python3^.8]abc.py" source "[python.lib.python3^.8]abc.py";
    file "[python.lib.python3^.8]aifc.py" source "[python.lib.python3^.8]aifc.py";
