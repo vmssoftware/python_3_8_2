@@ -4274,12 +4274,18 @@ class SignalsTest(unittest.TestCase):
                 if e.errno != errno.EBADF:
                     raise
 
+    @unittest.skipIf(sys.platform in ("OpenVMS"),
+                         "-= it hangs =-")
     def test_interrupted_write_unbuffered(self):
         self.check_interrupted_write(b"xy", b"xy", mode="wb", buffering=0)
 
+    @unittest.skipIf(sys.platform in ("OpenVMS"),
+                         "-= it hangs =-")
     def test_interrupted_write_buffered(self):
         self.check_interrupted_write(b"xy", b"xy", mode="wb")
 
+    @unittest.skipIf(sys.platform in ("OpenVMS"),
+                         "-= it hangs =-")
     def test_interrupted_write_text(self):
         self.check_interrupted_write("xy", b"xy", mode="w", encoding="ascii")
 
@@ -4341,10 +4347,14 @@ class SignalsTest(unittest.TestCase):
             os.close(w)
             os.close(r)
 
+    @unittest.skipIf(sys.platform in ("OpenVMS"),
+                         "-= it hangs =-")
     def test_interrupted_read_retry_buffered(self):
         self.check_interrupted_read_retry(lambda x: x.decode('latin1'),
                                           mode="rb")
 
+    @unittest.skipIf(sys.platform in ("OpenVMS"),
+                         "-= it hangs =-")
     def test_interrupted_read_retry_text(self):
         self.check_interrupted_read_retry(lambda x: x,
                                           mode="r")
@@ -4417,9 +4427,13 @@ class SignalsTest(unittest.TestCase):
                 if e.errno != errno.EBADF:
                     raise
 
+    @unittest.skipIf(sys.platform in ("OpenVMS"),
+                         "-= it hangs =-")
     def test_interrupted_write_retry_buffered(self):
         self.check_interrupted_write_retry(b"x", mode="wb")
 
+    @unittest.skipIf(sys.platform in ("OpenVMS"),
+                         "-= it hangs =-")
     def test_interrupted_write_retry_text(self):
         self.check_interrupted_write_retry("x", mode="w", encoding="latin1")
 

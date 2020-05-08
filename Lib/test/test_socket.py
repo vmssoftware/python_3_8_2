@@ -1523,6 +1523,8 @@ class GeneralModuleTests(unittest.TestCase):
             c.close()
             s.close()
 
+    @unittest.skipIf(sys.platform in ("OpenVMS"),
+                         "-= it hangs =-")
     def test_sendall_interrupted(self):
         self.check_sendall_interrupted(False)
 

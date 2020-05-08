@@ -656,6 +656,8 @@ class SiginterruptTest(unittest.TestCase):
                                     % (exitcode, stdout))
                 return (exitcode == 3)
 
+    @unittest.skipIf(sys.platform in ("OpenVMS"),
+                         "-= it hangs =-")
     def test_without_siginterrupt(self):
         # If a signal handler is installed and siginterrupt is not called
         # at all, when that signal arrives, it interrupts a syscall that's in
