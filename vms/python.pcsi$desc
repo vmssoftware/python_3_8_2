@@ -270,7 +270,7 @@ product VSI I64VMS PYTHON A3.8-2may13 FULL ;
    file "[python.include]weakrefobject.h" source "[python.include]weakrefobject.h";
 
    file "[python.include]py_vms.h" source "[python.include]py_vms.h";
-   file "[python.include]format_macros.h" source "[python.include]format_macros.h";
+-- file "[python.include]format_macros.h" source "[python.include]format_macros.h";
 
    file "[python.lib]python$shr.EXE" source "[python.lib]python$shr.EXE";
    file "[python.lib.python3^.8]abc.py" source "[python.lib.python3^.8]abc.py";
