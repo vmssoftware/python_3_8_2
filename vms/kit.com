@@ -6,7 +6,7 @@ $
 $ product package python -
         /source=python.pcsi$desc -
         /destination=[] -
-        /material=(wrk_disk:[vorfolomeev.python3.out.],[]) -
+        /material=([]) -
         /format=sequential -
         /opt=noconf -
         /log -
