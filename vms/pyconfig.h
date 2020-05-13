@@ -1,5 +1,4 @@
 #include "py_vms.h"
-#include "format_macros.h"
 
 /* pyconfig.h Created from Python 3.5 for VMS source */
 
@@ -877,7 +876,7 @@
 #undef HAVE_RL_RESIZE_TERMINAL
 
 /* Define to 1 if you have the `round' function. */
-#undef HAVE_ROUND
+#define HAVE_ROUND
 
 /* Define to 1 if you have the `rtpSpawn' function. */
 #undef HAVE_RTPSPAWN

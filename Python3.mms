@@ -298,9 +298,6 @@ pyconfig.h : [.vms]pyconfig.h
 py_vms.h : [.vms]py_vms.h
     copy [.vms]py_vms.h []
 
-format_macros.h : [.vms]format_macros.h
-    copy [.vms]format_macros.h []
-
 IO_HEADERS = -
 [.Modules._io]_iomodule.h
 
@@ -431,7 +428,6 @@ PYTHON_HEADERS = -
 [.Include]weakrefobject.h -
 pyconfig.h -
 py_vms.h -
-format_macros.h -
 $(PARSER_HEADERS) -
 [.Include]Python-ast.h -
 [.Include.cpython]abstract.h -
@@ -765,13 +761,13 @@ DTRACE_DEPS = -
 [.$(OBJ_DIR).vms]stdioreadline.obj : [.vms]stdioreadline.c
 [.$(OBJ_DIR).vms]vms_poll_select_hack.obj : [.vms]vms_poll_select_hack.c
 
-[.$(OBJ_DIR).Objects]interpreteridobject.obj : [.Objects]interpreteridobject.c $(PYTHON_HEADERS) [.vms]format_macros.h
+[.$(OBJ_DIR).Objects]interpreteridobject.obj : [.Objects]interpreteridobject.c $(PYTHON_HEADERS)
   @ pipe create/dir $(DIR $(MMS$TARGET)) | copy SYS$INPUT nl:
-    $(CC) $(PY_CORE_CFLAGS) /OBJECT=$(MMS$TARGET) /FIRST=[.vms]format_macros.h $(MMS$SOURCE)
+    $(CC) $(PY_CORE_CFLAGS) /OBJECT=$(MMS$TARGET) $(MMS$SOURCE)
 
-[.$(OBJ_DIR).Programs]_testembed.obj : [.Programs]_testembed.c $(PYTHON_HEADERS) [.vms]format_macros.h
+[.$(OBJ_DIR).Programs]_testembed.obj : [.Programs]_testembed.c $(PYTHON_HEADERS)
   @ pipe create/dir $(DIR $(MMS$TARGET)) | copy SYS$INPUT nl:
-    $(CC) $(PY_CORE_CFLAGS) /OBJECT=$(MMS$TARGET) /FIRST=[.vms]format_macros.h $(MMS$SOURCE)
+    $(CC) $(PY_CORE_CFLAGS) /OBJECT=$(MMS$TARGET) $(MMS$SOURCE)
 
 ! no git info, just dependency
 [.$(OBJ_DIR).Modules]getbuildinfo.obj : [.Modules]getbuildinfo.c $(PYTHON_HEADERS) -

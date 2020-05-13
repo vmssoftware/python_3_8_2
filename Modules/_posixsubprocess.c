@@ -449,13 +449,17 @@ exec_dcl(char *const argv[], int p2cread, int c2pwrite) {
     return (pid);
 }
 
-static void
+static int
 safe_make_inherit(int fd) {
     if (fd != -1) {
         int _dup_ = dup(fd);
-        dup2(_dup_, fd);
-        close(_dup_);
+        if (_dup_ != -1) {
+            int retcode = dup2(_dup_, fd);
+            close(_dup_);
+            return retcode;
+        }
     }
+    return -1;
 }
 
 static int

@@ -4869,7 +4869,7 @@ class NetworkConnectionAttributesTest(SocketTCPTest, ThreadableTest):
     testSourceAddress = _justAccept
     def _testSourceAddress(self):
         self.cli = socket.create_connection((HOST, self.port), timeout=30,
-                source_address=('', self.source_port))
+                source_address=('127.0.0.1' if sys.platform in ("OpenVMS") else '', self.source_port))
         self.addCleanup(self.cli.close)
         self.assertEqual(self.cli.getsockname()[1], self.source_port)
         # The port number being used is sufficient to show that the bind()

@@ -258,6 +258,17 @@ hashtable_compare_pointer_t(_Py_hashtable_t *ht, const void *pkey,
 
 }
 
+#ifdef __VMS
+Py_uhash_t
+hashtable_hash_uintptr_t(struct _Py_hashtable_t *ht, const void *pkey)
+{
+    uintptr_t key;
+
+    _Py_HASHTABLE_READ_KEY(ht, pkey, key);
+    return (Py_uhash_t)_Py_HashPointer((void*)key);
+}
+#endif
+
 
 static _Py_hashtable_t *
 hashtable_new(size_t key_size, size_t data_size,
@@ -985,7 +996,11 @@ tracemalloc_init(void)
     else {
         tracemalloc_traces = hashtable_new(sizeof(uintptr_t),
                                            sizeof(trace_t),
+#ifdef __VMS
+                                           hashtable_hash_uintptr_t,
+#else
                                            _Py_hashtable_hash_ptr,
+#endif
                                            _Py_hashtable_compare_direct);
     }
 

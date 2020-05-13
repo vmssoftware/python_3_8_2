@@ -218,6 +218,8 @@ class ProcessTestCase(BaseTestCase):
         self.assertIn('stdin', c.exception.args[0])
         self.assertIn('input', c.exception.args[0])
 
+    @unittest.skipIf(sys.platform in ("OpenVMS"),
+                         "-= it hangs =-")
     def test_check_output_timeout(self):
         # check_output() function with timeout arg
         with self.assertRaises(subprocess.TimeoutExpired) as c:
@@ -1487,6 +1489,8 @@ class RunFuncTestCase(BaseTestCase):
         self.assertIn('stdin', c.exception.args[0])
         self.assertIn('input', c.exception.args[0])
 
+    @unittest.skipIf(sys.platform in ("OpenVMS"),
+                         "-= it hangs =-")
     def test_check_output_timeout(self):
         with self.assertRaises(subprocess.TimeoutExpired) as c:
             cp = self.run_python((
@@ -2229,6 +2233,8 @@ class POSIXProcessTestCase(BaseTestCase):
     # When duping fds, if there arises a situation where one of the fds is
     # either 0, 1 or 2, it is possible that it is overwritten (#12607).
     # This tests all combinations of this.
+    @unittest.skipIf(sys.platform in ("OpenVMS"),
+                         "-= it hangs =-")
     def test_swap_fds(self):
         self.check_swap_fds(0, 1, 2)
         self.check_swap_fds(0, 2, 1)
@@ -2864,6 +2870,8 @@ class POSIXProcessTestCase(BaseTestCase):
             mock_proc_stdin.write.assert_called_once_with(b'stuff')
             mock_proc_stdin.close.assert_called_once_with()
 
+    @unittest.skipIf(sys.platform in ("OpenVMS"),
+                         "-= it hangs =-")
     def test_communicate_BrokenPipeError_stdin_flush(self):
         # Setting stdin and stdout forces the ._communicate() code path.
         # python -h exits faster than python -c pass (but spams stdout).
