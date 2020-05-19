@@ -1005,9 +1005,14 @@ class BytesTest(BaseBytesTest, unittest.TestCase):
             def ptr_formatter(ptr):
                 return (ptr_format % ptr)
         else:
-            # UNIX (glibc)
-            def ptr_formatter(ptr):
-                return '%#x' % ptr
+            if sys.platform in ("OpenVMS"):
+                # OpenVMS
+                def ptr_formatter(ptr):
+                    return '0x'+('%#x' % ptr)[2:].upper()
+            else:
+                # UNIX (glibc)
+                def ptr_formatter(ptr):
+                    return '%#x' % ptr
 
         ptr = 0xabcdef
         self.assertEqual(PyBytes_FromFormat(b'ptr=%p', c_char_p(ptr)),
