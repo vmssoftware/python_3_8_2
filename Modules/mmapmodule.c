@@ -74,6 +74,10 @@ my_getpagesize(void)
 #include <sys/types.h>
 #endif /* HAVE_SYS_TYPES_H */
 
+#ifdef __VMS
+#   define  MAP_ANONYMOUS  0x10
+#endif
+
 /* Prefer MAP_ANONYMOUS since MAP_ANON is deprecated according to man page. */
 #if !defined(MAP_ANONYMOUS) && defined(MAP_ANON)
 #  define MAP_ANONYMOUS MAP_ANON

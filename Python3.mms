@@ -89,7 +89,7 @@ PY_OSF_CFLAGS = $(PY_CFLAGS_Q)/DEFINE=(_OSF_SOURCE,$(PY_CFLAGS_DEF))/INCLUDE_DIR
 .FIRST
     ! defines for nested includes, like:
     ! #include "clinic/transmogrify.h.h"
-    define clinic [.Objects.clinic],[.Python.clinic],[.Modules.clinic],[.Modules._io.clinic],[.Modules.cjkcodecs.clinic],[.Objects.stringlib.clinic],[.Modules._blake2.clinic],[.Modules._sha3.clinic]
+    define clinic [.Objects.clinic],[.Python.clinic],[.Modules.clinic],[.Modules._io.clinic],[.Modules.cjkcodecs.clinic],[.Objects.stringlib.clinic],[.Modules._blake2.clinic],[.Modules._sha3.clinic],[.Modules._multiprocessing.clinic]
     define stringlib [.Objects.stringlib]
     define modules [.Modules]
     define readline oss$root:[include.readline]
@@ -250,6 +250,7 @@ $(LIBDYNLOAD_VMS) -
 [.$(OUT_DIR).$(DYNLOAD_DIR)]_multiprocessing.exe -
 [.$(OUT_DIR).$(DYNLOAD_DIR)]_opcode.exe -
 [.$(OUT_DIR).$(DYNLOAD_DIR)]_pickle.exe -
+[.$(OUT_DIR).$(DYNLOAD_DIR)]_posixshmem.exe -
 [.$(OUT_DIR).$(DYNLOAD_DIR)]_posixsubprocess.exe -
 [.$(OUT_DIR).$(DYNLOAD_DIR)]_queue.exe -
 [.$(OUT_DIR).$(DYNLOAD_DIR)]_random.exe -
@@ -1313,6 +1314,15 @@ EXPAT_HEADERS = -
     $(CC) $(PY_CFLAGS_MULT) /OBJECT=$(MMS$TARGET) $(MMS$SOURCE)
 
 [.$(OUT_DIR).$(DYNLOAD_DIR)]_multiprocessing.exe : [.$(OBJ_DIR).Modules._multiprocessing]multiprocessing.obm,[.$(OBJ_DIR).Modules._multiprocessing]semaphore.obm
+    @ pipe create/dir $(DIR $(MMS$TARGET)) | copy SYS$INPUT nl:
+    $(LINK)$(LINKFLAGS)/SHARE=python$build_out:[$(DYNLOAD_DIR)]$(NOTDIR $(MMS$TARGET_NAME)).EXE $(MMS$SOURCE_LIST),[.opt]$(NOTDIR $(MMS$TARGET_NAME)).opt/OPT
+
+! _posixshmem
+[.$(OBJ_DIR).Modules._multiprocessing]posixshmem.obm : [.Modules._multiprocessing]posixshmem.c [.Modules._multiprocessing]multiprocessing.h $(PYTHON_HEADERS)
+    @ pipe create/dir $(DIR $(MMS$TARGET)) | copy SYS$INPUT nl:
+    $(CC) $(PY_CFLAGS_MULT) /OBJECT=$(MMS$TARGET) $(MMS$SOURCE)
+
+[.$(OUT_DIR).$(DYNLOAD_DIR)]_posixshmem.exe : [.$(OBJ_DIR).Modules._multiprocessing]posixshmem.obm
     @ pipe create/dir $(DIR $(MMS$TARGET)) | copy SYS$INPUT nl:
     $(LINK)$(LINKFLAGS)/SHARE=python$build_out:[$(DYNLOAD_DIR)]$(NOTDIR $(MMS$TARGET_NAME)).EXE $(MMS$SOURCE_LIST),[.opt]$(NOTDIR $(MMS$TARGET_NAME)).opt/OPT
 

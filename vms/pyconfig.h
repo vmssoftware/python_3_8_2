@@ -972,10 +972,10 @@
 #undef HAVE_SHADOW_H
 
 /* Define to 1 if you have the `shm_open' function. */
-#undef HAVE_SHM_OPEN
+#define HAVE_SHM_OPEN
 
 /* Define to 1 if you have the `shm_unlink' function. */
-#undef HAVE_SHM_UNLINK
+#define HAVE_SHM_UNLINK
 
 /* Define to 1 if you have the `sigaction' function. */
 #undef HAVE_SIGACTION
@@ -1167,7 +1167,7 @@
 #undef HAVE_SYS_MKDEV_H
 
 /* Define to 1 if you have the <sys/mman.h> header file. */
-#undef HAVE_SYS_MMAN_H
+#define HAVE_SYS_MMAN_H
 
 /* Define to 1 if you have the <sys/modem.h> header file. */
 #undef HAVE_SYS_MODEM_H

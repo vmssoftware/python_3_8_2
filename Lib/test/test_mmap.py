@@ -37,6 +37,8 @@ class MmapTests(unittest.TestCase):
             f.write(b'foo')
             f.write(b'\0'* (PAGESIZE-3) )
             f.flush()
+            if sys.platform in ("OpenVMS"):
+                os.fsync(f.fileno())
             m = mmap.mmap(f.fileno(), 2 * PAGESIZE)
         finally:
             f.close()
@@ -175,6 +177,8 @@ class MmapTests(unittest.TestCase):
             with open(TESTFN, "rb") as fp:
                 self.assertEqual(fp.read(), b'a'*mapsize,
                                  "Readonly memory map data file was modified")
+            if sys.platform in ("OpenVMS"):
+                m.close()
 
         # Opening mmap with size too big
         with open(TESTFN, "r+b") as f:
@@ -258,6 +262,8 @@ class MmapTests(unittest.TestCase):
             n = len(data)
             f.write(data)
             f.flush()
+            if sys.platform in ("OpenVMS"):
+                os.fsync(f.fileno())
             m = mmap.mmap(f.fileno(), n)
 
         for start in range(n+1):
@@ -274,6 +280,8 @@ class MmapTests(unittest.TestCase):
             n = len(data)
             f.write(data)
             f.flush()
+            if sys.platform in ("OpenVMS"):
+                os.fsync(f.fileno())
             m = mmap.mmap(f.fileno(), n)
 
         self.assertEqual(m.find(b'one'), 0)
@@ -292,6 +300,8 @@ class MmapTests(unittest.TestCase):
             n = len(data)
             f.write(data)
             f.flush()
+            if sys.platform in ("OpenVMS"):
+                os.fsync(f.fileno())
             m = mmap.mmap(f.fileno(), n)
 
         self.assertEqual(m.rfind(b'one'), 8)
@@ -351,6 +361,8 @@ class MmapTests(unittest.TestCase):
 
             f.write(b"ABCDEabcde") # Arbitrary character
             f.flush()
+            if sys.platform in ("OpenVMS"):
+                os.fsync(f.fileno())
 
             mf = mmap.mmap(f.fileno(), 10)
             mf.move(5, 0, 5)
@@ -474,6 +486,8 @@ class MmapTests(unittest.TestCase):
         f.write (b'foo')
         f.write (b'\0' * (halfsize - 3))
         f.flush ()
+        if sys.platform in ("OpenVMS"):
+            os.fsync(f.fileno())
         return mmap.mmap (f.fileno(), 0)
 
     def test_empty_file (self):
@@ -822,4 +836,4 @@ class LargeMmapTests(unittest.TestCase):
 
 
 if __name__ == '__main__':
-    unittest.main()
+    unittest.main(verbosity=2)
