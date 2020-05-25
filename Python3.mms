@@ -101,6 +101,8 @@ PY_OSF_CFLAGS = $(PY_CFLAGS_Q)/DEFINE=(_OSF_SOURCE,$(PY_CFLAGS_DEF))/INCLUDE_DIR
     define kcp  [.Modules._sha3.kcp]
     ! SWIG
     swig :== $swig$root:[bin]swig.exe
+    ! OPENSSL 111
+    define openssl ssl111$include:
     ! names
     BUILD_OUT_DIR = F$ENVIRONMENT("DEFAULT")-"]"+".$(OUT_DIR).]"
     BUILD_OBJ_DIR = F$ENVIRONMENT("DEFAULT")-"]"+".$(OBJ_DIR).]"

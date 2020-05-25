@@ -13,6 +13,7 @@ $ com_pat = com_dev + com_dir
 $ bld_pat = com_dev + com_dir - "]" + ".out.''CONFIG']"
 $ inc_pat = com_dev + com_dir - "]" + ".include]"
 $ lib_pat = com_dev + com_dir - "]" + ".lib...]"
+$ vms_py_pat = com_dev + com_dir - "]" + ".modules.vms...]"
 $ vms_pat = com_dev + com_dir - "]" + ".vms]"
 $ dyn_pat = com_dev + com_dir - "]" + ".out.'CONFIG'.lib-dynload...]"
 $ cnf_pat = com_dev + com_dir - "]" + ".build]"
@@ -27,6 +28,7 @@ $ backup 'com_pat'pyconfig.h python$root:[include]
 $ backup 'com_pat'py_vms.h python$root:[include]
 $
 $ backup 'lib_pat'*.* python$root:[lib.python3^.8...]
+$ backup 'vms_py_pat'*.py python$root:[lib.python3^.8.vms]
 $ backup 'bld_pat'python$shr.exe python$root:[lib]
 $
 $ backup 'vms_pat'python$define_root.com python$root:[000000]
