@@ -581,7 +581,7 @@ def close_all(map=None, ignore_all=False):
 #
 # Regardless, this is useful for pipes, and stdin/stdout...
 
-if os.name == 'posix':
+if os.name == 'posix' and sys.platform not in ("OpenVMS"):
     class file_wrapper:
         # Here we override just enough to make a file
         # look like a socket for the purposes of asyncore.

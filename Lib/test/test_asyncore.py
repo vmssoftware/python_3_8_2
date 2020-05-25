@@ -17,7 +17,7 @@ if support.PGO:
 
 
 TIMEOUT = 3
-HAS_UNIX_SOCKETS = hasattr(socket, 'AF_UNIX')
+HAS_UNIX_SOCKETS = hasattr(socket, 'AF_UNIX') and sys.platform not in ("OpenVMS")
 
 class dummysocket:
     def __init__(self):
@@ -71,7 +71,8 @@ def capture_server(evt, buf, serv):
     else:
         n = 200
         start = time.monotonic()
-        while n > 0 and time.monotonic() - start < 3.0:
+        time_out = 30.0 if sys.platform in ("OpenVMS") else 3.0
+        while n > 0 and time.monotonic() - start < time_out:
             r, w, e = select.select([conn], [], [], 0.1)
             if r:
                 n -= 1

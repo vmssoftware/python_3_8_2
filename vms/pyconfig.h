@@ -978,16 +978,16 @@
 #define HAVE_SHM_UNLINK
 
 /* Define to 1 if you have the `sigaction' function. */
-#undef HAVE_SIGACTION
+#define HAVE_SIGACTION
 
 /* Define to 1 if you have the `sigaltstack' function. */
 #undef HAVE_SIGALTSTACK
 
 /* Define to 1 if you have the `sigfillset' function. */
-#undef HAVE_SIGFILLSET
+#define HAVE_SIGFILLSET
 
 /* Define to 1 if `si_band' is a member of `siginfo_t'. */
-#undef HAVE_SIGINFO_T_SI_BAND
+#define HAVE_SIGINFO_T_SI_BAND
 
 /* Define to 1 if you have the `siginterrupt' function. */
 #undef HAVE_SIGINTERRUPT
