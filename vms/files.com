@@ -1,17 +1,18 @@
 $ set nover
-$ del/noconf [.python...__pycache__]*.*;*
-$ del/noconf [.python...]__pycache__.dir;
+$
+$ com_nam = f$environment("procedure")
+$ com_dir = f$parse(com_nam,,,"directory")
+$ com_dev = f$parse(com_nam,,,"device")
+$ dir_name = com_dev + com_dir - "vms]" + "out.]"
+$
 $ top = "python"
 $
-$ pwd = f$environment("default")
-$ dir_name = f$parse(pwd,,, "directory", "no_conceal")
-$ dev_name = f$parse(pwd,,, "device", "no_conceal")
-$ dir_name = dir_name - "]["
-$ dir_name = f$edit(dir_name, "lowercase")
-$ dir_name = dir_name - "]" + ".]"
+$ define/process/nolog/translation=(concealed) tmp$root 'dir_name'
 $
-$ tmp = dev_name + dir_name
-$ define/process/nolog/translation=(concealed) tmp$root 'tmp'
+$ del/noconf tmp$root:['top'...__pycache__]*.*;*
+$ del/noconf tmp$root:['top'...]__pycache__.dir;
+$
+$ del/noconf files.dat;*
 $
 $ open/write fp files.dat
 $ current_dir = "[''top']"
