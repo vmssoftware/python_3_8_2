@@ -705,7 +705,7 @@ internal_setblocking(PySocketSockObject *s, int block)
     u_long arg;
 #endif
 #if !defined(MS_WINDOWS) \
-    && !((defined(HAVE_SYS_IOCTL_H) && defined(FIONBIO)))
+    && !((defined(HAVE_SYS_IOCTL_H) && defined(FIONBIO) || defined(__VMS)))
     int delay_flag, new_delay_flag;
 #endif
 

@@ -105,8 +105,9 @@ class _UnixSelectorEventLoop(selector_events.BaseSelectorEventLoop):
             # read signal numbers from this file descriptor to handle signals.
             signal.signal(sig, _sighandler_noop)
 
-            # Set SA_RESTART to limit EINTR occurrences.
-            signal.siginterrupt(sig, False)
+            if sys.platform not in ("OpenVMS"):
+                # Set SA_RESTART to limit EINTR occurrences.
+                signal.siginterrupt(sig, False)
         except OSError as exc:
             del self._signal_handlers[sig]
             if not self._signal_handlers:

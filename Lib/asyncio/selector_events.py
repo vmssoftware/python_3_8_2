@@ -622,6 +622,9 @@ class _SelectorTransport(transports._FlowControlMixin,
         if 'peername' not in self._extra:
             try:
                 self._extra['peername'] = sock.getpeername()
+                # OpenVMS fix
+                if self._extra['peername'][0] == '0.0.0.0':
+                    self._extra['peername'] = None
             except socket.error:
                 self._extra['peername'] = None
         self._sock = sock

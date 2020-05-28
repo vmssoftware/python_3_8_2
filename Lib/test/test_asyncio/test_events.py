@@ -22,7 +22,7 @@ import unittest
 from unittest import mock
 import weakref
 
-if sys.platform != 'win32':
+if sys.platform not in ('win32', 'OpenVMS'):
     import tty
 
 import asyncio
@@ -48,7 +48,7 @@ def broken_unix_getsockname():
     version = tuple(map(int, version.split('.')))
     return version < (10, 5)
 
-
+# @unittest.skipIf(sys.platform in ('OpenVMS'), 'OpenVMS has no os.fork()')
 def _test_get_event_loop_new_process__sub_proc():
     async def doit():
         return 'hello'
@@ -1356,8 +1356,8 @@ class EventLoopTestsMixin:
         read_transport._pipe = None
         write_transport._pipe = None
 
-    @unittest.skipUnless(sys.platform != 'win32',
-                         "Don't support pipes for Windows")
+    @unittest.skipUnless(sys.platform not in ('win32', 'OpenVMS'),
+                         "Don't support PTY for Windows and OpenVMS")
     def test_read_pty_output(self):
         proto = MyReadPipeProto(loop=self.loop)
 
@@ -1453,8 +1453,8 @@ class EventLoopTestsMixin:
         self.loop.run_until_complete(proto.done)
         self.assertEqual('CLOSED', proto.state)
 
-    @unittest.skipUnless(sys.platform != 'win32',
-                         "Don't support pipes for Windows")
+    @unittest.skipUnless(sys.platform not in ('win32', 'OpenVMS'),
+                         "Don't support PTY for Windows and OpenVMS")
     # select, poll and kqueue don't support character devices (PTY) on Mac OS X
     # older than 10.6 (Snow Leopard)
     @support.requires_mac_ver(10, 6)
@@ -1497,8 +1497,8 @@ class EventLoopTestsMixin:
         self.loop.run_until_complete(proto.done)
         self.assertEqual('CLOSED', proto.state)
 
-    @unittest.skipUnless(sys.platform != 'win32',
-                         "Don't support pipes for Windows")
+    @unittest.skipUnless(sys.platform not in ('win32', 'OpenVMS'),
+                         "Don't support PTY for Windows and OpenVMS")
     # select, poll and kqueue don't support character devices (PTY) on Mac OS X
     # older than 10.6 (Snow Leopard)
     @support.requires_mac_ver(10, 6)
@@ -2020,6 +2020,11 @@ if sys.platform == 'win32':
 
         def test_remove_fds_after_closing(self):
             raise unittest.SkipTest("IocpEventLoop does not have add_reader()")
+
+elif sys.platform == 'OpenVMS':
+
+    pass
+
 else:
     import selectors
 
@@ -2632,7 +2637,7 @@ class GetEventLoopTestsMixin:
             asyncio.get_running_loop = self.get_running_loop_saved
             asyncio.get_event_loop = self.get_event_loop_saved
 
-    if sys.platform != 'win32':
+    if sys.platform not in ('win32', 'OpenVMS'):
 
         def test_get_event_loop_new_process(self):
             # Issue bpo-32126: The multiprocessing module used by
@@ -2753,4 +2758,4 @@ class TestAbstractServer(unittest.TestCase):
 
 
 if __name__ == '__main__':
-    unittest.main()
+    unittest.main(verbosity=2)

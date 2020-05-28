@@ -759,10 +759,15 @@ signal_set_wakeup_fd(PyObject *self, PyObject *args, PyObject *kwds)
         if (blocking < 0)
             return NULL;
         if (blocking) {
+#ifdef __VMS
+            // do not know how to check non-blocking mode, so just try to set it
+            _Py_set_blocking(fd, 0);
+#else
             PyErr_Format(PyExc_ValueError,
                          "the fd %i must be in non-blocking mode",
                          fd);
             return NULL;
+#endif
         }
     }
 
