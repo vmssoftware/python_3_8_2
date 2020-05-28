@@ -7,6 +7,7 @@
    directory "[python.bin]" ;
    directory "[python.include]" ;
    directory "[python.lib]" ;
+   directory "[python.include.cpython]" ;
    directory "[python.lib.python3^.8]" ;
    directory "[python.lib.python3^.8.asyncio]" ;
    directory "[python.lib.python3^.8.collections]" ;
@@ -152,6 +153,8 @@
    file "[python]python$startup.com" source "[python]python$startup.com";
    file "[python]python.pcsi$desc" source "[python]python.pcsi$desc";
    file "[python]python.pcsi$text" source "[python]python.pcsi$text";
+   file "[python]VSI-I64VMS-PYTHON-A0308-2MAY26-1.PCSI" source "[python]VSI-I64VMS-PYTHON-A0308-2MAY26-1.PCSI";
+   file "[python]VSI-I64VMS-PYTHON-A0308-2MAY26-1.PCSI$COMPRESSED" source "[python]VSI-I64VMS-PYTHON-A0308-2MAY26-1.PCSI$COMPRESSED";
    file "[python.bin]python3.EXE" source "[python.bin]python3.EXE";
    file "[python.include]abstract.h" source "[python.include]abstract.h";
    file "[python.include]asdl.h" source "[python.include]asdl.h";
@@ -252,6 +255,21 @@
    file "[python.include]unicodeobject.h" source "[python.include]unicodeobject.h";
    file "[python.include]warnings.h" source "[python.include]warnings.h";
    file "[python.include]weakrefobject.h" source "[python.include]weakrefobject.h";
+   file "[python.include.cpython]abstract.h" source "[python.include.cpython]abstract.h";
+   file "[python.include.cpython]dictobject.h" source "[python.include.cpython]dictobject.h";
+   file "[python.include.cpython]fileobject.h" source "[python.include.cpython]fileobject.h";
+   file "[python.include.cpython]initconfig.h" source "[python.include.cpython]initconfig.h";
+   file "[python.include.cpython]interpreteridobject.h" source "[python.include.cpython]interpreteridobject.h";
+   file "[python.include.cpython]object.h" source "[python.include.cpython]object.h";
+   file "[python.include.cpython]objimpl.h" source "[python.include.cpython]objimpl.h";
+   file "[python.include.cpython]pyerrors.h" source "[python.include.cpython]pyerrors.h";
+   file "[python.include.cpython]pylifecycle.h" source "[python.include.cpython]pylifecycle.h";
+   file "[python.include.cpython]pymem.h" source "[python.include.cpython]pymem.h";
+   file "[python.include.cpython]pystate.h" source "[python.include.cpython]pystate.h";
+   file "[python.include.cpython]sysmodule.h" source "[python.include.cpython]sysmodule.h";
+   file "[python.include.cpython]traceback.h" source "[python.include.cpython]traceback.h";
+   file "[python.include.cpython]tupleobject.h" source "[python.include.cpython]tupleobject.h";
+   file "[python.include.cpython]unicodeobject.h" source "[python.include.cpython]unicodeobject.h";
    file "[python.lib]python$shr.EXE" source "[python.lib]python$shr.EXE";
    file "[python.lib.python3^.8]abc.py" source "[python.lib.python3^.8]abc.py";
    file "[python.lib.python3^.8]aifc.py" source "[python.lib.python3^.8]aifc.py";

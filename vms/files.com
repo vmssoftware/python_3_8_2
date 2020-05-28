@@ -52,7 +52,7 @@ $    then
 $        current_dir = f$parse(file,,,"DIRECTORY") - "000000."
 $        size = f$file_attributes(file, "ALQ")
 $        type = f$parse(file,,,"TYPE")
-$        if type .nes. ".log" .and. type .nes. ".LOG"
+$        if type .nes. ".log" .and. type .nes. ".LOG" .and. type .nes. ".pcsi$desc" .and. type .nes. ".pcsi$text"
 $        then
 $           write fp "   file ""''current_dir'''name'''type'"" source ""''current_dir'''name'''type'"";"
 $        else

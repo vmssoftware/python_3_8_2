@@ -12,6 +12,7 @@ $ com_dev = f$parse(com_nam,,,"device")
 $ com_pat = com_dev + com_dir
 $ bld_pat = com_dev + com_dir - "]" + ".out.''CONFIG']"
 $ inc_pat = com_dev + com_dir - "]" + ".include]"
+$ cpy_pat = com_dev + com_dir - "]" + ".include.cpython]"
 $ lib_pat = com_dev + com_dir - "]" + ".lib...]"
 $ vms_py_pat = com_dev + com_dir - "]" + ".modules.vms...]"
 $ vms_pat = com_dev + com_dir - "]" + ".vms]"
@@ -24,6 +25,7 @@ $
 $ backup 'bld_pat'python3.exe python$root:[bin]
 $
 $ backup 'inc_pat'*.h python$root:[include]
+$ backup 'cpy_pat'*.h python$root:[include.cpython]
 $ backup 'com_pat'pyconfig.h python$root:[include]
 $ backup 'com_pat'py_vms.h python$root:[include]
 $

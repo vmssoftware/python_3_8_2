@@ -22,5 +22,7 @@ $ purge/log
 $
 $ purge/log [...]
 $
+$ set noverify
+$
 $ exit
 
