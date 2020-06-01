@@ -192,7 +192,7 @@ class SubprocessMixin:
         else:
             self.assertEqual(-signal.SIGTERM, returncode)
 
-    @unittest.skipIf(sys.platform == 'win32', "Don't have SIGHUP")
+    @unittest.skipIf(sys.platform in ('win32', 'OpenVMS'), "Don't have SIGHUP")
     def test_send_signal(self):
         # bpo-31034: Make sure that we get the default signal handler (killing
         # the process). The parent process may have decided to ignore SIGHUP,
@@ -647,7 +647,7 @@ class SubprocessMixin:
         self.loop.run_until_complete(go())
 
 
-if sys.platform != 'win32':
+if sys.platform not in ('win32', 'OpenVMS'):
     # Unix
     class SubprocessWatcherMixin(SubprocessMixin):
 

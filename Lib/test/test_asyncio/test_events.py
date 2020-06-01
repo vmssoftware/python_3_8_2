@@ -1842,7 +1842,7 @@ class SubprocessTestsMixin:
             self.check_terminated(proto.returncode)
             transp.close()
 
-    @unittest.skipIf(sys.platform == 'win32', "Don't have SIGHUP")
+    @unittest.skipIf(sys.platform in ('win32', 'OpenVMS'), "Don't have SIGHUP")
     def test_subprocess_send_signal(self):
         # bpo-31034: Make sure that we get the default signal handler (killing
         # the process). The parent process may have decided to ignore SIGHUP,
