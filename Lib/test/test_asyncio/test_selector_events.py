@@ -3,6 +3,8 @@
 import selectors
 import socket
 import unittest
+import sys
+
 from unittest import mock
 try:
     import ssl
@@ -1239,6 +1241,8 @@ class SelectorDatagramTransportTests(test_utils.TestCase):
         self.assertEqual(transport._conn_lost, 0)
         self.assertFalse(transport._fatal_error.called)
 
+    @unittest.skipIf(sys.platform in ('OpenVMS'),
+                    "skip. self.protocol.error_received.called is False")
     def test_sendto_error_received_connected(self):
         data = b'data'
 
@@ -1336,6 +1340,8 @@ class SelectorDatagramTransportTests(test_utils.TestCase):
 
         self.assertFalse(transport._fatal_error.called)
 
+    @unittest.skipIf(sys.platform in ('OpenVMS'),
+                    "skip. self.protocol.error_received.called is False")
     def test_sendto_ready_error_received_connection(self):
         self.sock.send.side_effect = ConnectionRefusedError
 

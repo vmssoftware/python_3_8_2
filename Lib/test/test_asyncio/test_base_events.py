@@ -1334,6 +1334,8 @@ class BaseEventLoopWithSelectorTests(test_utils.TestCase):
     def test_create_connection_no_inet_pton(self, m_socket):
         self._test_create_connection_ip_addr(m_socket, False)
 
+    @unittest.skipIf(sys.platform in ('OpenVMS'),
+                    "skip. [Errno 9] service not supported for socktype")
     @patch_socket
     def test_create_connection_service_name(self, m_socket):
         m_socket.getaddrinfo = socket.getaddrinfo
@@ -1601,6 +1603,8 @@ class BaseEventLoopWithSelectorTests(test_utils.TestCase):
         self.assertRaises(
             OSError, self.loop.run_until_complete, coro)
 
+    @unittest.skipIf(sys.platform in ('OpenVMS'),
+                    "skip. [Errno 13] permission denied")
     def test_create_datagram_endpoint_allow_broadcast(self):
         protocol = MyDatagramProto(create_future=True, loop=self.loop)
         self.loop.sock_connect = sock_connect = mock.Mock()
@@ -1740,6 +1744,8 @@ class BaseEventLoopWithSelectorTests(test_utils.TestCase):
             MyDatagramProto, allow_broadcast=True, sock=FakeSock())
         self.assertRaises(ValueError, self.loop.run_until_complete, fut)
 
+    @unittest.skipIf(sys.platform in ('OpenVMS'),
+                    "skip. [Errno 13] permission denied")
     def test_create_datagram_endpoint_sockopts(self):
         # Socket options should not be applied unless asked for.
         # SO_REUSEPORT is not available on all platforms.

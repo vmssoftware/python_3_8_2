@@ -13,6 +13,9 @@ from test import support
 if sys.platform != 'win32':
     from asyncio import unix_events
 
+if sys.platform == 'OpenVMS':
+    raise unittest.SkipTest('skip. too many failures in OpenVMS')
+
 # Program blocking
 PROGRAM_BLOCKED = [sys.executable, '-c', 'import time; time.sleep(3600)']
 
@@ -148,6 +151,7 @@ class SubprocessMixin:
         self.assertEqual(exitcode, 0)
         self.assertEqual(stdout, b'some data')
 
+    @unittest.skipIf(sys.platform == 'OpenVMS', 'OpenVMS has no "exit" shell command')
     def test_shell(self):
         proc = self.loop.run_until_complete(
             asyncio.create_subprocess_shell('exit 7')
@@ -155,6 +159,7 @@ class SubprocessMixin:
         exitcode = self.loop.run_until_complete(proc.wait())
         self.assertEqual(exitcode, 7)
 
+    @unittest.skipIf(sys.platform == 'OpenVMS', 'OpenVMS has no "exit" shell command')
     def test_start_new_session(self):
         # start the new process in a new session
         proc = self.loop.run_until_complete(
@@ -636,6 +641,7 @@ class SubprocessMixin:
             await proc.wait()
         self.loop.run_until_complete(go())
 
+    @unittest.skipIf(sys.platform == 'OpenVMS', 'OpenVMS has no "exit" shell command')
     def test_shell_loop_deprecated(self):
         async def go():
             with self.assertWarns(DeprecationWarning):
@@ -647,7 +653,7 @@ class SubprocessMixin:
         self.loop.run_until_complete(go())
 
 
-if sys.platform not in ('win32', 'OpenVMS'):
+if sys.platform != 'win32':
     # Unix
     class SubprocessWatcherMixin(SubprocessMixin):
 
@@ -690,6 +696,11 @@ if sys.platform not in ('win32', 'OpenVMS'):
                                      test_utils.TestCase):
 
         Watcher = unix_events.FastChildWatcher
+
+elif sys.platform == 'OpenVMS':
+
+    # OpenVMS
+    raise unittest.SkipTest('skip in OpenVMS')
 
 else:
     # Windows

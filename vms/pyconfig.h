@@ -1358,7 +1358,7 @@
 #define HAVE_WCSCOLL 1
 
 /* Define to 1 if you have the `wcsftime' function. */
-#define HAVE_WCSFTIME 1
+#undef HAVE_WCSFTIME
 
 /* Define to 1 if you have the `wcsxfrm' function. */
 #define HAVE_WCSXFRM 1

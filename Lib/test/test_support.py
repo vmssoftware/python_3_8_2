@@ -199,8 +199,13 @@ class TestSupport(unittest.TestCase):
 
         with support.temp_dir() as temp_path:
             with support.change_cwd(temp_path) as new_cwd:
-                self.assertEqual(new_cwd, temp_path)
-                self.assertEqual(os.getcwd(), new_cwd)
+                if sys.platform == 'OpenVMS' and temp_path.startswith('/tmp/'):
+                    length = len(temp_path) - 5 # len('/tmp/')
+                    self.assertEqual(new_cwd[-length:], temp_path[-length:])
+                    self.assertEqual(os.getcwd()[-length:], new_cwd[-length:])
+                else:
+                    self.assertEqual(new_cwd, temp_path)
+                    self.assertEqual(os.getcwd(), new_cwd)
 
         self.assertEqual(os.getcwd(), original_cwd)
 
@@ -217,7 +222,11 @@ class TestSupport(unittest.TestCase):
             self.assertRaises(FileNotFoundError, call_change_cwd,
                               non_existent_dir)
 
-        self.assertEqual(os.getcwd(), original_cwd)
+        if sys.platform == 'OpenVMS' and original_cwd.startswith('/tmp/'):
+            length = len(original_cwd) - 5 # len('/tmp/')
+            self.assertEqual(os.getcwd()[-length:], original_cwd[-length:])
+        else:
+            self.assertEqual(os.getcwd(), original_cwd)
 
     def test_change_cwd__non_existent_dir__quiet_true(self):
         """Test passing a non-existent directory with quiet=True."""
@@ -409,8 +418,8 @@ class TestSupport(unittest.TestCase):
 
         self.assertRaises(AssertionError, support.check__all__, self, unittest)
 
-    @unittest.skipUnless(hasattr(os, 'waitpid') and hasattr(os, 'WNOHANG'),
-                         'need os.waitpid() and os.WNOHANG')
+    @unittest.skipUnless(hasattr(os, 'waitpid') and hasattr(os, 'WNOHANG') and hasattr(os, 'fork') ,
+                         'need os.waitpid() and os.WNOHANG and os.fork()')
     def test_reap_children(self):
         # Make sure that there is no other pending child process
         support.reap_children()

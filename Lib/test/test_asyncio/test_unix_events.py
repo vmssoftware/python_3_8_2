@@ -16,7 +16,7 @@ import unittest
 from unittest import mock
 from test import support
 
-if sys.platform == 'win32':
+if sys.platform in ('win32', 'OpenVMS'):
     raise unittest.SkipTest('UNIX only')
 
 
