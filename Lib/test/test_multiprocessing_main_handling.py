@@ -280,14 +280,17 @@ class MultiProcessingCmdLineMixin():
 
 # Test all supported start methods (setupClass skips as appropriate)
 
+@unittest.skipIf(sys.platform == 'OpenVMS', 'OpenVMS does not support os.spawn()')
 class SpawnCmdLineTest(MultiProcessingCmdLineMixin, unittest.TestCase):
     start_method = 'spawn'
     main_in_children_source = test_source_main_skipped_in_children
 
+@unittest.skipIf(sys.platform == 'OpenVMS', 'OpenVMS does not support os.fork()')
 class ForkCmdLineTest(MultiProcessingCmdLineMixin, unittest.TestCase):
     start_method = 'fork'
     main_in_children_source = test_source
 
+@unittest.skipIf(sys.platform == 'OpenVMS', 'OpenVMS does not support os.forkserver()')
 class ForkServerCmdLineTest(MultiProcessingCmdLineMixin, unittest.TestCase):
     start_method = 'forkserver'
     main_in_children_source = test_source_main_skipped_in_children
