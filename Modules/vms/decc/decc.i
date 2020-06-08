@@ -19,6 +19,32 @@
    }
 }
 
+%typemap(out) char** {
+  int len,i;
+  if ($1 == NULL) {
+      $result = Py_None;
+  } else {
+      len = 0;
+      while ($1[len]) len++;
+      $result = PyList_New(len);
+      for (i = 0; i < len; i++) {
+        PyList_SetItem($result, i, PyString_FromString($1[i]));
+      }
+  }
+}
+
+%typemap(newfree) char ** {
+  if ($1 != NULL) {
+      int i;
+      i = 0;
+      while ($1[i]) {
+          free($1[i]);
+          ++i;
+      }
+      free($1);
+  }
+}
+
 %constant int _SC_ARG_MAX = 100;
 %constant int _SC_CHILD_MAX = 101;
 %constant int _SC_CLK_TCK = 102;
@@ -87,11 +113,13 @@
 %rename(sysconf) _sysconf;
 %rename(sleep) _sleep;
 
+%newobject _from_vms;
+
 extern unsigned int _fix_time(long long);
 extern unsigned int _unixtime(long long dt);
 extern long long _vmstime(unsigned int);
-extern char * _from_vms(char *);
-extern char * _to_vms(char *);
+extern char ** _from_vms(char *, int);
+extern char * _to_vms(char *, int, int);
 extern char *_getenv(char *, char *);
 extern long _sysconf(int);
 extern int _sleep(unsigned int);

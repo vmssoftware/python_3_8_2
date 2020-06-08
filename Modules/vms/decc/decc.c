@@ -87,23 +87,39 @@ long long _vmstime(unsigned int dt)
 extern int decc$from_vms(const char *, int (*)(char *, void *), int, ...);
 extern int decc$to_vms(const char *, int (*)(char *, int, void *), int, int, ...);
 
+typedef struct {
+    int     len;
+    int     cap;
+    char**  buf;
+} _simple_arr;
 
-static int cb_from_vms(char *name, void *ud)
+static int cb_from_vms(char *name, void *user_data)
 {
-    char **tmp = (char **) ud;
-    *tmp = strdup(name);
-    assert(*tmp);
+    _simple_arr *parr = (_simple_arr *) user_data;
+    assert(parr);
+    if (parr->len + 1 >= parr->cap ) {
+        parr->cap += 8;
+        parr->buf = realloc(parr->buf, parr->cap * sizeof(char*));
+    }
+    parr->buf[parr->len] = strdup(name);
+    assert(parr->buf[parr->len]);
+    ++parr->len;
+    parr->buf[parr->len] = NULL;
     return (1);
 }
 
 
-char *_from_vms(char *path)
+char **_from_vms(char *path, int wild_flag)
 {
-    char *tmp = NULL;
+    _simple_arr arr;
+    arr.len = 0;
+    arr.cap = 8;
+    arr.buf = malloc(arr.cap * sizeof(char*));
+    arr.buf[arr.len] = NULL;
 
     assert(path);
-    decc$from_vms(path, cb_from_vms, 0, &tmp);
-    return (tmp);
+    int num_files = decc$from_vms(path, cb_from_vms, wild_flag, &arr);
+    return (arr.buf);
 }
 
 
@@ -115,12 +131,12 @@ static int cb_to_vms(char *name, int flag, void *ud)
     return (1);
 }
 
-char *_to_vms(char *path)
+char *_to_vms(char *path, int allow_wild, int no_directory)
 {
     char *tmp = NULL;
 
     assert(path);
-    decc$to_vms(path, cb_to_vms, 0, 0, &tmp);
+    decc$to_vms(path, cb_to_vms, allow_wild, no_directory, &tmp);
     return (tmp);
 }
 

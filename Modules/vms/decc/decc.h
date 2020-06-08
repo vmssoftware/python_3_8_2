@@ -8,8 +8,8 @@
 extern unsigned int _fix_time(long long);
 extern unsigned int _unixtime(long long dt);
 extern long long _vmstime(unsigned int);
-extern char * _from_vms(char *);
-extern char * _to_vms(char *);
+extern char ** _from_vms(char *, int);
+extern char * _to_vms(char *, int, int);
 extern char *_getenv(char *, char *);
 extern long _sysconf(int);
 extern int _sleep(unsigned int);
