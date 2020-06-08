@@ -123,21 +123,32 @@ char **_from_vms(char *path, int wild_flag)
 }
 
 
-static int cb_to_vms(char *name, int flag, void *ud)
+static int cb_to_vms(char *name, int flag, void *user_data)
 {
-    char **tmp = (char **) ud;
-    *tmp = strdup(name);
-    assert((*tmp));
+    _simple_arr *parr = (_simple_arr *) user_data;
+    assert(parr);
+    if (parr->len + 1 >= parr->cap ) {
+        parr->cap += 8;
+        parr->buf = realloc(parr->buf, parr->cap * sizeof(char*));
+    }
+    parr->buf[parr->len] = strdup(name);
+    assert(parr->buf[parr->len]);
+    ++parr->len;
+    parr->buf[parr->len] = NULL;
     return (1);
 }
 
-char *_to_vms(char *path, int allow_wild, int no_directory)
+char **_to_vms(char *path, int allow_wild, int no_directory)
 {
-    char *tmp = NULL;
+    _simple_arr arr;
+    arr.len = 0;
+    arr.cap = 8;
+    arr.buf = malloc(arr.cap * sizeof(char*));
+    arr.buf[arr.len] = NULL;
 
     assert(path);
-    decc$to_vms(path, cb_to_vms, allow_wild, no_directory, &tmp);
-    return (tmp);
+    decc$to_vms(path, cb_to_vms, allow_wild, no_directory, &arr);
+    return (arr.buf);
 }
 
 
