@@ -14,7 +14,7 @@ int
 main(int argc, char **argv)
 {
 #ifdef __VMS
-    exit(Py_BytesMain(argc, argv));
+    exit(Py_BytesMain(argc, (char**)argv));
 #else
     return Py_BytesMain(argc, argv);
 #endif

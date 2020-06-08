@@ -44,10 +44,15 @@ mpd_ssize_t MPD_MINALLOC = MPD_MINALLOC_MIN;
 
 /* Custom allocation and free functions */
 void *(* mpd_mallocfunc)(size_t size) = malloc;
+#ifdef __VMS
+void *(* mpd_reallocfunc)(void *ptr, size_t size) = (void*(*)(void*,size_t))realloc;
+void *(* mpd_callocfunc)(size_t nmemb, size_t size) = calloc;
+void (* mpd_free)(void *ptr) = (void(*)(void*))free;
+#else
 void *(* mpd_reallocfunc)(void *ptr, size_t size) = realloc;
 void *(* mpd_callocfunc)(size_t nmemb, size_t size) = calloc;
 void (* mpd_free)(void *ptr) = free;
-
+#endif
 
 /* emulate calloc if it is not available */
 void *

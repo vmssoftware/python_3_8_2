@@ -275,7 +275,11 @@ hashtable_new(size_t key_size, size_t data_size,
               _Py_hashtable_hash_func hash_func,
               _Py_hashtable_compare_func compare_func)
 {
+#ifdef __VMS
+    _Py_hashtable_allocator_t hashtable_alloc = {malloc, (void (*) (void *))free};
+#else
     _Py_hashtable_allocator_t hashtable_alloc = {malloc, free};
+#endif
     return _Py_hashtable_new_full(key_size, data_size, 0,
                                   hash_func, compare_func,
                                   &hashtable_alloc);

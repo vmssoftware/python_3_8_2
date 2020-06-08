@@ -286,7 +286,14 @@ parsetok(struct tok_state *tok, grammar *g, int start, perrdetail *err_ret,
         }
         else
             started = 1;
+#ifdef __VMS
+#pragma message save
+#pragma message disable MAYLOSEDATA3
+#endif
         len = (a != NULL && b != NULL) ? b - a : 0;
+#ifdef __VMS
+#pragma message restore
+#endif
         str = (char *) PyObject_MALLOC(len + 1);
         if (str == NULL) {
             err_ret->error = E_NOMEM;
@@ -321,16 +328,30 @@ parsetok(struct tok_state *tok, grammar *g, int start, perrdetail *err_ret,
         lineno = type == STRING ? tok->first_lineno : tok->lineno;
         line_start = type == STRING ? tok->multi_line_start : tok->line_start;
         if (a != NULL && a >= line_start) {
+#ifdef __VMS
+#pragma message save
+#pragma message disable MAYLOSEDATA3
+#endif
             col_offset = Py_SAFE_DOWNCAST(a - line_start,
                                           intptr_t, int);
+#ifdef __VMS
+#pragma message restore
+#endif
         }
         else {
             col_offset = -1;
         }
 
         if (b != NULL && b >= tok->line_start) {
+#ifdef __VMS
+#pragma message save
+#pragma message disable MAYLOSEDATA3
+#endif
             end_col_offset = Py_SAFE_DOWNCAST(b - tok->line_start,
                                               intptr_t, int);
+#ifdef __VMS
+#pragma message restore
+#endif
         }
         else {
             end_col_offset = -1;
@@ -428,12 +449,26 @@ parsetok(struct tok_state *tok, grammar *g, int start, perrdetail *err_ret,
         err_ret->lineno = tok->lineno;
         if (tok->buf != NULL) {
             size_t len;
+#ifdef __VMS
+#pragma message save
+#pragma message disable MAYLOSEDATA3
+#endif
             assert(tok->cur - tok->buf < INT_MAX);
+#ifdef __VMS
+#pragma message restore
+#endif
             /* if we've managed to parse a token, point the offset to its start,
              * else use the current reading position of the tokenizer
              */
+#ifdef __VMS
+#pragma message save
+#pragma message disable MAYLOSEDATA3
+#endif
             err_ret->offset = col_offset != -1 ? col_offset + 1 : ((int)(tok->cur - tok->buf));
             len = tok->inp - tok->buf;
+#ifdef __VMS
+#pragma message restore
+#endif
             err_ret->text = (char *) PyObject_MALLOC(len + 1);
             if (err_ret->text != NULL) {
                 if (len > 0)

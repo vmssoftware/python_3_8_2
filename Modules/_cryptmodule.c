@@ -40,7 +40,14 @@ crypt_crypt_impl(PyObject *module, const char *word, const char *salt)
     memset(&data, 0, sizeof(data));
     crypt_result = crypt_r(word, salt, &data);
 #else
+#ifdef __VMS
+#pragma message save
+#pragma message disable MAYLOSEDATA2
+#endif
     crypt_result = crypt(word, salt);
+#ifdef __VMS
+#pragma message restore
+#endif
 #endif
     return Py_BuildValue("s", crypt_result);
 }

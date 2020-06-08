@@ -456,7 +456,14 @@ semlock_new(PyTypeObject *type, PyObject *args, PyObject *kwds)
     }
 
     SEM_CLEAR_ERROR();
+#ifdef __VMS
+#pragma message save
+#pragma message disable MAYLOSEDATA2
+#endif
     handle = SEM_CREATE(name, value, maxvalue);
+#ifdef __VMS
+#pragma message restore
+#endif
     /* On Windows we should fail if GetLastError()==ERROR_ALREADY_EXISTS */
     if (handle == SEM_FAILED || SEM_GET_LAST_ERROR() != 0)
         goto failure;
@@ -500,7 +507,14 @@ semlock_rebuild(PyTypeObject *type, PyObject *args)
 
 #ifndef MS_WINDOWS
     if (name != NULL) {
+#ifdef __VMS
+#pragma message save
+#pragma message disable MAYLOSEDATA2
+#endif
         handle = sem_open(name, 0);
+#ifdef __VMS
+#pragma message restore
+#endif
         if (handle == SEM_FAILED) {
             PyMem_Free(name_copy);
             return PyErr_SetFromErrno(PyExc_OSError);

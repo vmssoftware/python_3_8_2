@@ -410,7 +410,6 @@ exec_dcl(char *const argv[], int p2cread, int c2pwrite) {
     char output_name[PATH_MAX + 1] = "";
     struct dsc$descriptor_s *input_ptr = NULL;
     struct dsc$descriptor_s *output_ptr = NULL;
-    char execute_str[1024];
 
     if (p2cread != -1) {
         if (getname(p2cread, input_name, 1)) {
@@ -428,14 +427,23 @@ exec_dcl(char *const argv[], int p2cread, int c2pwrite) {
         }
     }
 
-    execute_str[0] = 0;
     int i = 1;  // skip DCL
+    int exec_len = 0;
+    while (argv[i]) {
+        exec_len += strlen(argv[i]) + 1;
+        ++i;
+    }
+
+    char *execute_str = PyMem_MALLOC(exec_len + 1);
+
+    i = 1;
+    execute_str[0] = 0;
     while (argv[i]) {
         if (i > 1) {
             strcat(execute_str, " ");
         }
         strcat(execute_str, argv[i]);
-        i++;
+        ++i;
     }
 
     execute.dsc$w_length = strlen(execute_str);
@@ -445,6 +453,8 @@ exec_dcl(char *const argv[], int p2cread, int c2pwrite) {
     if (!$VMS_STATUS_SUCCESS(status)) {
         pid = -1;
     }
+
+    PyMem_FREE(execute_str);
 
     return (pid);
 }
