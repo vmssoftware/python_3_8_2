@@ -584,9 +584,13 @@ tracemalloc_remove_trace(unsigned int domain, uintptr_t ptr)
     tracemalloc_traced_memory -= trace.size;
 }
 
+#ifdef __VMS
+#define REMOVE_TRACE(ptr) \
+            tracemalloc_remove_trace(DEFAULT_DOMAIN, (uintptr_t)(void*)(ptr))
+#else
 #define REMOVE_TRACE(ptr) \
             tracemalloc_remove_trace(DEFAULT_DOMAIN, (uintptr_t)(ptr))
-
+#endif
 
 static int
 tracemalloc_add_trace(unsigned int domain, uintptr_t ptr,
@@ -652,9 +656,13 @@ tracemalloc_add_trace(unsigned int domain, uintptr_t ptr,
     return 0;
 }
 
+#ifdef __VMS
+#define ADD_TRACE(ptr, size) \
+            tracemalloc_add_trace(DEFAULT_DOMAIN, (uintptr_t)(void*)(ptr), size)
+#else
 #define ADD_TRACE(ptr, size) \
             tracemalloc_add_trace(DEFAULT_DOMAIN, (uintptr_t)(ptr), size)
-
+#endif
 
 static void*
 tracemalloc_alloc(int use_calloc, void *ctx, size_t nelem, size_t elsize)

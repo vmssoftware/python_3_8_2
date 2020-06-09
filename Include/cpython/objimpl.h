@@ -72,20 +72,36 @@ typedef struct {
 #define _PyGC_PREV_MASK_COLLECTING (2)
 /* The (N-2) most significant bits contain the real address. */
 #define _PyGC_PREV_SHIFT           (2)
+#ifdef __VMS
+#define _PyGC_PREV_MASK            (((uintptr_t)(void*) -1) << _PyGC_PREV_SHIFT)
+#else
 #define _PyGC_PREV_MASK            (((uintptr_t) -1) << _PyGC_PREV_SHIFT)
+#endif
 
 // Lowest bit of _gc_next is used for flags only in GC.
 // But it is always 0 for normal code.
 #define _PyGCHead_NEXT(g)        ((PyGC_Head*)(g)->_gc_next)
+#ifdef __VMS
+#define _PyGCHead_SET_NEXT(g, p) ((g)->_gc_next = (uintptr_t)(void*)(p))
+#else
 #define _PyGCHead_SET_NEXT(g, p) ((g)->_gc_next = (uintptr_t)(p))
+#endif
 
 // Lowest two bits of _gc_prev is used for _PyGC_PREV_MASK_* flags.
 #define _PyGCHead_PREV(g) ((PyGC_Head*)((g)->_gc_prev & _PyGC_PREV_MASK))
+#ifdef __VMS
 #define _PyGCHead_SET_PREV(g, p) do { \
-    assert(((uintptr_t)p & ~_PyGC_PREV_MASK) == 0); \
+    assert(((uintptr_t)(void*)(p) & ~_PyGC_PREV_MASK) == 0); \
+    (g)->_gc_prev = ((g)->_gc_prev & ~_PyGC_PREV_MASK) \
+        | ((uintptr_t)(void*)(p)); \
+    } while (0)
+#else
+#define _PyGCHead_SET_PREV(g, p) do { \
+    assert(((uintptr_t)(p) & ~_PyGC_PREV_MASK) == 0); \
     (g)->_gc_prev = ((g)->_gc_prev & ~_PyGC_PREV_MASK) \
         | ((uintptr_t)(p)); \
     } while (0)
+#endif
 
 #define _PyGCHead_FINALIZED(g) \
     (((g)->_gc_prev & _PyGC_PREV_MASK_FINALIZED) != 0)

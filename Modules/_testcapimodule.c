@@ -125,9 +125,13 @@ test_sizeof_c_types(PyObject *self, PyObject *Py_UNUSED(ignored))
     CHECK_SIZEOF(Py_ssize_t, sizeof(void *));
     CHECK_SIGNNESS(Py_ssize_t, 1);
 
+#ifndef __VMS
     CHECK_SIZEOF(uintptr_t, sizeof(void *));
+#endif
     CHECK_SIGNNESS(uintptr_t, 0);
+#ifndef __VMS
     CHECK_SIZEOF(intptr_t, sizeof(void *));
+#endif
     CHECK_SIGNNESS(intptr_t, 1);
 
     Py_RETURN_NONE;

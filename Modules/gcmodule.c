@@ -97,9 +97,15 @@ gc_set_refs(PyGC_Head *g, Py_ssize_t refs)
 static inline void
 gc_reset_refs(PyGC_Head *g, Py_ssize_t refs)
 {
+#ifdef __VMS
+    g->_gc_prev = (g->_gc_prev & _PyGC_PREV_MASK_FINALIZED)
+        | PREV_MASK_COLLECTING
+        | ((uintptr_t)(void*)(refs) << _PyGC_PREV_SHIFT);
+#else
     g->_gc_prev = (g->_gc_prev & _PyGC_PREV_MASK_FINALIZED)
         | PREV_MASK_COLLECTING
         | ((uintptr_t)(refs) << _PyGC_PREV_SHIFT);
+#endif
 }
 
 static inline void

@@ -57,9 +57,15 @@ do { memory -= size; printf("%8d - %s\n", memory, comment); } while (0)
    that all use of text and tail as object pointers must be wrapped in
    JOIN_OBJ.  see comments in the ElementObject definition for more
    info. */
+#ifdef __VMS
+#define JOIN_GET(p) ((uintptr_t)(void*) (p) & 1)
+#define JOIN_SET(p, flag) ((void*) ((uintptr_t)(void*) (JOIN_OBJ(p)) | (flag)))
+#define JOIN_OBJ(p) ((PyObject*) ((uintptr_t)(void*) (p) & ~(uintptr_t)(void*)1))
+#else
 #define JOIN_GET(p) ((uintptr_t) (p) & 1)
 #define JOIN_SET(p, flag) ((void*) ((uintptr_t) (JOIN_OBJ(p)) | (flag)))
 #define JOIN_OBJ(p) ((PyObject*) ((uintptr_t) (p) & ~(uintptr_t)1))
+#endif
 
 /* Py_SETREF for a PyObject* that uses a join flag. */
 Py_LOCAL_INLINE(void)

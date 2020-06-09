@@ -2630,11 +2630,19 @@ _PyObject_DebugMallocStats(FILE *out)
         numfreepools += arenas[i].nfreepools;
 
         /* round up to pool alignment */
+#ifdef __VMS
+        if (base & (uintptr_t)(void*)POOL_SIZE_MASK) {
+            arena_alignment += POOL_SIZE;
+            base &= ~(uintptr_t)(void*)POOL_SIZE_MASK;
+            base += POOL_SIZE;
+        }
+#else
         if (base & (uintptr_t)POOL_SIZE_MASK) {
             arena_alignment += POOL_SIZE;
             base &= ~(uintptr_t)POOL_SIZE_MASK;
             base += POOL_SIZE;
         }
+#endif
 
         /* visit every pool in the arena */
         assert(base <= (uintptr_t) arenas[i].pool_address);

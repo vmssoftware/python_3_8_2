@@ -573,7 +573,11 @@ entrance:
     if (ctx->pattern[0] == SRE_OP_INFO) {
         /* optimization info block */
         /* <INFO> <1=skip> <2=flags> <3=min> ... */
+#ifdef __VMS
+        if (ctx->pattern[3] && (uintptr_t)(void*)(end - ctx->ptr) < ctx->pattern[3]) {
+#else
         if (ctx->pattern[3] && (uintptr_t)(end - ctx->ptr) < ctx->pattern[3]) {
+#endif
             TRACE(("reject (got %" PY_FORMAT_SIZE_T "d chars, "
                    "need %" PY_FORMAT_SIZE_T "d)\n",
                    end - ctx->ptr, (Py_ssize_t) ctx->pattern[3]));

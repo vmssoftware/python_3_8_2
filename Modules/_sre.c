@@ -1459,6 +1459,7 @@ _sre_compile_impl(PyObject *module, PyObject *pattern, int flags,
         arg = *code++;                                  \
         VTRACE(("%lu (arg)\n", (unsigned long)arg));    \
     } while (0)
+#ifdef __VMS
 #define GET_SKIP_ADJ(adj)                               \
     do {                                                \
         VTRACE(("%p= ", code));                         \
@@ -1466,10 +1467,23 @@ _sre_compile_impl(PyObject *module, PyObject *pattern, int flags,
         skip = *code;                                   \
         VTRACE(("%lu (skip to %p)\n",                   \
                (unsigned long)skip, code+skip));        \
-        if (skip-adj > (uintptr_t)(end - code))      \
+        if (skip-adj > (uintptr_t)(void*)(end - code))  \
             FAIL;                                       \
         code++;                                         \
     } while (0)
+#else
+#define GET_SKIP_ADJ(adj)                               \
+    do {                                                \
+        VTRACE(("%p= ", code));                         \
+        if (code >= end) FAIL;                          \
+        skip = *code;                                   \
+        VTRACE(("%lu (skip to %p)\n",                   \
+               (unsigned long)skip, code+skip));        \
+        if (skip-adj > (uintptr_t)(end - code))         \
+            FAIL;                                       \
+        code++;                                         \
+    } while (0)
+#endif
 #define GET_SKIP GET_SKIP_ADJ(0)
 
 static int

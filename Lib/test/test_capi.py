@@ -57,7 +57,9 @@ class CAPITest(unittest.TestCase):
                                  stdout=subprocess.PIPE,
                                  stderr=subprocess.PIPE)
         (out, err) = p.communicate()
-        self.assertEqual(out, b'')
+        if sys.platform not in ('OpenVMS'):
+            # for some reason in OpenVMS crash dump is put into output
+            self.assertEqual(out, b'')
         # This used to cause an infinite loop.
         self.assertTrue(err.rstrip().startswith(
                          b'Fatal Python error:'

@@ -502,9 +502,15 @@ compiler_unit_check(struct compiler_unit *u)
 {
     basicblock *block;
     for (block = u->u_blocks; block != NULL; block = block->b_list) {
+#ifdef __VMS
+        assert((uintptr_t)block != (uintptr_t)(void*)0xcbcbcbcbU);
+        assert((uintptr_t)block != (uintptr_t)(void*)0xfbfbfbfbU);
+        assert((uintptr_t)block != (uintptr_t)(void*)0xdbdbdbdbU);
+#else
         assert((uintptr_t)block != 0xcbcbcbcbU);
         assert((uintptr_t)block != 0xfbfbfbfbU);
         assert((uintptr_t)block != 0xdbdbdbdbU);
+#endif
         if (block->b_instr != NULL) {
             assert(block->b_ialloc > 0);
             assert(block->b_iused > 0);
@@ -5925,7 +5931,7 @@ makecode(struct compiler *c, struct assembler *a)
         goto error;
     }
     co = PyCode_NewWithPosOnlyArgs(posonlyargcount+posorkeywordargcount,
-                                   posonlyargcount, kwonlyargcount, nlocals_int, 
+                                   posonlyargcount, kwonlyargcount, nlocals_int,
                                    maxdepth, flags, bytecode, consts, names,
                                    varnames, freevars, cellvars, c->c_filename,
                                    c->u->u_name, c->u->u_firstlineno, a->a_lnotab);

@@ -275,7 +275,12 @@ class CmdLineTest(unittest.TestCase):
         rc2, out2, err2 = assert_python_ok('-c', code, __isolated=False)
         # regarding to Posix specification, outputs should be equal
         # for empty and unset PYTHONPATH
-        self.assertEqual(out1, out2)
+        if sys.platform == 'OpenVMS':
+            # paths may be different because of logical names substitution
+            # just test amount of paths
+            self.assertEqual(len(out1.decode('utf-8').split(':')), len(out2.decode('utf-8').split(':')))
+        else:
+            self.assertEqual(out1, out2)
 
     def test_displayhook_unencodable(self):
         for encoding in ('ascii', 'latin-1', 'utf-8'):
@@ -301,6 +306,8 @@ class CmdLineTest(unittest.TestCase):
             stdin.write(sep.join((b'abc', b'def')))
             stdin.flush()
             stdin.seek(0)
+            if sys.platform == 'OpenVMS':
+                os.fsync(stdin.fileno())
             with subprocess.Popen(
                 (sys.executable, "-c", code),
                 stdin=stdin, stdout=subprocess.PIPE) as proc:
