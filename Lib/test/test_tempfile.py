@@ -343,6 +343,8 @@ class TestBadTempdir:
             finally:
                 os.chmod(tempfile.tempdir, oldmode)
 
+    @unittest.skipIf(sys.platform == 'OpenVMS',
+                     'OpenVMS creates nested folders.')
     def test_nonexisting_directory(self):
         with _inside_empty_temp_dir():
             tempdir = os.path.join(tempfile.tempdir, 'nonexistent')
@@ -350,6 +352,8 @@ class TestBadTempdir:
                 with self.assertRaises(FileNotFoundError):
                     self.make_temp()
 
+    @unittest.skipIf(sys.platform == 'OpenVMS',
+                     'OpenVMS creates nested folders, even the file with the same name exists.')
     def test_non_directory(self):
         with _inside_empty_temp_dir():
             tempdir = os.path.join(tempfile.tempdir, 'file')
@@ -368,6 +372,12 @@ class TestMkstempInner(TestBadTempdir, BaseTestCase):
         _close = os.close
         _unlink = os.unlink
 
+        def __enter__(self):
+            return self
+
+        def __exit__(self, *exc_info):
+            self.__del__()
+
         def __init__(self, dir, pre, suf, bin):
             if bin: flags = self._bflags
             else:   flags = self._tflags
@@ -379,8 +389,10 @@ class TestMkstempInner(TestBadTempdir, BaseTestCase):
             os.write(self.fd, str)
 
         def __del__(self):
-            self._close(self.fd)
-            self._unlink(self.name)
+            if self.fd != -1:
+                self._close(self.fd)
+                self._unlink(self.name)
+                self.fd = -1
 
     def do_create(self, dir=None, pre=None, suf=None, bin=1):
         output_type = tempfile._infer_return_type(dir, pre, suf)
@@ -400,28 +412,41 @@ class TestMkstempInner(TestBadTempdir, BaseTestCase):
 
     def test_basic(self):
         # _mkstemp_inner can create files
-        self.do_create().write(b"blat")
-        self.do_create(pre="a").write(b"blat")
-        self.do_create(suf="b").write(b"blat")
-        self.do_create(pre="a", suf="b").write(b"blat")
-        self.do_create(pre="aa", suf=".txt").write(b"blat")
+        with self.do_create() as t:
+            t.write(b"blat")
+        with self.do_create(pre="a")as t:
+            t.write(b"blat")
+        with self.do_create(suf="b")as t:
+            t.write(b"blat")
+        with self.do_create(pre="a", suf="b")as t:
+            t.write(b"blat")
+        with self.do_create(pre="aa", suf=".txt")as t:
+            t.write(b"blat")
 
     def test_basic_with_bytes_names(self):
         # _mkstemp_inner can create files when given name parts all
         # specified as bytes.
         dir_b = tempfile.gettempdirb()
-        self.do_create(dir=dir_b, suf=b"").write(b"blat")
-        self.do_create(dir=dir_b, pre=b"a").write(b"blat")
-        self.do_create(dir=dir_b, suf=b"b").write(b"blat")
-        self.do_create(dir=dir_b, pre=b"a", suf=b"b").write(b"blat")
-        self.do_create(dir=dir_b, pre=b"aa", suf=b".txt").write(b"blat")
+        with self.do_create(dir=dir_b, suf=b"") as t:
+            t.write(b"blat")
+        with self.do_create(dir=dir_b, pre=b"a") as t:
+            t.write(b"blat")
+        with self.do_create(dir=dir_b, suf=b"b") as t:
+            t.write(b"blat")
+        with self.do_create(dir=dir_b, pre=b"a", suf=b"b") as t:
+            t.write(b"blat")
+        with self.do_create(dir=dir_b, pre=b"aa", suf=b".txt") as t:
+            t.write(b"blat")
         # Can't mix str & binary types in the args.
         with self.assertRaises(TypeError):
-            self.do_create(dir="", suf=b"").write(b"blat")
+            with self.do_create(dir="", suf=b"") as t:
+                t.write(b"blat")
         with self.assertRaises(TypeError):
-            self.do_create(dir=dir_b, pre="").write(b"blat")
+            with self.do_create(dir=dir_b, pre="") as t:
+                t.write(b"blat")
         with self.assertRaises(TypeError):
-            self.do_create(dir=dir_b, pre=b"", suf="").write(b"blat")
+            with self.do_create(dir=dir_b, pre=b"", suf="") as t:
+                t.write(b"blat")
 
     def test_basic_many(self):
         # _mkstemp_inner can create many files (stochastic)
@@ -433,8 +458,10 @@ class TestMkstempInner(TestBadTempdir, BaseTestCase):
         # _mkstemp_inner can create files in a user-selected directory
         dir = tempfile.mkdtemp()
         try:
-            self.do_create(dir=dir).write(b"blat")
-            self.do_create(dir=pathlib.Path(dir)).write(b"blat")
+            with self.do_create(dir=dir) as t:
+                t.write(b"blat")
+            with self.do_create(dir=pathlib.Path(dir)) as t:
+                t.write(b"blat")
         finally:
             os.rmdir(dir)
 
@@ -450,6 +477,7 @@ class TestMkstempInner(TestBadTempdir, BaseTestCase):
             user = expected >> 6
             expected = user * (1 + 8 + 64)
         self.assertEqual(mode, expected)
+        del file
 
     @unittest.skipUnless(has_spawnl, 'os.spawnl not available')
     def test_noinherit(self):
@@ -460,45 +488,45 @@ class TestMkstempInner(TestBadTempdir, BaseTestCase):
         else:
             v="q"
 
-        file = self.do_create()
-        self.assertEqual(os.get_inheritable(file.fd), False)
-        fd = "%d" % file.fd
+        with self.do_create() as file:
+            self.assertEqual(os.get_inheritable(file.fd), False)
+            fd = "%d" % file.fd
 
-        try:
-            me = __file__
-        except NameError:
-            me = sys.argv[0]
+            try:
+                me = __file__
+            except NameError:
+                me = sys.argv[0]
 
-        # We have to exec something, so that FD_CLOEXEC will take
-        # effect.  The core of this test is therefore in
-        # tf_inherit_check.py, which see.
-        tester = os.path.join(os.path.dirname(os.path.abspath(me)),
-                              "tf_inherit_check.py")
+            # We have to exec something, so that FD_CLOEXEC will take
+            # effect.  The core of this test is therefore in
+            # tf_inherit_check.py, which see.
+            tester = os.path.join(os.path.dirname(os.path.abspath(me)),
+                                "tf_inherit_check.py")
 
-        # On Windows a spawn* /path/ with embedded spaces shouldn't be quoted,
-        # but an arg with embedded spaces should be decorated with double
-        # quotes on each end
-        if sys.platform == 'win32':
-            decorated = '"%s"' % sys.executable
-            tester = '"%s"' % tester
-        else:
-            decorated = sys.executable
+            # On Windows a spawn* /path/ with embedded spaces shouldn't be quoted,
+            # but an arg with embedded spaces should be decorated with double
+            # quotes on each end
+            if sys.platform == 'win32':
+                decorated = '"%s"' % sys.executable
+                tester = '"%s"' % tester
+            else:
+                decorated = sys.executable
 
-        retval = os.spawnl(os.P_WAIT, sys.executable, decorated, tester, v, fd)
-        self.assertFalse(retval < 0,
-                    "child process caught fatal signal %d" % -retval)
-        self.assertFalse(retval > 0, "child process reports failure %d"%retval)
+            retval = os.spawnl(os.P_WAIT, sys.executable, decorated, tester, v, fd)
+            self.assertFalse(retval < 0,
+                        "child process caught fatal signal %d" % -retval)
+            self.assertFalse(retval > 0, "child process reports failure %d"%retval)
 
     @unittest.skipUnless(has_textmode, "text mode not available")
     def test_textmode(self):
         # _mkstemp_inner can create files in text mode
 
         # A text file is truncated at the first Ctrl+Z byte
-        f = self.do_create(bin=0)
-        f.write(b"blat\x1a")
-        f.write(b"extra\n")
-        os.lseek(f.fd, 0, os.SEEK_SET)
-        self.assertEqual(os.read(f.fd, 20), b"blat")
+        with self.do_create(bin=0) as f:
+            f.write(b"blat\x1a")
+            f.write(b"extra\n")
+            os.lseek(f.fd, 0, os.SEEK_SET)
+            self.assertEqual(os.read(f.fd, 20), b"blat")
 
     def make_temp(self):
         return tempfile._mkstemp_inner(tempfile.gettempdir(),
@@ -1331,6 +1359,8 @@ class TestTemporaryDirectory(BaseTestCase):
             with open(os.path.join(path, "test%d.txt" % i), "wb") as f:
                 f.write(b"Hello world!")
 
+    @unittest.skipIf(sys.platform == 'OpenVMS',
+                     'OpenVMS creates nested folders.')
     def test_mkdtemp_failure(self):
         # Check no additional exception if mkdtemp fails
         # Previously would raise AttributeError instead

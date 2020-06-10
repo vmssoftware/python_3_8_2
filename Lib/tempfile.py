@@ -247,6 +247,10 @@ def _mkstemp_inner(dir, pre, suf, flags, output_type):
         file = _os.path.join(dir, pre + name + suf)
         _sys.audit("tempfile.mkstemp", file)
         try:
+            if _sys.platform == 'OpenVMS':
+                # OpenVMS can easly create the file aaa. even if the directory aaa.DIR exists
+                if _os.access(file, _os.F_OK):
+                    continue
             fd = _os.open(file, flags, 0o600)
         except FileExistsError:
             continue    # try again
@@ -356,6 +360,10 @@ def mkdtemp(suffix=None, prefix=None, dir=None):
         file = _os.path.join(dir, prefix + name + suffix)
         _sys.audit("tempfile.mkdtemp", file)
         try:
+            if _sys.platform == 'OpenVMS':
+                # OpenVMS can easly create the directory aaa.DIR even if the file aaa. exists
+                if _os.access(file, _os.F_OK):
+                    continue
             _os.mkdir(file, 0o700)
         except FileExistsError:
             continue    # try again
@@ -786,7 +794,7 @@ class TemporaryDirectory(object):
     @classmethod
     def _rmtree(cls, name):
         def onerror(func, path, exc_info):
-            if issubclass(exc_info[0], PermissionError):
+            if issubclass(exc_info[0], (PermissionError, OSError)):
                 def resetperms(path):
                     try:
                         _os.chflags(path, 0)
@@ -802,7 +810,7 @@ class TemporaryDirectory(object):
                     try:
                         _os.unlink(path)
                     # PermissionError is raised on FreeBSD for directories
-                    except (IsADirectoryError, PermissionError):
+                    except (IsADirectoryError, PermissionError, OSError):
                         cls._rmtree(path)
                 except FileNotFoundError:
                     pass
