@@ -75,6 +75,10 @@ import os
 print('cwd==%a' % os.getcwd())
 """
 
+if sys.platform == 'OpenVMS':
+    import vms.decc
+    tmp_folder_real = vms.decc.from_vms(vms.decc.to_vms("/tmp/0123456789/", False, 1)[0], False)[0][:-10]
+
 def _make_test_script(script_dir, script_basename, source=test_source):
     to_return = make_script(script_dir, script_basename, source)
     importlib.invalidate_caches()
@@ -301,6 +305,9 @@ class CmdLineTest(unittest.TestCase):
             pkg_dir = os.path.join(script_dir, 'test_pkg')
             make_pkg(pkg_dir)
             script_name = _make_test_script(pkg_dir, 'script')
+            if sys.platform == 'OpenVMS':
+                script_name = script_name.replace('/tmp/', tmp_folder_real)
+                script_dir = script_dir.replace('/tmp/', tmp_folder_real)
             self._check_script(["-m", "test_pkg.script"], script_name, script_name,
                                script_dir, 'test_pkg',
                                importlib.machinery.SourceFileLoader,
@@ -309,6 +316,10 @@ class CmdLineTest(unittest.TestCase):
     def test_module_in_package_in_zipfile(self):
         with support.temp_dir() as script_dir:
             zip_name, run_name = _make_test_zip_pkg(script_dir, 'test_zip', 'test_pkg', 'script')
+            if sys.platform == 'OpenVMS':
+                zip_name = zip_name.replace('/tmp/', tmp_folder_real)
+                run_name = run_name.replace('/tmp/', tmp_folder_real)
+                script_dir = script_dir.replace('/tmp/', tmp_folder_real)
             self._check_script(["-m", "test_pkg.script"], run_name, run_name,
                                script_dir, 'test_pkg', zipimport.zipimporter,
                                PYTHONPATH=zip_name, cwd=script_dir)
@@ -316,6 +327,10 @@ class CmdLineTest(unittest.TestCase):
     def test_module_in_subpackage_in_zipfile(self):
         with support.temp_dir() as script_dir:
             zip_name, run_name = _make_test_zip_pkg(script_dir, 'test_zip', 'test_pkg', 'script', depth=2)
+            if sys.platform == 'OpenVMS':
+                zip_name = zip_name.replace('/tmp/', tmp_folder_real)
+                run_name = run_name.replace('/tmp/', tmp_folder_real)
+                script_dir = script_dir.replace('/tmp/', tmp_folder_real)
             self._check_script(["-m", "test_pkg.test_pkg.script"], run_name, run_name,
                                script_dir, 'test_pkg.test_pkg',
                                zipimport.zipimporter,
@@ -326,6 +341,9 @@ class CmdLineTest(unittest.TestCase):
             pkg_dir = os.path.join(script_dir, 'test_pkg')
             make_pkg(pkg_dir)
             script_name = _make_test_script(pkg_dir, '__main__')
+            if sys.platform == 'OpenVMS':
+                script_name = script_name.replace('/tmp/', tmp_folder_real)
+                script_dir = script_dir.replace('/tmp/', tmp_folder_real)
             self._check_script(["-m", "test_pkg"], script_name,
                                script_name, script_dir, 'test_pkg',
                                importlib.machinery.SourceFileLoader,
@@ -339,6 +357,9 @@ class CmdLineTest(unittest.TestCase):
             compiled_name = py_compile.compile(script_name, doraise=True)
             os.remove(script_name)
             pyc_file = support.make_legacy_pyc(script_name)
+            if sys.platform == 'OpenVMS':
+                pyc_file = pyc_file.replace('/tmp/', tmp_folder_real)
+                script_dir = script_dir.replace('/tmp/', tmp_folder_real)
             self._check_script(["-m", "test_pkg"], pyc_file,
                                pyc_file, script_dir, 'test_pkg',
                                importlib.machinery.SourcelessFileLoader,
@@ -376,6 +397,9 @@ class CmdLineTest(unittest.TestCase):
                     print(repr(out))
                 expected = "init_argv0==%r" % '-m'
                 self.assertIn(expected.encode('utf-8'), out)
+                if sys.platform == 'OpenVMS':
+                    script_name = script_name.replace('/tmp/', tmp_folder_real)
+                    script_dir = script_dir.replace('/tmp/', tmp_folder_real)
                 self._check_output(script_name, rc, out,
                                    script_name, script_name, script_dir, 'test_pkg',
                                    importlib.machinery.SourceFileLoader)
@@ -405,6 +429,9 @@ class CmdLineTest(unittest.TestCase):
                     f.write("data")
                     rc, out, err = assert_python_ok('-m', 'other', *example_args,
                                                     __isolated=False)
+                    if sys.platform == 'OpenVMS':
+                        script_name = script_name.replace('/tmp/', tmp_folder_real)
+                        script_dir = script_dir.replace('/tmp/', tmp_folder_real)
                     self._check_output(script_name, rc, out,
                                       script_name, script_name, script_dir, '',
                                       importlib.machinery.SourceFileLoader)
@@ -686,6 +713,9 @@ class CmdLineTest(unittest.TestCase):
             # direct execution test cases
             p = spawn_python("-sm", "script_pkg.__main__", cwd=work_dir)
             out_by_module = kill_python(p).decode().splitlines()
+            if sys.platform == 'OpenVMS':
+                work_dir = work_dir.replace('/tmp/', tmp_folder_real)
+                script_dir = script_dir.replace('/tmp/', tmp_folder_real)
             self.assertEqual(out_by_module[0], work_dir)
             self.assertNotIn(script_dir, out_by_module)
             # Package execution should give the same output
