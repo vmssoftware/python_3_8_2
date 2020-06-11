@@ -22,9 +22,32 @@ except ImportError:
 from test import support
 from test.support import script_helper
 
-from .test_py_compile import without_source_date_epoch
-from .test_py_compile import SourceDateEpochTestMeta
+from test.test_py_compile import without_source_date_epoch
+from test.test_py_compile import SourceDateEpochTestMeta
 
+def onerror(func, path, exc_info):
+    if issubclass(exc_info[0], (PermissionError, OSError)):
+        def resetperms(path):
+            try:
+                os.chflags(path, 0)
+            except AttributeError:
+                pass
+            os.chmod(path, 0o700)
+
+        try:
+            resetperms(path)
+
+            try:
+                os.unlink(path)
+            # PermissionError is raised on FreeBSD for directories
+            except (IsADirectoryError, PermissionError, OSError):
+                shutil.rmtree(path, onerror=onerror)
+        except FileNotFoundError:
+            pass
+    elif issubclass(exc_info[0], FileNotFoundError):
+        pass
+    else:
+        raise
 
 class CompileallTestsBase:
 
@@ -43,7 +66,7 @@ class CompileallTestsBase:
         shutil.copyfile(self.source_path, self.source_path3)
 
     def tearDown(self):
-        shutil.rmtree(self.directory)
+        shutil.rmtree(self.directory, onerror=onerror)
 
     def add_bad_source_file(self):
         self.bad_source_path = os.path.join(self.directory, '_test_bad.py')
@@ -221,7 +244,7 @@ class EncodingTest(unittest.TestCase):
             file.write('print u"\u20ac"\n')
 
     def tearDown(self):
-        shutil.rmtree(self.directory)
+        shutil.rmtree(self.directory, onerror=onerror)
 
     def test_error(self):
         try:
@@ -288,7 +311,7 @@ class CommandLineTestsBase:
 
     def setUp(self):
         self.directory = tempfile.mkdtemp()
-        self.addCleanup(support.rmtree, self.directory)
+        self.addCleanup(support.rmtree, self.directory) #, onerror=onerror)
         self.pkgdir = os.path.join(self.directory, 'foo')
         os.mkdir(self.pkgdir)
         self.pkgdir_cachedir = os.path.join(self.pkgdir, '__pycache__')
@@ -555,6 +578,7 @@ class CommandLineTestsBase:
         self.assertEqual(int.from_bytes(data[4:8], 'little'), 0b01)
 
     @skipUnless(_have_multiprocessing, "requires multiprocessing")
+    @unittest.skipIf(sys.platform == 'OpenVMS', "OpenVMS has no os.fork()")
     def test_workers(self):
         bar2fn = script_helper.make_script(self.directory, 'bar2', '')
         files = []
