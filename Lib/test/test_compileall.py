@@ -311,7 +311,7 @@ class CommandLineTestsBase:
 
     def setUp(self):
         self.directory = tempfile.mkdtemp()
-        self.addCleanup(support.rmtree, self.directory) #, onerror=onerror)
+        self.addCleanup(shutil.rmtree, self.directory, onerror=onerror)
         self.pkgdir = os.path.join(self.directory, 'foo')
         os.mkdir(self.pkgdir)
         self.pkgdir_cachedir = os.path.join(self.pkgdir, '__pycache__')
