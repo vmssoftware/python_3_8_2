@@ -1016,7 +1016,7 @@ class WalkTests(unittest.TestCase):
 
     def setUp(self):
         join = os.path.join
-        self.addCleanup(support.rmtree, support.TESTFN)
+        self.addCleanup(shutil.rmtree, support.TESTFN)
 
         # Build:
         #     TESTFN/
@@ -1934,6 +1934,7 @@ class TestInvalidFD(unittest.TestCase):
 
     @unittest.skipUnless(hasattr(os, 'get_blocking'),
                          'needs os.get_blocking() and os.set_blocking()')
+    @unittest.skipIf(sys.platform == 'OpenVMS', 'OpenVMS does not support blocking files')
     def test_blocking(self):
         self.check(os.get_blocking)
         self.check(os.set_blocking, True)
@@ -3617,6 +3618,7 @@ class PathTConverterTests(unittest.TestCase):
 
 @unittest.skipUnless(hasattr(os, 'get_blocking'),
                      'needs os.get_blocking() and os.set_blocking()')
+@unittest.skipIf(sys.platform == 'OpenVMS', 'OpenVMS does not support blocking files')
 class BlockingTests(unittest.TestCase):
     def test_blocking(self):
         fd = os.open(__file__, os.O_RDONLY)
@@ -4053,4 +4055,4 @@ if hasattr(os, "_fspath"):
 
 
 if __name__ == "__main__":
-    unittest.main()
+    unittest.main(verbosity=2)

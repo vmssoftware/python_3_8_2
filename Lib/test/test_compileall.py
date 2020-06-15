@@ -25,30 +25,6 @@ from test.support import script_helper
 from test.test_py_compile import without_source_date_epoch
 from test.test_py_compile import SourceDateEpochTestMeta
 
-def onerror(func, path, exc_info):
-    if issubclass(exc_info[0], (PermissionError, OSError)):
-        def resetperms(path):
-            try:
-                os.chflags(path, 0)
-            except AttributeError:
-                pass
-            os.chmod(path, 0o700)
-
-        try:
-            resetperms(path)
-
-            try:
-                os.unlink(path)
-            # PermissionError is raised on FreeBSD for directories
-            except (IsADirectoryError, PermissionError, OSError):
-                shutil.rmtree(path, onerror=onerror)
-        except FileNotFoundError:
-            pass
-    elif issubclass(exc_info[0], FileNotFoundError):
-        pass
-    else:
-        raise
-
 class CompileallTestsBase:
 
     def setUp(self):
@@ -66,7 +42,7 @@ class CompileallTestsBase:
         shutil.copyfile(self.source_path, self.source_path3)
 
     def tearDown(self):
-        shutil.rmtree(self.directory, onerror=onerror)
+        shutil.rmtree(self.directory)
 
     def add_bad_source_file(self):
         self.bad_source_path = os.path.join(self.directory, '_test_bad.py')
@@ -244,7 +220,7 @@ class EncodingTest(unittest.TestCase):
             file.write('print u"\u20ac"\n')
 
     def tearDown(self):
-        shutil.rmtree(self.directory, onerror=onerror)
+        shutil.rmtree(self.directory)
 
     def test_error(self):
         try:
@@ -311,7 +287,7 @@ class CommandLineTestsBase:
 
     def setUp(self):
         self.directory = tempfile.mkdtemp()
-        self.addCleanup(shutil.rmtree, self.directory, onerror=onerror)
+        self.addCleanup(shutil.rmtree, self.directory)
         self.pkgdir = os.path.join(self.directory, 'foo')
         os.mkdir(self.pkgdir)
         self.pkgdir_cachedir = os.path.join(self.pkgdir, '__pycache__')

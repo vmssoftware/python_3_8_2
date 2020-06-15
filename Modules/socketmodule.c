@@ -714,7 +714,6 @@ internal_setblocking(PySocketSockObject *s, int block)
 #if (defined(HAVE_SYS_IOCTL_H) && defined(FIONBIO)) || defined(__VMS)
     block = !block;
 #ifdef __VMS
-    ioctl(s->sock_fd, FIONBIO, (char *)&block);
     if (ioctl(s->sock_fd, FIONBIO, (char *)&block) == -1)
         goto done;
 #else

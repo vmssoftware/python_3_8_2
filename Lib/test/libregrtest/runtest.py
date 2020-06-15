@@ -319,37 +319,7 @@ def cleanup_test_droppings(test_name, verbose):
 
         if os.path.isdir(name):
             import shutil
-            if sys.platform == 'OpenVMS':
-                def onerror(func, path, exc_info):
-                    if issubclass(exc_info[0], (PermissionError, OSError)):
-                        def resetperms(path):
-                            try:
-                                os.chflags(path, 0)
-                            except AttributeError:
-                                pass
-                            os.chmod(path, 0o700)
-
-                        try:
-                            resetperms(path)
-
-                            try:
-                                os.unlink(path)
-                            # PermissionError is raised on FreeBSD for directories
-                            except (IsADirectoryError, PermissionError, OSError):
-                                shutil.rmtree(path, onerror=onerror)
-                        except FileNotFoundError:
-                            pass
-                    elif issubclass(exc_info[0], FileNotFoundError):
-                        pass
-                    else:
-                        raise
-
-                def dir_nuker(name):
-                    shutil.rmtree(name, onerror=onerror)
-
-                kind, nuker = "directory", dir_nuker
-            else:
-                kind, nuker = "directory", shutil.rmtree
+            kind, nuker = "directory", shutil.rmtree
         elif os.path.isfile(name):
             kind, nuker = "file", os.unlink
         else:

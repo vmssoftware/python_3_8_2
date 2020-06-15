@@ -794,7 +794,7 @@ class TemporaryDirectory(object):
     @classmethod
     def _rmtree(cls, name):
         def onerror(func, path, exc_info):
-            if issubclass(exc_info[0], (PermissionError, OSError)):
+            if issubclass(exc_info[0], PermissionError):
                 def resetperms(path):
                     try:
                         _os.chflags(path, 0)
@@ -810,7 +810,7 @@ class TemporaryDirectory(object):
                     try:
                         _os.unlink(path)
                     # PermissionError is raised on FreeBSD for directories
-                    except (IsADirectoryError, PermissionError, OSError):
+                    except (IsADirectoryError, PermissionError):
                         cls._rmtree(path)
                 except FileNotFoundError:
                     pass

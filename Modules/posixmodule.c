@@ -4593,7 +4593,32 @@ os_unlink_impl(PyObject *module, path_t *path, int dir_fd)
         result = unlinkat(dir_fd, path->narrow, 0);
     else
 #endif /* HAVE_UNLINKAT */
+#ifdef __VMS
+        int t_len = strlen(path->narrow);
+        if (path->narrow[t_len - 1] == ';' ) {
+            // remove the latest version only
+            char *t_path = PyMem_Malloc(t_len);
+            strncpy(t_path, path->narrow, t_len);
+            t_path[t_len - 1] = 0;
+            result = unlink(t_path);
+            PyMem_FREE(t_path);
+        } else {
+            // remove all versions
+            int t_errno = errno;
+            result = unlink(path->narrow);
+            if (result == 0) {
+                while (!(result = unlink(path->narrow))) {
+                    // pass
+                }
+                if (errno == ENOENT) {
+                    errno = t_errno;
+                    result = 0;
+                }
+            }
+        }
+#else
         result = unlink(path->narrow);
+#endif
 #endif
     _Py_END_SUPPRESS_IPH
     Py_END_ALLOW_THREADS

@@ -36,7 +36,7 @@ static void set_coe ( void )
     set ("DECC$UNIX_LEVEL", 100);
     set ("DECC$ARGV_PARSE_STYLE", 1);
     set ("DECC$EFS_CASE_PRESERVE", 1);
-    set ("DECC$EFS_CASE_SPECIAL", 1);
+    set ("DECC$EFS_CASE_SPECIAL", 0);
     set ("DECC$EFS_CHARSET", 1);
     set ("DECC$ENABLE_GETENV_CACHE", 1);
     set ("DECC$FILE_SHARING", 1);
