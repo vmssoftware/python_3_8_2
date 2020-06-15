@@ -2503,6 +2503,8 @@ class Bz2PartialReadTest(Bz2Test, unittest.TestCase):
 
 
 def root_is_uid_gid_0():
+    if sys.platform == 'OpenVMS':
+        return False
     try:
         import pwd, grp
     except ImportError:

@@ -1,5 +1,6 @@
 """Tests for distutils.command.sdist."""
 import os
+import sys
 import tarfile
 import unittest
 import warnings
@@ -443,6 +444,7 @@ class SDistTestCase(BasePyPIRCCommandTestCase):
                      "The tar command is not found")
     @unittest.skipIf(find_executable('gzip') is None,
                      "The gzip command is not found")
+    @unittest.skipIf(sys.platform == 'OpenVMS', 'OpenVMS has no root with zero uid')
     def test_make_distribution_owner_group(self):
         # now building a sdist
         dist, cmd = self.get_cmd()

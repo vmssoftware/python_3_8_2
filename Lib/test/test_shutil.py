@@ -1360,6 +1360,7 @@ class TestShutil(unittest.TestCase):
         self.assertRaises(ValueError, make_archive, base_name, 'xxx')
 
     @support.requires_zlib
+    @unittest.skipIf(sys.platform == 'OpenVMS', 'OpenVMS has no root with zero uid')
     def test_make_archive_owner_group(self):
         # testing make_archive with owner and group, with various combinations
         # this works even if there's not gid/uid support
@@ -1389,6 +1390,7 @@ class TestShutil(unittest.TestCase):
 
     @support.requires_zlib
     @unittest.skipUnless(UID_GID_SUPPORT, "Requires grp and pwd support")
+    @unittest.skipIf(sys.platform == 'OpenVMS', 'OpenVMS has no root with zero uid')
     def test_tarfile_root_owner(self):
         root_dir, base_dir = self._create_files()
         base_name = os.path.join(self.mkdtemp(), 'archive')
