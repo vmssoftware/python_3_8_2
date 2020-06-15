@@ -1457,7 +1457,37 @@ convertenviron(void)
     }
 #ifdef __VMS
     static const char* prefillNames[] = {
+        "PYTHONHOME",
+        "PYTHONPATH",
+        "PYTHONSTARTUP",
+        "PYTHONOPTIMIZE",
+        "PYTHONBREAKPOINT",
+        "PYTHONDEBUG",
+        "PYTHONINSPECT",
+        "PYTHONUNBUFFERED",
+        "PYTHONVERBOSE",
         "PYTHONCASEOK",
+        "PYTHONDONTWRITEBYTECODE",
+        "PYTHONPYCACHEPREFIX",
+        "PYTHONHASHSEED",
+        "PYTHONIOENCODING",
+        "PYTHONNOUSERSITE",
+        "PYTHONUSERBASE",
+        "PYTHONEXECUTABLE",
+        "PYTHONWARNINGS",
+        "PYTHONFAULTHANDLER",
+        "PYTHONTRACEMALLOC",
+        "PYTHONPROFILEIMPORTTIME",
+        "PYTHONASYNCIODEBUG",
+        "PYTHONMALLOC",
+        "PYTHONMALLOCSTATS",
+        "PYTHONLEGACYWINDOWSFSENCODING",
+        "PYTHONLEGACYWINDOWSSTDIO",
+        "PYTHONCOERCECLOCALE",
+        "PYTHONDEVMODE",
+        "PYTHONUTF8",
+        "PYTHONTHREADDEBUG",
+        "PYTHONDUMPREFS",
         NULL
         };
     const char**ppName = prefillNames;
