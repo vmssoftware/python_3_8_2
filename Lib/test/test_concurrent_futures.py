@@ -62,6 +62,9 @@ def sleep_and_raise(t):
 def sleep_and_print(t, msg):
     time.sleep(t)
     print(msg)
+    if sys.platform == 'OpenVMS':
+        # in case of OpenVMS stdout will be lost after flush()
+        return
     sys.stdout.flush()
 
 def init(x):
@@ -158,11 +161,11 @@ class ProcessPoolForkMixin(ExecutorMixin):
     ctx = "fork"
 
     def get_context(self):
-        if sys.platform == "win32":
+        if sys.platform in ("win32", "OpenVMS"):
             self.skipTest("require unix system")
         return super().get_context()
 
-
+@unittest.skipIf(sys.platform == 'OpenVMS', 'Does not work in OpenVMS')
 class ProcessPoolSpawnMixin(ExecutorMixin):
     executor_type = futures.ProcessPoolExecutor
     ctx = "spawn"
@@ -173,7 +176,7 @@ class ProcessPoolForkserverMixin(ExecutorMixin):
     ctx = "forkserver"
 
     def get_context(self):
-        if sys.platform == "win32":
+        if sys.platform in ("win32", "OpenVMS"):
             self.skipTest("require unix system")
         return super().get_context()
 
