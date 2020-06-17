@@ -112,6 +112,7 @@
 %rename(getenv) _getenv;
 %rename(sysconf) _sysconf;
 %rename(sleep) _sleep;
+%rename(dlopen_test) _dlopen_test;
 
 %newobject _from_vms;
 %newobject _to_vms;
@@ -124,4 +125,6 @@ extern char ** _to_vms(char *, int, int);
 extern char *_getenv(char *, char *);
 extern long _sysconf(int);
 extern int _sleep(unsigned int);
+extern int _dlopen_test(char *name);
+
 

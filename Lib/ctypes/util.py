@@ -81,9 +81,14 @@ elif os.name == "posix" and sys.platform == "darwin":
         return None
 
 # __VMS much more TBD
-if os.name == "posix" and sys.platform == "OpenVMS":
+elif os.name == "posix" and sys.platform == "OpenVMS":
     def find_library(name):
-        return "decc$shr"
+        if name == "c":
+            return "decc$shr"
+        import vms.decc
+        if vms.decc.dlopen_test(name):
+            return name
+        return None
 
 elif sys.platform.startswith("aix"):
     # AIX has two styles of storing shared libraries

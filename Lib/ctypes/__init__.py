@@ -388,7 +388,11 @@ class CDLL(object):
         return func
 
     def __getitem__(self, name_or_ordinal):
-        func = self._FuncPtr((name_or_ordinal, self))
+        if self._name == 'decc$shr':
+            # OpenVMS hack
+            func = self._FuncPtr(('decc$' + name_or_ordinal, self))
+        else:
+            func = self._FuncPtr((name_or_ordinal, self))
         if not isinstance(name_or_ordinal, int):
             func.__name__ = name_or_ordinal
         return func

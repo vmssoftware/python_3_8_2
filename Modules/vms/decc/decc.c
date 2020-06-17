@@ -9,6 +9,7 @@
 #include <unistd.h>
 #include <time.h>
 #include <assert.h>
+#include <dlfcn.h>
 
 #include "decc.h"
 
@@ -183,5 +184,14 @@ long _sysconf(int name)
 int _sleep(unsigned int nsec)
 {
     return (sleep(nsec));
+}
+
+int _dlopen_test(char *name) {
+    void *handle = dlopen(name, 0);
+    if (handle) {
+        dlclose(handle);
+        return 1;
+    }
+    return 0;
 }
 
