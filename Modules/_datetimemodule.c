@@ -1533,8 +1533,8 @@ wrap_strftime(PyObject *object, PyObject *format, PyObject *timetuple,
             ntoappend = 1;
         }
         else if ((ch = *pin++) == '\0') {
-        /* Null byte follows %, copy only '%'. 
-         * 
+        /* Null byte follows %, copy only '%'.
+         *
          * Back the pin up one char so that we catch the null check
          * the next time through the loop.*/
             pin--;
@@ -1624,7 +1624,7 @@ wrap_strftime(PyObject *object, PyObject *format, PyObject *timetuple,
         usednew += ntoappend;
         assert(usednew <= totalnew);
     }  /* end while() */
-    
+
     if (_PyBytes_Resize(&newfmt, usednew) < 0)
         goto Done;
     {
@@ -4870,6 +4870,8 @@ datetime_from_timet_and_us(PyObject *cls, TM_FUNC f, time_t timet, int us,
      */
 #ifdef MS_WINDOWS
         && (timet - max_fold_seconds > 0)
+#elif defined(__VMS)
+        && (timet > (time_t)max_fold_seconds)
 #endif
         ) {
         long long probe_seconds, result_seconds, transition;

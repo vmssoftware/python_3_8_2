@@ -793,6 +793,13 @@ time_strftime(PyObject *self, PyObject *args)
 
     fmtlen = time_strlen(fmt);
 
+#ifdef __VMS
+    if (fmtlen > 0 && fmt[fmtlen-1] == '%') {
+        PyErr_SetString(PyExc_ValueError, "Invalid format string");
+        return NULL;
+    }
+#endif
+
     /* I hate these functions that presume you know how big the output
      * will be ahead of time...
      */

@@ -1657,7 +1657,7 @@ class datetime(date):
             # thus we can't perform fold detection for values of time less
             # than the max time fold. See comments in _datetimemodule's
             # version of this method for more details.
-            if t < max_fold_seconds and sys.platform.startswith("win"):
+            if t < max_fold_seconds and (sys.platform.startswith("win") or sys.platform == 'OpenVMS'):
                 return result
 
             y, m, d, hh, mm, ss = converter(t - max_fold_seconds)[:6]

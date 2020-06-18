@@ -34,6 +34,8 @@
 
 #define _POSIX_EXIT 1
 
+// #define __SIGNED_INT_TIME_T
+
 // #ifndef HGVERSION
 // #define HGVERSION ""
 // #endif

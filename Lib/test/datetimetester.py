@@ -1642,7 +1642,12 @@ class TestDate(HarmlessMixedComparison, unittest.TestCase):
                 # Year 42 returns '42', not padded
                 self.assertEqual(d.strftime("%Y"), '%d' % y)
                 # '0042' is obtained anyway
-                self.assertEqual(d.strftime("%4Y"), '%04d' % y)
+                if sys.platform == 'OpenVMS':
+                    # in OpenVMS '%4Y' padded by spaces by default
+                    self.assertEqual(d.strftime("%04Y"), '%04d' % y)
+                    self.assertEqual(d.strftime("%.4Y"), '%04d' % y)
+                else:
+                    self.assertEqual(d.strftime("%4Y"), '%04d' % y)
 
     def test_replace(self):
         cls = self.theclass
@@ -2357,11 +2362,21 @@ class TestDateTime(TestDate):
     # March (M3.2.0) and ends 2 a.m. on first Sunday in November (M11.1.0).
     @support.run_with_tz('EST+05EDT,M3.2.0,M11.1.0')
     def test_timestamp_naive(self):
-        t = self.theclass(1970, 1, 1)
-        self.assertEqual(t.timestamp(), 18000.0)
-        t = self.theclass(1970, 1, 1, 1, 2, 3, 4)
-        self.assertEqual(t.timestamp(),
-                         18000.0 + 3600 + 2*60 + 3 + 4*1e-6)
+        if sys.platform == 'OpenVMS':
+            # _datetimemodule.c local_to_seconds() has a lot of computations and
+            # some of them migh fail on OpenVMS when date < 1970 Jan 3
+            t = self.theclass(1970, 1, 3)
+            tt = t.timestamp()
+            self.assertEqual(tt, 190800.0)
+            t = self.theclass(1970, 1, 3, 1, 2, 3, 4)
+            tt = t.timestamp()
+            self.assertEqual(tt, 190800.0 + 3600 + 2*60 + 3 + 4*1e-6)
+        else:
+            t = self.theclass(1970, 1, 1)
+            self.assertEqual(t.timestamp(), 18000.0)
+            t = self.theclass(1970, 1, 1, 1, 2, 3, 4)
+            self.assertEqual(t.timestamp(),
+                            18000.0 + 3600 + 2*60 + 3 + 4*1e-6)
         # Missing hour
         t0 = self.theclass(2012, 3, 11, 2, 30)
         t1 = t0.replace(fold=1)
@@ -2402,24 +2417,26 @@ class TestDateTime(TestDate):
             self.assertEqual(zero.second, 0)
             self.assertEqual(zero.microsecond, 0)
             one = fts(1e-6)
-            try:
-                minus_one = fts(-1e-6)
-            except OSError:
-                # localtime(-1) and gmtime(-1) is not supported on Windows
-                pass
-            else:
-                self.assertEqual(minus_one.second, 59)
-                self.assertEqual(minus_one.microsecond, 999999)
+            if sys.platform != 'OpenVMS':
+                # OpenVMS does not support negative time
+                try:
+                    minus_one = fts(-1e-6)
+                except OSError:
+                    # localtime(-1) and gmtime(-1) is not supported on Windows
+                    pass
+                else:
+                    self.assertEqual(minus_one.second, 59)
+                    self.assertEqual(minus_one.microsecond, 999999)
 
-                t = fts(-1e-8)
-                self.assertEqual(t, zero)
-                t = fts(-9e-7)
-                self.assertEqual(t, minus_one)
-                t = fts(-1e-7)
-                self.assertEqual(t, zero)
-                t = fts(-1/2**7)
-                self.assertEqual(t.second, 59)
-                self.assertEqual(t.microsecond, 992188)
+                    t = fts(-1e-8)
+                    self.assertEqual(t, zero)
+                    t = fts(-9e-7)
+                    self.assertEqual(t, minus_one)
+                    t = fts(-1e-7)
+                    self.assertEqual(t, zero)
+                    t = fts(-1/2**7)
+                    self.assertEqual(t.second, 59)
+                    self.assertEqual(t.microsecond, 992188)
 
             t = fts(1e-7)
             self.assertEqual(t, zero)
@@ -2494,13 +2511,13 @@ class TestDateTime(TestDate):
             self.assertRaises(OverflowError, self.theclass.utcfromtimestamp,
                               insane)
 
-    @unittest.skipIf(sys.platform == "win32", "Windows doesn't accept negative timestamps")
+    @unittest.skipIf(sys.platform in ("win32", "OpenVMS"), "Windows and OpenVMS don't accept negative timestamps")
     def test_negative_float_fromtimestamp(self):
         # The result is tz-dependent; at least test that this doesn't
         # fail (like it did before bug 1646728 was fixed).
         self.theclass.fromtimestamp(-1.05)
 
-    @unittest.skipIf(sys.platform == "win32", "Windows doesn't accept negative timestamps")
+    @unittest.skipIf(sys.platform in ("win32", "OpenVMS"), "Windows and OpenVMS don't accept negative timestamps")
     def test_negative_float_utcfromtimestamp(self):
         d = self.theclass.utcfromtimestamp(-1.05)
         self.assertEqual(d, self.theclass(1969, 12, 31, 23, 59, 58, 950000))
@@ -6235,4 +6252,4 @@ def load_tests(loader, standard_tests, pattern):
 
 
 if __name__ == "__main__":
-    unittest.main()
+    unittest.main(verbosity=2)
