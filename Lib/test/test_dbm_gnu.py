@@ -87,10 +87,14 @@ class TestGdbm(unittest.TestCase):
         # Add size0 bytes to make sure that the file size changes.
         value_size = max(size0, 10000)
         self.g['x'] = 'x' * value_size
+        # OpenVMS (and other OS too!) requires sync()
+        self.g.sync()
         size1 = os.path.getsize(filename)
         self.assertGreater(size1, size0)
 
         del self.g['x']
+        # OpenVMS (and other OS too!) requires sync()
+        self.g.sync()
         # 'size' is supposed to be the same even after deleting an entry.
         self.assertEqual(os.path.getsize(filename), size1)
 
