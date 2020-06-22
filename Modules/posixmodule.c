@@ -28,6 +28,8 @@
 #ifdef __VMS
 #include <tcp.h>
 #include <unistd.h>
+#include "descrip.h"
+#include "lib$routines.h"
 #endif
 
 #include "Python.h"
@@ -4554,6 +4556,21 @@ BOOL WINAPI Py_DeleteFileW(LPCWSTR lpFileName)
 }
 #endif /* MS_WINDOWS */
 
+#ifdef __VMS
+extern int decc$to_vms(const char *, int (*)(char *, int, void *), int, int, ...);
+int delete_non_unlinkable_link_callback(char *name, int flag, void* userdata) {
+    struct dsc$descriptor_s file_name = {0, DSC$K_DTYPE_T, DSC$K_CLASS_S, 0};
+    file_name.dsc$w_length = strlen(name);
+    file_name.dsc$a_pointer = name;
+    *(int*)userdata = lib$delete_file(&file_name);
+    return 0;
+}
+int delete_non_unlinkable_link(const char *path) {
+    int del_code = 0;
+    decc$to_vms(path, delete_non_unlinkable_link_callback, 0, 1, &del_code);
+    return del_code;
+}
+#endif
 
 /*[clinic input]
 os.unlink
@@ -4613,6 +4630,14 @@ os_unlink_impl(PyObject *module, path_t *path, int dir_fd)
                 if (errno == ENOENT) {
                     errno = t_errno;
                     result = 0;
+                }
+            } else if (errno == ENOENT) {
+                STRUCT_STAT buf;
+                int l_stat_code = LSTAT(path->narrow, &buf);
+                if (l_stat_code == 0 && S_ISLNK(buf.st_mode)) {
+                    // unlink reports that file does not exist, but it exists and it is a link
+                    // so we will use lib$delete_file
+                    result = (1 != delete_non_unlinkable_link(path->narrow));
                 }
             }
         }
@@ -8038,7 +8063,23 @@ os_readlink_impl(PyObject *module, path_t *path, int dir_fd)
         length = readlinkat(dir_fd, path->narrow, buffer, MAXPATHLEN);
     else
 #endif
+#ifdef __VMS
+    {
+        length = -1;
+        STRUCT_STAT stat_buff;
+        if (LSTAT(path->narrow, &stat_buff) == 0) {
+            // so, the file is accessible
+            if (S_ISLNK(stat_buff.st_mode)) {
+                length = readlink(path->narrow, buffer, MAXPATHLEN);
+            } else {
+                // the file is not a link
+                errno = EINVAL;
+            }
+        }
+    }
+#else
         length = readlink(path->narrow, buffer, MAXPATHLEN);
+#endif
     Py_END_ALLOW_THREADS
 
     if (length < 0) {

@@ -497,7 +497,7 @@
 #undef HAVE_GETPWNAM_R
 
 /* Define to 1 if you have the `getpwuid_r' function. */
-#undef HAVE_GETPWUID_R
+#define HAVE_GETPWUID_R
 
 /* Define to 1 if the getrandom() function is available */
 #undef HAVE_GETRANDOM

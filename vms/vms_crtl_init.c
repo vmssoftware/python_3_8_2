@@ -35,17 +35,18 @@ static void set_coe ( void )
 {
     set ("DECC$UNIX_LEVEL", 100);
     set ("DECC$ARGV_PARSE_STYLE", 1);
+    set ("DECC$DETACHED_CHILD_PROCESS", 0);
     set ("DECC$EFS_CASE_PRESERVE", 1);
     set ("DECC$EFS_CASE_SPECIAL", 0);
     set ("DECC$EFS_CHARSET", 1);
     set ("DECC$ENABLE_GETENV_CACHE", 1);
-    set ("DECC$FILE_SHARING", 1);
-    set ("DECC$POSIX_SEEK_STREAM_FILE", 1);
-    set ("DECC$READDIR_DROPDOTNOTYPE", 1);
     set ("DECC$EXIT_AFTER_FAILED_EXEC", 1);
-    set ("DECC$DETACHED_CHILD_PROCESS", 0);
+    set ("DECC$FILE_SHARING", 1);
     set ("DECC$MAILBOX_CTX_STM", 1);
     set ("DECC$POPEN_NO_CRLF_REC_ATTR", 1);
+    set ("DECC$POSIX_SEEK_STREAM_FILE", 1);
+    set ("DECC$POSIX_STYLE_UID", 0);    // else getpwuid() doesn't work
+    set ("DECC$READDIR_DROPDOTNOTYPE", 1);
 }
 
 #pragma extern_model save

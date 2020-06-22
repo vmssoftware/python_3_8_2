@@ -8,6 +8,8 @@ import re
 import sys
 from _collections_abc import Sequence
 from errno import EINVAL, ENOENT, ENOTDIR, EBADF, ELOOP
+if sys.platform == 'OpenVMS':
+    from errno import EPERM
 from operator import attrgetter
 from stat import S_ISDIR, S_ISLNK, S_ISREG, S_ISSOCK, S_ISBLK, S_ISCHR, S_ISFIFO
 from urllib.parse import quote_from_bytes as urlquote_from_bytes
@@ -317,6 +319,9 @@ class _PosixFlavour(_Flavour):
         sep = self.sep
         accessor = path._accessor
         seen = {}
+        errno_list = (EINVAL,)
+        if sys.platform == 'OpenVMS':
+            errno_list = (EINVAL, EPERM)
         def _resolve(path, rest):
             if rest.startswith(sep):
                 path = ''
@@ -342,7 +347,7 @@ class _PosixFlavour(_Flavour):
                 try:
                     target = accessor.readlink(newpath)
                 except OSError as e:
-                    if e.errno != EINVAL and strict:
+                    if e.errno not in errno_list and strict:
                         raise
                     # Not a symlink, or non-strict mode. We just leave the path
                     # untouched.
