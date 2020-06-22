@@ -276,6 +276,11 @@ class DumbDBMTestCase(unittest.TestCase):
             with dumbdbm.open(fname, 'r') as f:
                 self.assertEqual(sorted(f.keys()), sorted(self._dict))
                 f.close()  # don't write
+            # required for OpenVMS
+            os.chmod(dir, stat.S_IRWXU)
+            os.chmod(fname + ".dir", stat.S_IRWXU)
+            os.chmod(fname + ".dat", stat.S_IRWXU)
+
 
     @unittest.skipUnless(support.TESTFN_NONASCII,
                          'requires OS support of non-ASCII encodings')
