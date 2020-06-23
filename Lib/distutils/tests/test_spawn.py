@@ -35,8 +35,12 @@ class SpawnTestCase(support.TempdirManager,
         # creating something executable
         # through the shell that returns 1
         if sys.platform != 'win32':
-            exe = os.path.join(tmpdir, 'foo.sh')
-            self.write_file(exe, '#!%s\nexit 1' % unix_shell)
+            if sys.platform == 'OpenVMS':
+                exe = os.path.join(tmpdir, 'foo.com')
+                self.write_file(exe, '$ exit 2')
+            else:
+                exe = os.path.join(tmpdir, 'foo.sh')
+                self.write_file(exe, '#!%s\nexit 1' % unix_shell)
         else:
             exe = os.path.join(tmpdir, 'foo.bat')
             self.write_file(exe, 'exit 1')
@@ -46,8 +50,12 @@ class SpawnTestCase(support.TempdirManager,
 
         # now something that works
         if sys.platform != 'win32':
-            exe = os.path.join(tmpdir, 'foo.sh')
-            self.write_file(exe, '#!%s\nexit 0' % unix_shell)
+            if sys.platform == 'OpenVMS':
+                exe = os.path.join(tmpdir, 'foo.com')
+                self.write_file(exe, '$ exit 1')
+            else:
+                exe = os.path.join(tmpdir, 'foo.sh')
+                self.write_file(exe, '#!%s\nexit 0' % unix_shell)
         else:
             exe = os.path.join(tmpdir, 'foo.bat')
             self.write_file(exe, 'exit 0')
@@ -135,6 +143,7 @@ class SpawnTestCase(support.TempdirManager,
                      unittest.mock.patch('distutils.spawn.os.defpath', ''):
                     rv = find_executable(program)
                     self.assertEqual(rv, filename)
+            os.chmod(filename, stat.S_IRWXU)
 
 
 def test_suite():

@@ -32,13 +32,21 @@ def spawn(cmd, search_path=1, verbose=0, dry_run=0):
     # cmd is documented as a list, but just in case some code passes a tuple
     # in, protect our %-formatting code against horrible death
     cmd = list(cmd)
-    if os.name == 'posix':
-        _spawn_posix(cmd, search_path, dry_run=dry_run)
-    elif os.name == 'nt':
-        _spawn_nt(cmd, search_path, dry_run=dry_run)
+    if sys.platform == 'OpenVMS':
+        import subprocess
+        p = subprocess.Popen(cmd)
+        p.wait()
+        if p.returncode != 0:
+            raise DistutilsExecError(
+                  "command %r failed with exit status %d" % (cmd, p.returncode))
     else:
-        raise DistutilsPlatformError(
-              "don't know how to spawn programs on platform '%s'" % os.name)
+        if os.name == 'posix':
+            _spawn_posix(cmd, search_path, dry_run=dry_run)
+        elif os.name == 'nt':
+            _spawn_nt(cmd, search_path, dry_run=dry_run)
+        else:
+            raise DistutilsPlatformError(
+                "don't know how to spawn programs on platform '%s'" % os.name)
 
 def _nt_quote_args(args):
     """Quote command-line arguments for DOS/Windows conventions.

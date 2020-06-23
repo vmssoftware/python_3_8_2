@@ -45,6 +45,7 @@ class SysconfigTestCase(support.EnvironGuard, unittest.TestCase):
         self.assertIsInstance(cvars, dict)
         self.assertTrue(cvars)
 
+    @unittest.skipIf(sys.platform == 'OpenVMS', 'OpenVMS has no source installed')
     def test_srcdir(self):
         # See Issues #15322, #15364.
         srcdir = sysconfig.get_config_var('srcdir')
@@ -244,6 +245,7 @@ class SysconfigTestCase(support.EnvironGuard, unittest.TestCase):
         self.assertIsNotNone(vars['SO'])
         self.assertEqual(vars['SO'], vars['EXT_SUFFIX'])
 
+    @unittest.skipIf(sys.platform == 'OpenVMS', 'OpenVMS -TBD-')
     def test_customize_compiler_before_get_config_vars(self):
         # Issue #21923: test that a Distribution compiler
         # instance can be called without an explicit call to
