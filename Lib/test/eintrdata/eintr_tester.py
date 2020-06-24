@@ -277,6 +277,7 @@ class SocketEINTRTest(EINTRBaseTest):
     def test_send(self):
         self._test_send(socket.socket.send)
 
+    @unittest.skipIf(sys.platform == 'OpenVMS', 'OpenVMS crashed on socket.socket.sendall')
     def test_sendall(self):
         self._test_send(socket.socket.sendall)
 
@@ -441,6 +442,8 @@ class SelectEINTRTest(EINTRBaseTest):
 
     @unittest.skipIf(sys.platform == "darwin",
                      "poll may fail on macOS; see issue #28087")
+    @unittest.skipIf(sys.platform == "OpenVMS",
+                     "OpenVMS poll() returns immediately on empty list, as on macOS")
     @unittest.skipUnless(hasattr(select, 'poll'), 'need select.poll')
     def test_poll(self):
         poller = select.poll()
@@ -488,15 +491,21 @@ class SelectEINTRTest(EINTRBaseTest):
 class FNTLEINTRTest(EINTRBaseTest):
     def _lock(self, lock_func, lock_name):
         self.addCleanup(support.unlink, support.TESTFN)
+        mode = 'wb'
+        if sys.platform == 'OpenVMS':
+            mode = 'ab'
         code = '\n'.join((
             "import fcntl, time",
-            "with open('%s', 'wb') as f:" % support.TESTFN,
+            "with open('%s', '%s') as f:" % (support.TESTFN, mode),
             "   fcntl.%s(f, fcntl.LOCK_EX)" % lock_name,
             "   time.sleep(%s)" % self.sleep_time))
         start_time = time.monotonic()
         proc = self.subprocess(code)
         with kill_on_error(proc):
-            with open(support.TESTFN, 'wb') as f:
+            with open(support.TESTFN, mode) as f:
+                err_list = (BlockingIOError,)
+                if sys.platform == 'OpenVMS':
+                    err_list = (BlockingIOError, PermissionError)
                 while True:  # synchronize the subprocess
                     dt = time.monotonic() - start_time
                     if dt > 60.0:
@@ -505,7 +514,7 @@ class FNTLEINTRTest(EINTRBaseTest):
                         lock_func(f, fcntl.LOCK_EX | fcntl.LOCK_NB)
                         lock_func(f, fcntl.LOCK_UN)
                         time.sleep(0.01)
-                    except BlockingIOError:
+                    except err_list:
                         break
                 # the child locked the file just a moment ago for 'sleep_time' seconds
                 # that means that the lock below will block for 'sleep_time' minus some
@@ -527,4 +536,4 @@ class FNTLEINTRTest(EINTRBaseTest):
 
 
 if __name__ == "__main__":
-    unittest.main()
+    unittest.main(verbosity=2)
