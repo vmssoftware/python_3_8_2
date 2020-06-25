@@ -256,6 +256,8 @@ class DefaultContext(BaseContext):
     def get_all_start_methods(self):
         if sys.platform == 'win32':
             return ['spawn']
+        elif sys.platform == 'OpenVMS':
+            return ['fork']
         else:
             if reduction.HAVE_SEND_HANDLE:
                 return ['fork', 'spawn', 'forkserver']
@@ -313,6 +315,8 @@ if sys.platform != 'win32':
         # bpo-33725: running arbitrary code after fork() is no longer reliable
         # on macOS since macOS 10.14 (Mojave). Use spawn by default instead.
         _default_context = DefaultContext(_concrete_contexts['spawn'])
+    elif sys.platform == 'OpenVMS':
+        _default_context = DefaultContext(_concrete_contexts['fork'])
     else:
         _default_context = DefaultContext(_concrete_contexts['fork'])
 
