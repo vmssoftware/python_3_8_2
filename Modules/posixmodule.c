@@ -9573,6 +9573,9 @@ os_isatty_impl(PyObject *module, int fd)
     _Py_BEGIN_SUPPRESS_IPH
     return_value = isatty(fd);
     _Py_END_SUPPRESS_IPH
+#ifdef __VMS
+    return_value = return_value == 1;
+#endif
     return return_value;
 }
 

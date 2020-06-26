@@ -1123,7 +1123,11 @@ setup_readline(readlinestate *mod_state)
 
     if (!using_libedit_emulation)
     {
+#ifdef __VMS
+        if (0 == isatty(STDOUT_FILENO)) {
+#else
         if (!isatty(STDOUT_FILENO)) {
+#endif
             /* Issue #19884: stdout is not a terminal. Disable meta modifier
                keys to not write the ANSI sequence "\033[1034h" into stdout. On
                terminals supporting 8 bit characters like TERM=xterm-256color

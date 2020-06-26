@@ -1979,7 +1979,11 @@ builtin_input_impl(PyObject *module, PyObject *prompt)
         Py_DECREF(tmp);
         if (fd < 0 && PyErr_Occurred())
             return NULL;
+#ifdef __VMS
+        tty = fd == fileno(stdin) && 1 == isatty(fd);
+#else
         tty = fd == fileno(stdin) && isatty(fd);
+#endif
     }
     if (tty) {
         tmp = _PyObject_CallMethodId(fout, &PyId_fileno, NULL);
@@ -1992,7 +1996,11 @@ builtin_input_impl(PyObject *module, PyObject *prompt)
             Py_DECREF(tmp);
             if (fd < 0 && PyErr_Occurred())
                 return NULL;
+#ifdef __VMS
+            tty = fd == fileno(stdout) && 1 == isatty(fd);
+#else
             tty = fd == fileno(stdout) && isatty(fd);
+#endif
         }
     }
 

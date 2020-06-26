@@ -107,7 +107,11 @@ Py_FrozenMain(int argc, char **argv)
     else
         sts = 0;
 
+#ifdef __VMS
+    if (inspect && 1 == isatty((int)fileno(stdin)))
+#else
     if (inspect && isatty((int)fileno(stdin)))
+#endif
         sts = PyRun_AnyFile(stdin, "<stdin>") != 0;
 
 #ifdef MS_WINDOWS

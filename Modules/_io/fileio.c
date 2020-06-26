@@ -1126,6 +1126,9 @@ _io_FileIO_isatty_impl(fileio *self)
     Py_BEGIN_ALLOW_THREADS
     _Py_BEGIN_SUPPRESS_IPH
     res = isatty(self->fd);
+#ifdef __VMS
+    res = res == 1;
+#endif
     _Py_END_SUPPRESS_IPH
     Py_END_ALLOW_THREADS
     return PyBool_FromLong(res);

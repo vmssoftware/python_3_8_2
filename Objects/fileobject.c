@@ -435,6 +435,9 @@ stdprinter_isatty(PyStdPrinter_Object *self, PyObject *Py_UNUSED(ignored))
 
     Py_BEGIN_ALLOW_THREADS
     res = isatty(self->fd);
+#ifdef __VMS
+    res = res == 1;
+#endif
     Py_END_ALLOW_THREADS
 
     return PyBool_FromLong(res);

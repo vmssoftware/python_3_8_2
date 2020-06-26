@@ -63,7 +63,11 @@ _Py_device_encoding(int fd)
 #endif
     int valid;
     _Py_BEGIN_SUPPRESS_IPH
+#ifdef __VMS
+    valid = 1 == isatty(fd);
+#else
     valid = isatty(fd);
+#endif
     _Py_END_SUPPRESS_IPH
     if (!valid)
         Py_RETURN_NONE;

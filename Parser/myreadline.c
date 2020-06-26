@@ -359,7 +359,11 @@ PyOS_Readline(FILE *sys_stdin, FILE *sys_stdout, const char *prompt)
      * a tty.  This can happen, for example if python is run like
      * this: python -i < test1.py
      */
+#ifdef __VMS
+    if (0 == isatty (fileno (sys_stdin)) || 0 == isatty (fileno (sys_stdout)))
+#else
     if (!isatty (fileno (sys_stdin)) || !isatty (fileno (sys_stdout)))
+#endif
         rv = PyOS_StdioReadline (sys_stdin, sys_stdout, prompt);
     else
         rv = (*PyOS_ReadlineFunctionPointer)(sys_stdin, sys_stdout,
