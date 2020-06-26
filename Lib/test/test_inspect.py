@@ -19,6 +19,10 @@ import unittest
 import unittest.mock
 import warnings
 
+if sys.platform == 'OpenVMS':
+    import vms.decc
+    python_folder_real = '/'.join(vms.decc.from_vms(vms.decc.to_vms(sys.executable, False, 1)[0], False)[0].split('/')[:-2])
+
 try:
     from concurrent.futures import ThreadPoolExecutor
 except ImportError:
