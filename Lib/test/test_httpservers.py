@@ -444,7 +444,8 @@ class SimpleHTTPServerTestCase(BaseTestCase):
 
         # chmod() doesn't work as expected on Windows, and filesystem
         # permissions are ignored by root on Unix.
-        if os.name == 'posix' and os.geteuid() != 0:
+        # also on OpenVMS chmod(0) sets user's default permissions, not resets them
+        if os.name == 'posix' and os.geteuid() != 0 and sys.platform != 'OpenVMS':
             os.chmod(self.tempdir, 0)
             try:
                 response = self.request(self.base_url + '/')
