@@ -2,4 +2,29 @@ sys$library:pthread$rtl.exe/share
 python$build_out:[000000]python$shr.exe/share
 GSMATCH=LEQUAL,1,0
 CASE_SENSITIVE=YES
-SYMBOL_VECTOR=(PyInit__testmultiphase=PROCEDURE)
+SYMBOL_VECTOR=( -
+PyInitU__testmultiphase24uq8jt$=PROCEDURE, -
+PyInitU_eckzbwbhc6jpgzcx415x =PROCEDURE, -
+PyInit__testmultiphase=PROCEDURE, -
+PyInit__testmultiphase_0c3e8cr$=PROCEDURE, -
+PyInit__testmultiphase_0v29c5l$=PROCEDURE, -
+PyInit__testmultiphase_11ppgn2$=PROCEDURE, -
+PyInit__testmultiphase_165978s$=PROCEDURE, -
+PyInit__testmultiphase_192j3ru$=PROCEDURE, -
+PyInit__testmultiphase_1g767il$=PROCEDURE, -
+PyInit__testmultiphase_23mkqc6$=PROCEDURE, -
+PyInit__testmultiphase_24g1e9b$=PROCEDURE, -
+PyInit__testmultiphase_2a55hpb$=PROCEDURE, -
+PyInit__testmultiphase_2aomecj$=PROCEDURE, -
+PyInit__testmultiphase_2bk6dcc$=PROCEDURE, -
+PyInit__testmultiphase_2mb031o$=PROCEDURE, -
+PyInit__testmultiphase_2me8md1$=PROCEDURE, -
+PyInit__testmultiphase_2n9sqcu$=PROCEDURE, -
+PyInit__testmultiphase_303s1sq$=PROCEDURE, -
+PyInit__testmultiphase_33m7den$=PROCEDURE, -
+PyInit__testmultiphase_35uahk4$=PROCEDURE, -
+PyInit__testmultiphase_3q0j1na$=PROCEDURE, -
+PyInit__testmultiphase_exec_err =PROCEDURE, -
+PyInit_imp_dummy=PROCEDURE, -
+PyInit_x =PROCEDURE -
+)
