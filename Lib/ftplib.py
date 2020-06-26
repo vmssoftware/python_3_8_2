@@ -304,7 +304,11 @@ class FTP:
 
     def makeport(self):
         '''Create a new socket and send a PORT command for it.'''
-        sock = socket.create_server(("", 0), family=self.af, backlog=1)
+        addr = ""
+        if sys.platform == 'OpenVMS':
+            # empty addr causes "wildcard resolved to multiple address" error
+            addr = "127.0.0.1"
+        sock = socket.create_server((addr, 0), family=self.af, backlog=1)
         port = sock.getsockname()[1] # Get proper port
         host = self.sock.getsockname()[0] # Get proper host
         if self.af == socket.AF_INET:
