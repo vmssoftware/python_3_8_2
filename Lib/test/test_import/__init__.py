@@ -99,7 +99,10 @@ class ImportTests(unittest.TestCase):
             from _testcapi import i_dont_exist
         self.assertEqual(cm.exception.name, '_testcapi')
         self.assertEqual(cm.exception.path, _testcapi.__file__)
-        self.assertRegex(str(cm.exception), r"cannot import name 'i_dont_exist' from '_testcapi' \(.*\.(so|pyd)\)")
+        if sys.platform == 'OpenVMS':
+            self.assertRegex(str(cm.exception), r"cannot import name 'i_dont_exist' from '_testcapi' \(.*\.(so|pyd|exe)\)")
+        else:
+            self.assertRegex(str(cm.exception), r"cannot import name 'i_dont_exist' from '_testcapi' \(.*\.(so|pyd)\)")
 
     def test_from_import_missing_attr_has_name(self):
         with self.assertRaises(ImportError) as cm:
@@ -135,6 +138,7 @@ class ImportTests(unittest.TestCase):
                 exec(f"from {name} import *", globals)
             self.assertNotIn(b"invalid_type", globals)
 
+    @unittest.skipIf(sys.platform == 'OpenVMS', 'OpenVMS requires PYTHONCASEOK, import is case-insensitive')
     def test_case_sensitivity(self):
         # Brief digression to test that import is case-sensitive:  if we got
         # this far, we know for sure that "random" exists.
@@ -557,6 +561,9 @@ class FilePermissionTests(unittest.TestCase):
                 self.fail("__import__ did not result in creation of "
                           "a .pyc file")
             stat_info = os.stat(cached_path)
+            if sys.platform == 'OpenVMS':
+                # else file won't be deleted
+                os.chmod(path, 0o777)
 
         expected = mode | 0o200 # Account for fix for issue #6074
         self.assertEqual(oct(stat.S_IMODE(stat_info.st_mode)), oct(expected))
@@ -1344,4 +1351,4 @@ class CircularImportTests(unittest.TestCase):
 
 if __name__ == '__main__':
     # Test needs to be a package, so we can do relative imports.
-    unittest.main()
+    unittest.main(verbosity=2)
