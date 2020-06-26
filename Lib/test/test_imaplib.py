@@ -8,6 +8,7 @@ import time
 import calendar
 import threading
 import socket
+from sys import platform
 
 from test.support import (reap_threads, verbose, transient_internet,
                           run_with_tz, run_with_locale, cpython_only,
@@ -73,9 +74,13 @@ class TestImaplib(unittest.TestCase):
 
     def test_imap4_host_default_value(self):
         # Check whether the IMAP4_PORT is truly unavailable.
+        addr = ''
+        if platform == 'OpenVMS':
+            # OpenVMS fails on empty address
+            addr = '127.0.0.1'
         with socket.socket() as s:
             try:
-                s.connect(('', imaplib.IMAP4_PORT))
+                s.connect((addr, imaplib.IMAP4_PORT))
                 self.skipTest(
                     "Cannot run the test with local IMAP server running.")
             except socket.error:
@@ -84,7 +89,7 @@ class TestImaplib(unittest.TestCase):
         # This is the exception that should be raised.
         expected_errnos = support.get_socket_conn_refused_errs()
         with self.assertRaises(OSError) as cm:
-            imaplib.IMAP4()
+            imaplib.IMAP4(host=addr)
         self.assertIn(cm.exception.errno, expected_errnos)
 
 
@@ -911,6 +916,7 @@ class ThreadedNetworkedTestsSSL(ThreadedNetworkedTests):
 
 @unittest.skipUnless(
     support.is_resource_enabled('network'), 'network resource disabled')
+@unittest.skipIf(platform == 'OpenVMS', 'OpenVMS fails with errno 41: Protocol wrong type for socket')
 class RemoteIMAPTest(unittest.TestCase):
     host = 'cyrus.andrew.cmu.edu'
     port = 143
