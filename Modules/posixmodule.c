@@ -3553,6 +3553,10 @@ posix_getcwd(int use_bytes)
     char *cwd = NULL;
     size_t buflen = 0;
 
+#ifdef __VMS
+    int try_get_cwd = 1;
+#endif
+
     Py_BEGIN_ALLOW_THREADS
     do {
         char *newbuf;
@@ -3571,7 +3575,18 @@ posix_getcwd(int use_bytes)
         buf = newbuf;
 
 #ifdef __VMS
-        cwd = getcwd(buf, buflen, 0);
+        // getcwd() must set ENOENT if default directory is deleted
+        cwd = getcwd(buf, buflen, 1);
+        if (cwd) {
+            cwd = getcwd(buf, buflen, 0);
+            if (!cwd) {
+                if (!try_get_cwd) {
+                    errno = ENOENT;
+                } else {
+                    --try_get_cwd;
+                }
+            }
+        }
 #else
         cwd = getcwd(buf, buflen);
 #endif
