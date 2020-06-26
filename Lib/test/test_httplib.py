@@ -8,6 +8,7 @@ import re
 import socket
 import threading
 import warnings
+from sys import platform
 
 import unittest
 TestCase = unittest.TestCase
@@ -1462,8 +1463,12 @@ class SourceAddressTest(TestCase):
         self.serv = None
 
     def testHTTPConnectionSourceAddress(self):
+        addr = ''
+        if platform == 'OpenVMS':
+            # OpenVMS fails with "wildcard resolved to multiple address" on empty address
+            addr = '127.0.0.1'
         self.conn = client.HTTPConnection(HOST, self.port,
-                source_address=('', self.source_port))
+                source_address=(addr, self.source_port))
         self.conn.connect()
         self.assertEqual(self.conn.sock.getsockname()[1], self.source_port)
 
