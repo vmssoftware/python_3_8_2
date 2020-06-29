@@ -504,9 +504,9 @@ class IOTest(unittest.TestCase):
                 else:
                     self.assertRaises(OSError, obj.write, data)
 
-                if sys.platform.startswith("win") and test in (
+                if sys.platform.startswith(("win", "OpenVMS")) and test in (
                         pipe_reader, pipe_writer):
-                    # Pipes seem to appear as seekable on Windows
+                    # Pipes seem to appear as seekable on Windows ans OpenVMS
                     continue
                 seekable = "s" in abilities
                 self.assertEqual(obj.seekable(), seekable)
@@ -3918,9 +3918,9 @@ class MiscIOTest(unittest.TestCase):
         self.addCleanup(os.close, r)
         f = self.open(w, 'a')
         self.addCleanup(f.close)
-        # Check that the file is marked non-seekable. On Windows, however, lseek
+        # Check that the file is marked non-seekable. On Windows and OpenVMS, however, lseek
         # somehow succeeds on pipes.
-        if sys.platform != 'win32':
+        if sys.platform not in ('win32', 'OpenVMS'):
             self.assertFalse(f.seekable())
 
     def test_io_after_close(self):
@@ -4079,6 +4079,8 @@ class MiscIOTest(unittest.TestCase):
 
     @unittest.skipUnless(hasattr(os, 'set_blocking'),
                          'os.set_blocking() required for this test')
+    @unittest.skipIf(sys.platform == 'OpenVMS',
+                         'OpenVMS os.set_blocking() works only for sockets')
     def _test_nonblock_pipe_write(self, bufsize):
         sent = []
         received = []

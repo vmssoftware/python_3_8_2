@@ -1358,10 +1358,12 @@
 #define HAVE_WCSCOLL 1
 
 /* Define to 1 if you have the `wcsftime' function. */
+/* Actually OpenVMS has `wcsftime' function, but it does not work as it is supposed to work */
 #undef HAVE_WCSFTIME
 
 /* Define to 1 if you have the `wcsxfrm' function. */
-#define HAVE_WCSXFRM 1
+/* Actually OpenVMS has `wcsxfrm' function, but it returns non-unicode strings */
+#undef HAVE_WCSXFRM
 
 /* Define to 1 if you have the `wmemcmp' function. */
 #undef HAVE_WMEMCMP
