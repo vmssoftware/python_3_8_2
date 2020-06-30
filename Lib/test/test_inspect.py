@@ -23,10 +23,10 @@ if sys.platform == 'OpenVMS':
     import vms.decc
     import re
     python_folder_real = '/'.join(vms.decc.from_vms(vms.decc.to_vms(sys.executable, False, 1)[0], False)[0].split('/')[:-2])
-    python_folder_pattern_str = re.sub('([/$])', r'\\\1', python_folder_real)
-    python_folder_pattern = re.compile(python_folder_pattern_str)
+    python_folder_pattern = re.compile(python_folder_real)
     def normalize_vms_path(vms_path):
-        return python_folder_pattern.sub(sys.prefix, vms_path)
+        # sys.prefix (and sys.exec_prefix too) not always eq '/python$root'
+        return python_folder_pattern.sub('/python$root', vms_path)
 
 
 try:
