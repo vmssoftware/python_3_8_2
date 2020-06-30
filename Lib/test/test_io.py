@@ -4161,6 +4161,7 @@ class CMiscIOTest(MiscIOTest):
         b = bytearray(2)
         self.assertRaises(ValueError, bufio.readinto, b)
 
+    @unittest.skipIf(sys.platform == 'OpenVMS', 'OpenVMS fails this test')
     def check_daemon_threads_shutdown_deadlock(self, stream_name):
         # Issue #23309: deadlocks at shutdown should be avoided when a
         # daemon thread and the main thread both write to a file.
