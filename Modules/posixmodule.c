@@ -13523,6 +13523,9 @@ ScandirIterator_iternext(ScandirIterator *iterator)
         name_len = NAMLEN(direntp);
         is_dot = direntp->d_name[0] == '.' &&
                  (name_len == 1 || (direntp->d_name[1] == '.' && name_len == 2));
+#ifdef __VMS
+        direntp->d_ino = direntp->d_ino & 0xffffffffffff;
+#endif
         if (!is_dot) {
             entry = DirEntry_from_posix_info(&iterator->path, direntp->d_name,
                                             name_len, direntp->d_ino

@@ -3,6 +3,7 @@ import os
 import copy
 import test.support
 import unittest
+import sys
 
 # Location of mailcap file
 MAILCAPFILE = test.support.findfile("mailcap.txt")
@@ -213,6 +214,7 @@ class FindmatchTest(unittest.TestCase):
         self._run_cases(cases)
 
     @unittest.skipUnless(os.name == "posix", "Requires 'test' command on system")
+    @unittest.skipIf(sys.platform == "OpenVMS", "Requires 'test' command on system")
     def test_test(self):
         # findmatch() will automatically check any "test" conditions and skip
         # the entry if the check fails.

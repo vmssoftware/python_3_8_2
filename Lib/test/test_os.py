@@ -88,6 +88,7 @@ class MiscTests(unittest.TestCase):
         cwd = os.getcwd()
         self.assertIsInstance(cwd, str)
 
+    @unittest.skipIf(sys.platform == 'OpenVMS', 'OpenVMS fails this test')
     def test_getcwd_long_path(self):
         # bpo-37412: On Linux, PATH_MAX is usually around 4096 bytes. On
         # Windows, MAX_PATH is defined as 260 characters, but Windows supports
@@ -640,12 +641,16 @@ class UtimeTests(unittest.TestCase):
         st = os.stat(filename)
 
         if support_subsecond:
-            self.assertAlmostEqual(st.st_atime, atime_ns * 1e-9, delta=1e-6)
+            if sys.platform != 'OpenVMS':
+                # OpenVMS does not support access time
+                self.assertAlmostEqual(st.st_atime, atime_ns * 1e-9, delta=1e-6)
             self.assertAlmostEqual(st.st_mtime, mtime_ns * 1e-9, delta=1e-6)
         else:
-            self.assertEqual(st.st_atime, atime_ns * 1e-9)
+            if sys.platform != 'OpenVMS':
+                self.assertEqual(st.st_atime, atime_ns * 1e-9)
             self.assertEqual(st.st_mtime, mtime_ns * 1e-9)
-        self.assertEqual(st.st_atime_ns, atime_ns)
+        if sys.platform != 'OpenVMS':
+            self.assertEqual(st.st_atime_ns, atime_ns)
         self.assertEqual(st.st_mtime_ns, mtime_ns)
 
     def test_utime(self):
@@ -955,6 +960,7 @@ class EnvironTests(mapping_tests.BasicTestMappingProtocol):
 
     # On OS X < 10.6, unsetenv() doesn't return a value (bpo-13415).
     @support.requires_mac_ver(10, 6)
+    @unittest.skipIf(sys.platform == 'OpenVMS', 'OpenVMS has unusual environment')
     def test_unset_error(self):
         if sys.platform == "win32":
             # an environment variable is limited to 32,767 characters
@@ -1328,6 +1334,9 @@ class MakedirTests(unittest.TestCase):
             if os.name != 'nt':
                 self.assertEqual(os.stat(path).st_mode & 0o777, 0o555)
                 self.assertEqual(os.stat(parent).st_mode & 0o777, 0o775)
+        if sys.platform == 'OpenVMS':
+            # else it cannot be deleted
+            os.chmod(path, 0o777)
 
     def test_exist_ok_existing_directory(self):
         path = os.path.join(support.TESTFN, 'dir1')
@@ -1370,6 +1379,7 @@ class MakedirTests(unittest.TestCase):
         finally:
             os.umask(old_mask)
 
+    @unittest.skipIf(sys.platform == 'OpenVMS', 'OpenVMS allows directories and files with the same UNIX name')
     def test_exist_ok_existing_regular_file(self):
         base = support.TESTFN
         path = os.path.join(support.TESTFN, 'dir1')
@@ -1928,6 +1938,7 @@ class TestInvalidFD(unittest.TestCase):
     def test_writev(self):
         self.check(os.writev, [b'abc'])
 
+    @unittest.skipIf(sys.platform == 'OpenVMS', 'OpenVMS does not support inheritance')
     def test_inheritable(self):
         self.check(os.get_inheritable)
         self.check(os.set_inheritable, True)
@@ -1985,23 +1996,23 @@ class PosixUidGidTests(unittest.TestCase):
 
     @unittest.skipUnless(hasattr(os, 'setuid'), 'test needs os.setuid()')
     def test_setuid(self):
-        if os.getuid() != 0:
+        if os.getuid() != 0 and sys.platform != 'OpenVMS':
             self.assertRaises(OSError, os.setuid, 0)
         self.assertRaises(TypeError, os.setuid, 'not an int')
         self.assertRaises(OverflowError, os.setuid, self.UID_OVERFLOW)
 
     @unittest.skipUnless(hasattr(os, 'setgid'), 'test needs os.setgid()')
     def test_setgid(self):
-        if os.getuid() != 0 and not HAVE_WHEEL_GROUP:
+        if os.getuid() != 0 and not HAVE_WHEEL_GROUP and sys.platform != 'OpenVMS':
             self.assertRaises(OSError, os.setgid, 0)
         self.assertRaises(TypeError, os.setgid, 'not an int')
         self.assertRaises(OverflowError, os.setgid, self.GID_OVERFLOW)
 
     @unittest.skipUnless(hasattr(os, 'seteuid'), 'test needs os.seteuid()')
     def test_seteuid(self):
-        if os.getuid() != 0:
+        if os.getuid() != 0 and sys.platform != 'OpenVMS':
             self.assertRaises(OSError, os.seteuid, 0)
-        self.assertRaises(TypeError, os.setegid, 'not an int')
+        self.assertRaises(TypeError, os.seteuid, 'not an int')
         self.assertRaises(OverflowError, os.seteuid, self.UID_OVERFLOW)
 
     @unittest.skipUnless(hasattr(os, 'setegid'), 'test needs os.setegid()')
@@ -2013,7 +2024,7 @@ class PosixUidGidTests(unittest.TestCase):
 
     @unittest.skipUnless(hasattr(os, 'setreuid'), 'test needs os.setreuid()')
     def test_setreuid(self):
-        if os.getuid() != 0:
+        if os.getuid() != 0 and sys.platform != 'OpenVMS':
             self.assertRaises(OSError, os.setreuid, 0, 0)
         self.assertRaises(TypeError, os.setreuid, 'not an int', 0)
         self.assertRaises(TypeError, os.setreuid, 0, 'not an int')
@@ -2030,7 +2041,7 @@ class PosixUidGidTests(unittest.TestCase):
 
     @unittest.skipUnless(hasattr(os, 'setregid'), 'test needs os.setregid()')
     def test_setregid(self):
-        if os.getuid() != 0 and not HAVE_WHEEL_GROUP:
+        if os.getuid() != 0 and not HAVE_WHEEL_GROUP and sys.platform != 'OpenVMS':
             self.assertRaises(OSError, os.setregid, 0, 0)
         self.assertRaises(TypeError, os.setregid, 'not an int', 0)
         self.assertRaises(TypeError, os.setregid, 0, 'not an int')
@@ -2676,6 +2687,7 @@ class PidTests(unittest.TestCase):
         # We are the parent of our subprocess
         self.assertEqual(int(stdout), os.getpid())
 
+    @unittest.skipIf(sys.platform == 'OpenVMS', 'OpenVMS has no os.spawn()')
     def test_waitpid(self):
         args = [sys.executable, '-c', 'pass']
         # Add an implicit test for PyUnicode_FSConverter().
@@ -3466,6 +3478,7 @@ class FDInheritanceTests(unittest.TestCase):
         self.assertEqual(os.get_inheritable(fd), True)
 
     @unittest.skipIf(fcntl is None, "need fcntl")
+    @unittest.skipIf(sys.platform == 'OpenVMS', 'OpenVMS does not support inheritable cloexec')
     def test_get_inheritable_cloexec(self):
         fd = os.open(__file__, os.O_RDONLY)
         self.addCleanup(os.close, fd)
@@ -3677,8 +3690,11 @@ class TestScandir(unittest.TestCase):
         self.assertIsInstance(entry, os.DirEntry)
         self.assertEqual(entry.name, name)
         self.assertEqual(entry.path, os.path.join(self.path, name))
-        self.assertEqual(entry.inode(),
-                         os.stat(entry.path, follow_symlinks=False).st_ino)
+        if is_symlink and sys.platform == 'OpenVMS':
+            pass    # OpenVMS readdir() follows symlink
+        else:
+            self.assertEqual(entry.inode(),
+                            os.stat(entry.path, follow_symlinks=False).st_ino)
 
         entry_stat = os.stat(entry.path)
         self.assertEqual(entry.is_dir(),
