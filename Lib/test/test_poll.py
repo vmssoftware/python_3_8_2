@@ -8,6 +8,7 @@ import threading
 import time
 import unittest
 from test.support import TESTFN, run_unittest, reap_threads, cpython_only
+import sys
 
 try:
     select.poll
@@ -74,24 +75,25 @@ class PollTests(unittest.TestCase):
         self.assertEqual(bufs, [MSG] * NUM_PIPES)
 
     def test_poll_unit_tests(self):
-        # returns NVAL for invalid file descriptor
-        FD, w = os.pipe()
-        os.close(FD)
-        os.close(w)
-        p = select.poll()
-        p.register(FD)
-        r = p.poll()
-        self.assertEqual(r[0], (FD, select.POLLNVAL))
-
-        with open(TESTFN, 'w') as f:
-            fd = f.fileno()
+        if sys.platform != 'OpenVMS':
+            # returns NVAL for invalid file descriptor
+            FD, w = os.pipe()
+            os.close(FD)
+            os.close(w)
             p = select.poll()
-            p.register(f)
+            p.register(FD)
             r = p.poll()
-            self.assertEqual(r[0][0], fd)
-        r = p.poll()
-        self.assertEqual(r[0], (fd, select.POLLNVAL))
-        os.unlink(TESTFN)
+            self.assertEqual(r[0], (FD, select.POLLNVAL))
+
+            with open(TESTFN, 'w') as f:
+                fd = f.fileno()
+                p = select.poll()
+                p.register(f)
+                r = p.poll()
+                self.assertEqual(r[0][0], fd)
+            r = p.poll()
+            self.assertEqual(r[0], (fd, select.POLLNVAL))
+            os.unlink(TESTFN)
 
         # type error for invalid arguments
         p = select.poll()
@@ -176,6 +178,7 @@ class PollTests(unittest.TestCase):
         self.assertRaises(OverflowError, pollster.poll, UINT_MAX + 1)
 
     @reap_threads
+    @unittest.skipIf(sys.platform == 'OpenVMS', 'OpenVMS fails poll() on duplicates?')
     def test_threaded_poll(self):
         r, w = os.pipe()
         self.addCleanup(os.close, r)

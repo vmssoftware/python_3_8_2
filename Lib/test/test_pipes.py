@@ -4,8 +4,9 @@ import string
 import unittest
 import shutil
 from test.support import TESTFN, run_unittest, unlink, reap_children
+import sys
 
-if os.name != 'posix':
+if os.name != 'posix' or sys.platform == 'OpenVMS':
     raise unittest.SkipTest('pipes module only works on posix')
 
 TESTFN2 = TESTFN + "2"
