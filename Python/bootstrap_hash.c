@@ -60,7 +60,7 @@ int getentropy (char entropy[], size_t entropy_size)
 	long	r	= jrand48(seed);
 	while ((i+step) < entropy_size) {
 		memcpy (&entropy[i], &r, step);
-		long	r	= jrand48(seed);
+		r	= jrand48(seed);
 		i	+= step;
 	}
 	memcpy (&entropy[i], &r, (entropy_size - i));
