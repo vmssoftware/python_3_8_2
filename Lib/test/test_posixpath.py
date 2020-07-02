@@ -1,6 +1,7 @@
 import os
 import posixpath
 import unittest
+import sys
 from posixpath import realpath, abspath, dirname, basename
 from test import support, test_genericpath
 from test.support import FakePath
@@ -42,6 +43,18 @@ class PosixPathTest(unittest.TestCase):
         for suffix in ["", "1", "2"]:
             support.unlink(support.TESTFN + suffix)
             safe_rmdir(support.TESTFN + suffix)
+            if sys.platform == 'OpenVMS':
+                # OpenVMS has strange bug - link has been unlinked, but OS reports that file still exist
+                if os.access(ABSTFN + suffix, os.F_OK):
+                    import time
+                    delta = time.time()
+                    count = 0
+                    while os.access(ABSTFN + suffix, os.F_OK):
+                        time.sleep(0.1)
+                        count = count + 1
+                        # support.unlink(ABSTFN + suffix)
+                    delta = time.time() - delta
+                    count = count
 
     def test_join(self):
         self.assertEqual(posixpath.join("/foo", "bar", "/bar", "baz"),
