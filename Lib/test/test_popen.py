@@ -12,9 +12,14 @@ import os, sys
 #    python -c "import sys;print(sys.argv)" {rest_of_commandline}
 # This results in Python being spawned and printing the sys.argv list.
 # We can then eval() the result of this, and see what each argv was.
-python = sys.executable
-if ' ' in python:
-    python = '"' + python + '"'     # quote embedded space for cmdline
+if sys.platform == 'OpenVMS':
+    # sys.executable won't be executed in shell as is, we should use MCR and VMS paths, so
+    # we hope only one version of Python is installed, and it is ours
+    python = 'python'
+else:
+    python = sys.executable
+    if ' ' in python:
+        python = '"' + python + '"'     # quote embedded space for cmdline
 
 class PopenTest(unittest.TestCase):
 
@@ -22,7 +27,13 @@ class PopenTest(unittest.TestCase):
         cmd = '%s -c "import sys; print(sys.argv)" %s'
         cmd = cmd % (python, cmdline)
         with os.popen(cmd) as p:
-            data = p.read()
+            if sys.platform == 'OpenVMS':
+                # skip the first line if it is empty
+                data = p.read()
+                while data == '':
+                    data = p.read()
+            else:
+                data = p.read()
         got = eval(data)[1:] # strip off argv[0]
         self.assertEqual(got, expected)
 
@@ -36,12 +47,20 @@ class PopenTest(unittest.TestCase):
             'foo "spam and eggs" "silly walk"',
             ["foo", "spam and eggs", "silly walk"]
         )
-        self._do_test_commandline(
-            'foo "a \\"quoted\\" arg" bar',
-            ["foo", 'a "quoted" arg', "bar"]
-        )
+        if sys.platform == 'OpenVMS':
+            # in DCL quote is passed as double quote
+            self._do_test_commandline(
+                'foo "a \"\"quoted\"\" arg" bar',
+                ["foo", 'a "quoted" arg', "bar"]
+            )
+        else:
+            self._do_test_commandline(
+                'foo "a \\"quoted\\" arg" bar',
+                ["foo", 'a "quoted" arg', "bar"]
+            )
         support.reap_children()
 
+    @unittest.skipIf(sys.platform == 'OpenVMS', 'OpenVMS command EXIT has another meaning')
     def test_return_code(self):
         self.assertEqual(os.popen("exit 0").close(), None)
         if os.name == 'nt':
@@ -50,11 +69,17 @@ class PopenTest(unittest.TestCase):
             self.assertEqual(os.popen("exit 42").close(), 42 << 8)
 
     def test_contextmanager(self):
-        with os.popen("echo hello") as f:
+        cmd = "echo hello"
+        if sys.platform == 'OpenVMS':
+            cmd = 'write sys$output F$FAO("hello!/")'
+        with os.popen(cmd) as f:
             self.assertEqual(f.read(), "hello\n")
 
     def test_iterating(self):
-        with os.popen("echo hello") as f:
+        cmd = "echo hello"
+        if sys.platform == 'OpenVMS':
+            cmd = ' write sys$output F$FAO("hello!/")'
+        with os.popen(cmd) as f:
             self.assertEqual(list(f), ["hello\n"])
 
     def test_keywords(self):
