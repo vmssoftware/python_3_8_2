@@ -744,7 +744,7 @@ class PosixTester(unittest.TestCase):
             check_stat(uid, gid)
             self.assertRaises(OSError, chown_func, first_param, 0, -1)
             check_stat(uid, gid)
-            if 0 not in os.getgroups():
+            if hasattr(os, 'getgroups') and 0 not in os.getgroups():
                 self.assertRaises(OSError, chown_func, first_param, -1, 0)
                 check_stat(uid, gid)
         # test illegal types
@@ -1167,7 +1167,7 @@ class PosixTester(unittest.TestCase):
             posix.close(f)
             support.rmtree(support.TESTFN + 'dir')
 
-    @unittest.skipUnless((os.mknod in os.supports_dir_fd) and hasattr(stat, 'S_IFIFO'),
+    @unittest.skipUnless(hasattr(os, 'mknod') and (os.mknod in os.supports_dir_fd) and hasattr(stat, 'S_IFIFO'),
                          "test requires both stat.S_IFIFO and dir_fd support for os.mknod()")
     def test_mknod_dir_fd(self):
         # Test using mknodat() to create a FIFO (the only use specified
@@ -1251,7 +1251,7 @@ class PosixTester(unittest.TestCase):
         finally:
             posix.close(f)
 
-    @unittest.skipUnless(os.mkfifo in os.supports_dir_fd, "test needs dir_fd support in os.mkfifo()")
+    @unittest.skipUnless(hasattr(os, 'mkfifo') and os.mkfifo in os.supports_dir_fd, "test needs dir_fd support in os.mkfifo()")
     def test_mkfifo_dir_fd(self):
         support.unlink(support.TESTFN)
         f = posix.open(posix.getcwd(), posix.O_RDONLY)
@@ -1372,6 +1372,7 @@ class PosixTester(unittest.TestCase):
         self.assertRaises(OverflowError, posix.sched_setaffinity, 0, [1<<128])
         self.assertRaises(OSError, posix.sched_setaffinity, -1, mask)
 
+    @unittest.skipIf(sys.platform == 'OpenVMS', 'OpenVMS has no RTLD_* constants')
     def test_rtld_constants(self):
         # check presence of major RTLD_* constants
         posix.RTLD_LAZY
