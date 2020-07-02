@@ -4,6 +4,7 @@ from test import support
 
 pwd = support.import_module('pwd')
 
+@unittest.skipIf(sys.platform == 'OpenVMS', 'OpenVMS: the process must have appropriate privileges')
 @unittest.skipUnless(hasattr(pwd, 'getpwall'), 'Does not have getpwall()')
 class PwdTest(unittest.TestCase):
 
