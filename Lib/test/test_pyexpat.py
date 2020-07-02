@@ -443,7 +443,12 @@ class HandlerExceptionTest(unittest.TestCase):
         raise RuntimeError(name)
 
     def check_traceback_entry(self, entry, filename, funcname):
-        self.assertEqual(os.path.basename(entry[0]), filename)
+        file_path = entry[0]
+        if sys.platform == 'OpenVMS':
+            if '[' in file_path:
+                import vms.decc
+                file_path = vms.decc.from_vms(file_path, 0)[0]
+        self.assertEqual(os.path.basename(file_path), filename)
         self.assertEqual(entry[2], funcname)
 
     def test_exception(self):
