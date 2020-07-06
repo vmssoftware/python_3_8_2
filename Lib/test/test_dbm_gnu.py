@@ -3,7 +3,7 @@ gdbm = support.import_module("dbm.gnu") #skip if not supported
 import unittest
 import os
 from test.support import TESTFN, TESTFN_NONASCII, unlink
-
+import sys
 
 filename = TESTFN
 
@@ -87,14 +87,16 @@ class TestGdbm(unittest.TestCase):
         # Add size0 bytes to make sure that the file size changes.
         value_size = max(size0, 10000)
         self.g['x'] = 'x' * value_size
-        # OpenVMS (and other OS too!) requires sync()
-        self.g.sync()
+        if sys.platform == 'OpenVMS':
+            # OpenVMS (and other OS too!) requires sync()
+            self.g.sync()
         size1 = os.path.getsize(filename)
         self.assertGreater(size1, size0)
 
         del self.g['x']
-        # OpenVMS (and other OS too!) requires sync()
-        self.g.sync()
+        if sys.platform == 'OpenVMS':
+            # OpenVMS (and other OS too!) requires sync()
+            self.g.sync()
         # 'size' is supposed to be the same even after deleting an entry.
         self.assertEqual(os.path.getsize(filename), size1)
 

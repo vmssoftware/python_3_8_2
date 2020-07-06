@@ -62,9 +62,6 @@ def sleep_and_raise(t):
 def sleep_and_print(t, msg):
     time.sleep(t)
     print(msg)
-    if sys.platform == 'OpenVMS':
-        # in case of OpenVMS stdout will be lost after flush()
-        return
     sys.stdout.flush()
 
 def init(x):
