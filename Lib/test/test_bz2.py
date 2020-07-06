@@ -880,12 +880,6 @@ class OpenTest(BaseTest):
         for mode in ("wb", "xb"):
             if mode == "xb":
                 unlink(self.filename)
-                # opening with "ab" creates second version of the file
-                if sys.platform == 'OpenVMS':
-                    try:
-                        unlink(self.filename)
-                    except:
-                        pass
             with self.open(self.filename, mode) as f:
                 f.write(self.TEXT)
             with open(self.filename, "rb") as f:
@@ -904,12 +898,6 @@ class OpenTest(BaseTest):
         for mode in ("w", "x"):
             if mode == "x":
                 unlink(self.filename)
-                # opening with "a" creates second version of the file
-                if sys.platform == 'OpenVMS':
-                    try:
-                        unlink(self.filename)
-                    except:
-                        pass
             with self.open(self.filename, mode) as f:
                 f.write(self.TEXT)
             with open(self.filename, "rb") as f:
@@ -929,12 +917,6 @@ class OpenTest(BaseTest):
         for mode in ("wt", "xt"):
             if mode == "xt":
                 unlink(self.filename)
-                # opening with "a" creates second version of the file
-                if sys.platform == 'OpenVMS':
-                    try:
-                        unlink(self.filename)
-                    except:
-                        pass
             with self.open(self.filename, mode) as f:
                 f.write(text)
             with open(self.filename, "rb") as f:
