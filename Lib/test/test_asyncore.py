@@ -71,7 +71,7 @@ def capture_server(evt, buf, serv):
     else:
         n = 200
         start = time.monotonic()
-        time_out = 30.0 if sys.platform in ("OpenVMS") else 3.0
+        time_out = 3.0
         while n > 0 and time.monotonic() - start < time_out:
             r, w, e = select.select([conn], [], [], 0.1)
             if r:
