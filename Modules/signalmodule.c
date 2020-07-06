@@ -1374,6 +1374,7 @@ PyInit__signal(void)
     if (PyModule_AddIntMacro(m, NSIG))
         goto finally;
 
+#if defined(PYPTHREAD_SIGMASK)
 #ifdef SIG_BLOCK
     if (PyModule_AddIntMacro(m, SIG_BLOCK))
          goto finally;
@@ -1385,6 +1386,7 @@ PyInit__signal(void)
 #ifdef SIG_SETMASK
     if (PyModule_AddIntMacro(m, SIG_SETMASK))
          goto finally;
+#endif
 #endif
 
     IntHandler = PyDict_GetItemString(d, "default_int_handler");

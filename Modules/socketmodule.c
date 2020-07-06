@@ -3395,6 +3395,11 @@ sock_listen(PySocketSockObject *s, PyObject *args)
      * (which doesn't make sense anyway) we force a minimum value of 0. */
     if (backlog < 0)
         backlog = 0;
+#ifdef __VMS
+    // OpenVMS does not allow zero length queue?
+    if (backlog == 0)
+        backlog = 1;
+#endif
     res = listen(s->sock_fd, backlog);
     Py_END_ALLOW_THREADS
     if (res < 0)

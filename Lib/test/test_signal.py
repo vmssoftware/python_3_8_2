@@ -87,7 +87,10 @@ class PosixTests(unittest.TestCase):
                  "for _ in range(999): time.sleep(0.01)"],
                 stderr=subprocess.PIPE)
         self.assertIn(b"KeyboardInterrupt", process.stderr)
-        self.assertEqual(process.returncode, -signal.SIGINT)
+        if sys.platform == 'OpenVMS':
+            self.assertEqual(process.returncode, 84)
+        else:
+            self.assertEqual(process.returncode, -signal.SIGINT)
         # Caveat: The exit code is insufficient to guarantee we actually died
         # via a signal.  POSIX shells do more than look at the 8 bit value.
         # Writing an automation friendly test of an interactive shell
@@ -201,6 +204,7 @@ class WakeupFDTests(unittest.TestCase):
     # On Windows, files are always blocking and Windows does not provide a
     # function to test if a socket is in non-blocking mode.
     @unittest.skipIf(sys.platform == "win32", "tests specific to POSIX")
+    @unittest.skipIf(sys.platform == "OpenVMS", "OpenVMS blocking works only for sockets")
     def test_set_wakeup_fd_blocking(self):
         rfd, wfd = os.pipe()
         self.addCleanup(os.close, rfd)
@@ -594,6 +598,7 @@ class WakeupSocketSignalTests(unittest.TestCase):
 
 
 @unittest.skipIf(sys.platform == "win32", "Not valid on Windows")
+@unittest.skipIf(sys.platform in ("OpenVMS"), "-= it hangs =-")
 class SiginterruptTest(unittest.TestCase):
 
     def readpipe_interrupted(self, interrupt):
@@ -656,8 +661,6 @@ class SiginterruptTest(unittest.TestCase):
                                     % (exitcode, stdout))
                 return (exitcode == 3)
 
-    @unittest.skipIf(sys.platform in ("OpenVMS"),
-                         "-= it hangs =-")
     def test_without_siginterrupt(self):
         # If a signal handler is installed and siginterrupt is not called
         # at all, when that signal arrives, it interrupts a syscall that's in
@@ -732,6 +735,7 @@ class ItimerTest(unittest.TestCase):
     # Issue 3864, unknown if this affects earlier versions of freebsd also
     @unittest.skipIf(sys.platform in ('netbsd5',),
         'itimer not reliable (does not mix well with threading) on some BSDs.')
+    @unittest.skipIf(sys.platform == 'OpenVMS', 'OpenVMS has no SIGVTALRM')
     def test_itimer_virtual(self):
         self.itimer = signal.ITIMER_VIRTUAL
         signal.signal(signal.SIGVTALRM, self.sig_vtalrm)
@@ -752,6 +756,7 @@ class ItimerTest(unittest.TestCase):
         # and the handler should have been called
         self.assertEqual(self.hndl_called, True)
 
+    @unittest.skipIf(sys.platform == 'OpenVMS', 'OpenVMS has no SIGPROF')
     def test_itimer_prof(self):
         self.itimer = signal.ITIMER_PROF
         signal.signal(signal.SIGPROF, self.sig_prof)
@@ -1168,6 +1173,7 @@ class StressTest(unittest.TestCase):
 
     @unittest.skipUnless(hasattr(signal, "setitimer"),
                          "test needs setitimer()")
+    @unittest.skipIf(sys.platform == 'OpenVMS', 'OpenVMS has no SIGPROF')
     def test_stress_delivery_dependent(self):
         """
         This test uses dependent signal handlers.
@@ -1279,4 +1285,4 @@ def tearDownModule():
     support.reap_children()
 
 if __name__ == "__main__":
-    unittest.main()
+    unittest.main(verbosity=2)

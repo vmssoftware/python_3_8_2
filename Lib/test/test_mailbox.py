@@ -584,7 +584,6 @@ class TestMailboxSuperclass(TestBase, unittest.TestCase):
         self.assertRaises(NotImplementedError, lambda: box.unlock())
         self.assertRaises(NotImplementedError, lambda: box.close())
 
-# @unittest.skipIf(sys.platform == 'OpenVMS', 'OpenVMS does not support mailbox.Maildir')
 class TestMaildir(TestMailbox, unittest.TestCase):
 
     _factory = lambda self, path, factory=None: mailbox.Maildir(path, factory)

@@ -26,6 +26,7 @@ class SelectTestCase(unittest.TestCase):
     # Issue #12367: http://www.freebsd.org/cgi/query-pr.cgi?pr=kern/155606
     @unittest.skipIf(sys.platform.startswith('freebsd'),
                      'skip because of a FreeBSD bug: kern/155606')
+    @unittest.skipIf(sys.platform == 'OpenVMS', 'OpenVMS select does not check if fd is closed')
     def test_errno(self):
         with open(__file__, 'rb') as fp:
             fd = fp.fileno()
@@ -44,8 +45,7 @@ class SelectTestCase(unittest.TestCase):
         self.assertIsNot(r, x)
         self.assertIsNot(w, x)
 
-    @unittest.skipIf(sys.platform in ("OpenVMS"),
-                         "-= need to create another cmd line =-")
+    @unittest.skipIf(sys.platform in ("OpenVMS"), "-= need to create another cmd line =-")
     def test_select(self):
         cmd = 'for i in 0 1 2 3 4 5 6 7 8 9; do echo testing...; sleep 1; done'
         with os.popen(cmd) as p:

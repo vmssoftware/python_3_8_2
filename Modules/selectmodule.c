@@ -280,6 +280,13 @@ select_select_impl(PyObject *module, PyObject *rlist, PyObject *wlist,
             return NULL;
         }
 
+#ifdef __VMS
+        if (timeout < 0) {
+            PyErr_SetString(PyExc_ValueError, "timeout must be non-negative");
+            return NULL;
+        }
+#endif
+
         if (_PyTime_AsTimeval(timeout, &tv, _PyTime_ROUND_TIMEOUT) == -1)
             return NULL;
         if ((int)tv.tv_sec < 0) {
