@@ -557,7 +557,6 @@ class CheckActualTests(BaseTestCase):
                            f'{", ".join(output.splitlines())}')
 
 
-@unittest.skipIf(sys.platform == 'OpenVMS', 'OpenVMS multiprocess test looses output data')
 class ProgramsTestCase(BaseTestCase):
     """
     Test various ways to run the Python test suite. Use options close
@@ -817,9 +816,6 @@ class ArgsTestCase(BaseTestCase):
         test = self.create_test("sigint", code=code)
 
         for multiprocessing in (False, True):
-            if sys.platform == 'OpenVMS' and multiprocessing:
-                # OpenVMS multiprocessing test looses output data
-                continue
             with self.subTest(multiprocessing=multiprocessing):
                 if multiprocessing:
                     args = ("--slowest", "-j2", test)
@@ -950,7 +946,6 @@ class ArgsTestCase(BaseTestCase):
         self.assertEqual(output.splitlines(), all_methods)
 
     @support.cpython_only
-    @unittest.skipIf(sys.platform == 'OpenVMS', 'OpenVMS does not catch SYSTEM-F-ACCVIO')
     def test_crashed(self):
         # Any code which causes a crash
         code = 'import faulthandler; faulthandler._sigsegv()'
@@ -1157,7 +1152,6 @@ class ArgsTestCase(BaseTestCase):
                                   env_changed=[testname],
                                   fail_env_changed=True)
 
-    @unittest.skipIf(sys.platform == 'OpenVMS', 'OpenVMS multiprocess test looses output data')
     def test_multiprocessing_timeout(self):
         code = textwrap.dedent(r"""
             import time

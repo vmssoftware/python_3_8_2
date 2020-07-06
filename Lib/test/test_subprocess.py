@@ -30,7 +30,6 @@ if support.PGO:
     raise unittest.SkipTest("test is not helpful for PGO")
 
 mswindows = (sys.platform == "win32")
-openvms = (sys.platform == "OpenVMS")
 
 #
 # Depends on the following external programs: Python
@@ -182,7 +181,7 @@ class ProcessTestCase(BaseTestCase):
         self.addCleanup(tf.close)
         tf.write(b'pear')
         tf.seek(0)
-        if openvms:
+        if sys.platform == "OpenVMS":
             os.fsync(tf.fileno())
         output = subprocess.check_output(
                 [sys.executable, "-c",
@@ -221,8 +220,6 @@ class ProcessTestCase(BaseTestCase):
         self.assertIn('stdin', c.exception.args[0])
         self.assertIn('input', c.exception.args[0])
 
-    @unittest.skipIf(sys.platform in ("OpenVMS"),
-                         "-= it hangs =-")
     def test_check_output_timeout(self):
         # check_output() function with timeout arg
         with self.assertRaises(subprocess.TimeoutExpired) as c:
@@ -267,7 +264,6 @@ class ProcessTestCase(BaseTestCase):
         p.wait()
         self.assertEqual(p.stdin, None)
 
-    @unittest.skipIf(openvms, 'OpenVMS does not support such inheriting')
     def test_stdout_none(self):
         # .stdout is None when not redirected, and the child's stdout will
         # be inherited from the parent.  In order to test this we run a
@@ -341,18 +337,18 @@ class ProcessTestCase(BaseTestCase):
                           self._assert_python, pre_args,
                           executable=NONEXISTING_CMD[0])
 
-    @unittest.skipIf(mswindows or openvms, "executable argument replaces shell")
+    @unittest.skipIf(mswindows or sys.platform == "OpenVMS", "executable argument replaces shell")
     def test_executable_replaces_shell(self):
         # Check that the executable argument replaces the default shell
         # when shell=True.
         self._assert_python([], executable=sys.executable, shell=True)
 
-    @unittest.skipIf(mswindows or openvms, "executable argument replaces shell")
+    @unittest.skipIf(mswindows or sys.platform == "OpenVMS", "executable argument replaces shell")
     def test_bytes_executable_replaces_shell(self):
         self._assert_python([], executable=os.fsencode(sys.executable),
                             shell=True)
 
-    @unittest.skipIf(mswindows or openvms, "executable argument replaces shell")
+    @unittest.skipIf(mswindows or sys.platform == "OpenVMS", "executable argument replaces shell")
     def test_pathlike_executable_replaces_shell(self):
         self._assert_python([], executable=FakePath(sys.executable),
                             shell=True)
@@ -405,7 +401,7 @@ class ProcessTestCase(BaseTestCase):
         temp_dir = self._normalize_cwd(temp_dir)
         self._assert_cwd(temp_dir, sys.executable, cwd=FakePath(temp_dir))
 
-    @unittest.skipIf(mswindows or openvms, "pending resolution of issue #15533")
+    @unittest.skipIf(mswindows or sys.platform == "OpenVMS", "pending resolution of issue #15533")
     def test_cwd_with_relative_arg(self):
         # Check that Popen looks for args[0] relative to cwd if args[0]
         # is relative.
@@ -421,7 +417,7 @@ class ProcessTestCase(BaseTestCase):
             python_dir = self._normalize_cwd(python_dir)
             self._assert_cwd(python_dir, rel_python, cwd=python_dir)
 
-    @unittest.skipIf(mswindows or openvms, "pending resolution of issue #15533")
+    @unittest.skipIf(mswindows or sys.platform == "OpenVMS", "pending resolution of issue #15533")
     def test_cwd_with_relative_executable(self):
         # Check that Popen looks for executable relative to cwd if executable
         # is relative (and that executable takes precedence over args[0]).
@@ -489,7 +485,7 @@ class ProcessTestCase(BaseTestCase):
         d = tf.fileno()
         os.write(d, b"pear")
         os.lseek(d, 0, 0)
-        if openvms:
+        if sys.platform == "OpenVMS":
             os.fsync(d)
         p = subprocess.Popen([sys.executable, "-c",
                          'import sys; sys.exit(sys.stdin.read() == "pear")'],
@@ -503,7 +499,7 @@ class ProcessTestCase(BaseTestCase):
         self.addCleanup(tf.close)
         tf.write(b"pear")
         tf.seek(0)
-        if openvms:
+        if sys.platform == "OpenVMS":
             os.fsync(tf.fileno())
         p = subprocess.Popen([sys.executable, "-c",
                          'import sys; sys.exit(sys.stdin.read() == "pear")'],
@@ -519,7 +515,7 @@ class ProcessTestCase(BaseTestCase):
         with p:
             self.assertEqual(p.stdout.read(), b"orange")
 
-    @unittest.skipIf(openvms, 'OpenVMS does not support output to opened file')
+    @unittest.skipIf(sys.platform == "OpenVMS", 'OpenVMS does not support output to opened file')
     def test_stdout_filedes(self):
         # stdout is set to open file descriptor
         tf = tempfile.TemporaryFile()
@@ -532,7 +528,7 @@ class ProcessTestCase(BaseTestCase):
         os.lseek(d, 0, 0)
         self.assertEqual(os.read(d, 1024), b"orange")
 
-    @unittest.skipIf(openvms, 'OpenVMS does not support passing files as output')
+    @unittest.skipIf(sys.platform == "OpenVMS", 'OpenVMS does not support passing files as output')
     def test_stdout_fileobj(self):
         # stdout is set to open file object
         tf = tempfile.TemporaryFile()
@@ -552,7 +548,7 @@ class ProcessTestCase(BaseTestCase):
         with p:
             self.assertStderrEqual(p.stderr.read(), b"strawberry")
 
-    @unittest.skipIf(openvms, 'OpenVMS does not support passing files as output')
+    @unittest.skipIf(sys.platform == "OpenVMS", 'OpenVMS does not support passing files as output')
     def test_stderr_filedes(self):
         # stderr is set to open file descriptor
         tf = tempfile.TemporaryFile()
@@ -565,7 +561,7 @@ class ProcessTestCase(BaseTestCase):
         os.lseek(d, 0, 0)
         self.assertStderrEqual(os.read(d, 1024), b"strawberry")
 
-    @unittest.skipIf(openvms, 'OpenVMS does not support passing files as output')
+    @unittest.skipIf(sys.platform == "OpenVMS", 'OpenVMS does not support passing files as output')
     def test_stderr_fileobj(self):
         # stderr is set to open file object
         tf = tempfile.TemporaryFile()
@@ -577,7 +573,6 @@ class ProcessTestCase(BaseTestCase):
         tf.seek(0)
         self.assertStderrEqual(tf.read(), b"strawberry")
 
-    @unittest.skipIf(openvms, 'OpenVMS does not support such inheriting')
     def test_stderr_redirect_with_no_stdout_redirect(self):
         # test stderr=STDOUT while stdout=None (not set)
 
@@ -611,7 +606,7 @@ class ProcessTestCase(BaseTestCase):
         with p:
             self.assertStderrEqual(p.stdout.read(), b"appleorange")
 
-    @unittest.skipIf(openvms, 'OpenVMS does not support passing files as output')
+    @unittest.skipIf(sys.platform == "OpenVMS", 'OpenVMS does not support passing files as output')
     def test_stdout_stderr_file(self):
         # capture stdout and stderr to the same open file
         tf = tempfile.TemporaryFile()
@@ -627,7 +622,7 @@ class ProcessTestCase(BaseTestCase):
         tf.seek(0)
         self.assertStderrEqual(tf.read(), b"appleorange")
 
-    @unittest.skipIf(openvms, 'OpenVMS does not support passing files as output')
+    @unittest.skipIf(sys.platform == "OpenVMS", 'OpenVMS does not support passing files as output')
     def test_stdout_filedes_of_stdout(self):
         # stdout is set to 1 (#1531862).
         # To avoid printing the text on stdout, we do something similar to
@@ -1326,7 +1321,6 @@ class ProcessTestCase(BaseTestCase):
                           ('thread-after-second-wait', expected_errorcode)],
                          results)
 
-    @unittest.skipIf(openvms, 'OpenVMS does not support such inheriting')
     def test_issue8780(self):
         # Ensure that stdout is inherited from the parent
         # if stdout=PIPE is not used
@@ -1420,13 +1414,13 @@ class ProcessTestCase(BaseTestCase):
         fds_after_exception = os.listdir(fd_directory)
         self.assertEqual(fds_before_popen, fds_after_exception)
 
-    @unittest.skipIf(mswindows or openvms, "behavior currently not supported on Windows and OpenVMS")
+    @unittest.skipIf(mswindows or sys.platform == "OpenVMS", "behavior currently not supported on Windows and OpenVMS")
     def test_file_not_found_includes_filename(self):
         with self.assertRaises(FileNotFoundError) as c:
             subprocess.call(['/opt/nonexistent_binary', 'with', 'some', 'args'])
         self.assertEqual(c.exception.filename, '/opt/nonexistent_binary')
 
-    @unittest.skipIf(mswindows or openvms, "behavior currently not supported on Windows and OpenVMS")
+    @unittest.skipIf(mswindows or sys.platform == "OpenVMS", "behavior currently not supported on Windows and OpenVMS")
     def test_file_not_found_with_bad_cwd(self):
         with self.assertRaises(FileNotFoundError) as c:
             subprocess.Popen(['exit', '0'], cwd='/some/nonexistent/directory')
@@ -1480,7 +1474,7 @@ class RunFuncTestCase(BaseTestCase):
         self.addCleanup(tf.close)
         tf.write(b'pear')
         tf.seek(0)
-        if openvms:
+        if sys.platform == "OpenVMS":
             os.fsync(tf.fileno())
         cp = self.run_python(
                  "import sys; sys.stdout.write(sys.stdin.read().upper())",
@@ -1507,8 +1501,6 @@ class RunFuncTestCase(BaseTestCase):
         self.assertIn('stdin', c.exception.args[0])
         self.assertIn('input', c.exception.args[0])
 
-    @unittest.skipIf(sys.platform in ("OpenVMS"),
-                         "-= it hangs =-")
     def test_check_output_timeout(self):
         with self.assertRaises(subprocess.TimeoutExpired) as c:
             cp = self.run_python((
@@ -1612,7 +1604,7 @@ class RunFuncTestCase(BaseTestCase):
                         f"{stacks}```")
 
 
-@unittest.skipIf(mswindows or openvms, "POSIX specific tests")
+@unittest.skipIf(mswindows or sys.platform == "OpenVMS", "POSIX specific tests")
 class POSIXProcessTestCase(BaseTestCase):
 
     def setUp(self):
@@ -2251,8 +2243,6 @@ class POSIXProcessTestCase(BaseTestCase):
     # When duping fds, if there arises a situation where one of the fds is
     # either 0, 1 or 2, it is possible that it is overwritten (#12607).
     # This tests all combinations of this.
-    @unittest.skipIf(sys.platform in ("OpenVMS"),
-                         "-= it hangs =-")
     def test_swap_fds(self):
         self.check_swap_fds(0, 1, 2)
         self.check_swap_fds(0, 2, 1)
@@ -2888,8 +2878,6 @@ class POSIXProcessTestCase(BaseTestCase):
             mock_proc_stdin.write.assert_called_once_with(b'stuff')
             mock_proc_stdin.close.assert_called_once_with()
 
-    @unittest.skipIf(sys.platform in ("OpenVMS"),
-                         "-= it hangs =-")
     def test_communicate_BrokenPipeError_stdin_flush(self):
         # Setting stdin and stdout forces the ._communicate() code path.
         # python -h exits faster than python -c pass (but spams stdout).
@@ -3255,11 +3243,11 @@ class MiscTests(unittest.TestCase):
             process.wait()
             self.assertEqual([], self.RecordingPopen.instances_created)
 
-    @unittest.skipIf(openvms, 'OpenVMS does not support this')
+    @unittest.skipIf(sys.platform == "OpenVMS", 'OpenVMS does not support this')
     def test_call_keyboardinterrupt_no_kill(self):
         self._test_keyboardinterrupt_no_kill(subprocess.call, timeout=6.282)
 
-    @unittest.skipIf(openvms, 'OpenVMS does not support this')
+    @unittest.skipIf(sys.platform == "OpenVMS", 'OpenVMS does not support this')
     def test_run_keyboardinterrupt_no_kill(self):
         self._test_keyboardinterrupt_no_kill(subprocess.run, timeout=6.282)
 
@@ -3269,7 +3257,7 @@ class MiscTests(unittest.TestCase):
                 raise KeyboardInterrupt  # Test how __exit__ handles ^C.
         self._test_keyboardinterrupt_no_kill(popen_via_context_manager)
 
-    @unittest.skipIf(openvms, 'OpenVMS does not support echo')
+    @unittest.skipIf(sys.platform == "OpenVMS", 'OpenVMS does not support echo')
     def test_getoutput(self):
         self.assertEqual(subprocess.getoutput('echo xyzzy'), 'xyzzy')
         self.assertEqual(subprocess.getstatusoutput('echo xyzzy'),
@@ -3416,4 +3404,4 @@ class ContextManagerTests(BaseTestCase):
 
 
 if __name__ == "__main__":
-    unittest.main()
+    unittest.main(verbosity=2)
