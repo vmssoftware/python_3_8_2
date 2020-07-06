@@ -316,7 +316,9 @@ faulthandler_disable_fatal_handler(fault_handler_t *handler)
    will be called.
 
    This function is signal-safe and should only call signal-safe functions. */
-
+#ifdef __VMS
+int vms_exit_on_crash = 0;
+#endif
 static void
 faulthandler_fatal_error(int signum)
 {
@@ -354,6 +356,11 @@ faulthandler_fatal_error(int signum)
         /* don't explicitly call the previous handler for SIGSEGV in this signal
            handler, because the Windows signal handler would not be called */
         return;
+    }
+#endif
+#ifdef __VMS
+    if (vms_exit_on_crash && (signum == SIGSEGV || signum == SIGBUS)) {
+        _exit(-signum);
     }
 #endif
     /* call the previous signal handler: it is called immediately if we use
@@ -925,6 +932,11 @@ faulthandler_unregister_py(PyObject *self, PyObject *args)
 static void
 faulthandler_suppress_crash_report(void)
 {
+
+#ifdef __VMS
+    vms_exit_on_crash = 1;
+#endif
+
 #ifdef MS_WINDOWS
     UINT mode;
 

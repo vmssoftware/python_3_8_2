@@ -134,8 +134,6 @@ class FaultHandlerTests(unittest.TestCase):
 
     @unittest.skipIf(sys.platform.startswith('aix'),
                      "the first page of memory is a mapped read-only on AIX")
-    @unittest.skipIf(sys.platform == 'OpenVMS',
-                     "OpenVMS faulthandler does not catch access violation?")
     def test_read_null(self):
         if not MS_WINDOWS:
             self.check_fatal_error("""
@@ -167,7 +165,6 @@ class FaultHandlerTests(unittest.TestCase):
             3,
             'Segmentation fault')
 
-    @unittest.skipIf(sys.platform == 'OpenVMS', 'OpenVMS faulthandler does not catch access violation?')
     def test_fatal_error_c_thread(self):
         self.check_fatal_error("""
             import faulthandler
@@ -270,7 +267,6 @@ class FaultHandlerTests(unittest.TestCase):
             3,
             'Segmentation fault')
 
-    @unittest.skipIf(sys.platform == 'OpenVMS', 'OpenVMS faulthandler does not catch access violation?')
     @unittest.skipIf(UB_SANITIZER or MEMORY_SANITIZER,
                      "sanitizer builds change crashing process output.")
     @skip_segfault_on_android
@@ -532,7 +528,6 @@ class FaultHandlerTests(unittest.TestCase):
         self.assertRegex(output, regex)
         self.assertEqual(exitcode, 0)
 
-    @unittest.skipIf(sys.platform == 'OpenVMS', 'OpenVMS looses child output data')
     def test_dump_traceback_threads(self):
         self.check_dump_traceback_threads(None)
 
@@ -623,7 +618,6 @@ class FaultHandlerTests(unittest.TestCase):
         with tempfile.TemporaryFile('wb+') as fp:
             self.check_dump_traceback_later(fd=fp.fileno())
 
-    @unittest.skipIf(sys.platform == 'OpenVMS', 'OpenVMS looses child output data')
     def test_dump_traceback_later_twice(self):
         self.check_dump_traceback_later(loops=2)
 

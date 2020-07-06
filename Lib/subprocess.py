@@ -1020,10 +1020,11 @@ class Popen(object):
                     stdout = []
                     while True:
                         data, pid = os.read_pipe(self.stdout.fileno())
-                        if self.pid != pid:
-                            continue
                         if not data:
-                            break
+                            if self.pid != pid:
+                                continue
+                            else:
+                                break
                         stdout.append(data)
                     stdout = b''.join(stdout)
                     if self.text_mode:
@@ -1038,10 +1039,11 @@ class Popen(object):
                     stderr = []
                     while True:
                         data, pid = os.read_pipe(self.stderr.fileno())
-                        if self.pid != pid:
-                            continue
                         if not data:
-                            break
+                            if self.pid != pid:
+                                continue
+                            else:
+                                break
                         stderr.append(data)
                     stderr = b''.join(stderr)
                     if self.text_mode:
@@ -1939,13 +1941,15 @@ class Popen(object):
                         elif key.fileobj in (self.stdout, self.stderr):
                             if _openvms:
                                 data, pid = os.read_pipe(key.fd)
-                                if self.pid != pid:
-                                    continue
                             else:
                                 data = os.read(key.fd, 32768)
+                                pid = self.pid
                             if not data:
-                                selector.unregister(key.fileobj)
-                                key.fileobj.close()
+                                if self.pid != pid:
+                                    continue
+                                else:
+                                    selector.unregister(key.fileobj)
+                                    key.fileobj.close()
                             self._fileobj2output[key.fileobj].append(data)
 
             self.wait(timeout=self._remaining_time(endtime))

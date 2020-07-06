@@ -15,12 +15,10 @@
 #endif
 
 #ifndef PREFIX
-// #define PREFIX "sys$sysdevice/cameron/python"
 #define PREFIX "/python$root"
 #endif
 
 #ifndef EXEC_PREFIX
-// #define EXEC_PREFIX "sys$sysdevice/cameron/python"
 #define EXEC_PREFIX "/python$root"
 #endif
 
@@ -34,16 +32,5 @@
 
 #define _POSIX_EXIT 1
 
-// #define __SIGNED_INT_TIME_T
+#define SIGBUS     10
 
-// #ifndef HGVERSION
-// #define HGVERSION ""
-// #endif
-
-// #ifndef HGTAG
-// #define HGTAG ""
-// #endif
-
-// #ifndef HGBRANCH
-// #define HGBRANCH ""
-// #endif
