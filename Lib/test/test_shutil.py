@@ -35,6 +35,11 @@ from test.support import TESTFN, FakePath
 TESTFN2 = TESTFN + "2"
 MACOS = sys.platform.startswith("darwin")
 AIX = sys.platform[:3] == 'aix'
+OPENVMS = sys.platform == 'OpenVMS'
+
+if OPENVMS:
+    import vms.decc
+
 try:
     import grp
     import pwd
@@ -180,6 +185,8 @@ class TestShutil(unittest.TestCase):
         basedir = None
         if sys.platform == "win32":
             basedir = os.path.realpath(os.getcwd())
+        elif OPENVMS:
+            basedir = vms.decc.from_vms(vms.decc.to_vms('/SYS$SCRATCH', 0, 1)[0], 0)[0].replace('/000000','')
         d = tempfile.mkdtemp(dir=basedir)
         self.tempdirs.append(d)
         return d
@@ -1360,7 +1367,7 @@ class TestShutil(unittest.TestCase):
         self.assertRaises(ValueError, make_archive, base_name, 'xxx')
 
     @support.requires_zlib
-    @unittest.skipIf(sys.platform == 'OpenVMS', 'OpenVMS has no root with zero uid')
+    @unittest.skipIf(OPENVMS, 'OpenVMS has no root with zero uid')
     def test_make_archive_owner_group(self):
         # testing make_archive with owner and group, with various combinations
         # this works even if there's not gid/uid support
@@ -1390,7 +1397,7 @@ class TestShutil(unittest.TestCase):
 
     @support.requires_zlib
     @unittest.skipUnless(UID_GID_SUPPORT, "Requires grp and pwd support")
-    @unittest.skipIf(sys.platform == 'OpenVMS', 'OpenVMS has no root with zero uid')
+    @unittest.skipIf(OPENVMS, 'OpenVMS has no root with zero uid')
     def test_tarfile_root_owner(self):
         root_dir, base_dir = self._create_files()
         base_name = os.path.join(self.mkdtemp(), 'archive')
@@ -1674,6 +1681,8 @@ class TestWhich(unittest.TestCase):
                                                      suffix=".Exe")
         os.chmod(self.temp_file.name, stat.S_IXUSR)
         self.addCleanup(self.temp_file.close)
+        if OPENVMS:
+            self.addCleanup(os.chmod, self.temp_file.name, 0o777)
         self.dir, self.file = os.path.split(self.temp_file.name)
         self.env_path = self.dir
         self.curdir = os.curdir
@@ -1850,6 +1859,8 @@ class TestMove(unittest.TestCase):
         basedir = None
         if sys.platform == "win32":
             basedir = os.path.realpath(os.getcwd())
+        elif OPENVMS:
+            basedir = vms.decc.from_vms(vms.decc.to_vms('/SYS$SCRATCH', 0, 1)[0], 0)[0].replace('/000000','')
         self.src_dir = tempfile.mkdtemp(dir=basedir)
         self.dst_dir = tempfile.mkdtemp(dir=basedir)
         self.src_file = os.path.join(self.src_dir, filename)
@@ -2144,6 +2155,7 @@ class TestCopyFile(unittest.TestCase):
         self.assertTrue(srcfile._exited_with[0] is None)
         self.assertTrue(srcfile._raised)
 
+    @unittest.skipIf(OPENVMS, 'OpenVMS does not allow renaming to the same case-insensitive name')
     def test_move_dir_caseinsensitive(self):
         # Renames a folder to the same name
         # but a different case.
@@ -2534,11 +2546,13 @@ class TermsizeTests(unittest.TestCase):
 
             # sys.__stdout__ is not a terminal on Unix
             # or fileno() not in (0, 1, 2) on Windows
-            with open(os.devnull, 'w') as f, \
-                 support.swap_attr(sys, '__stdout__', f):
-                size = shutil.get_terminal_size(fallback=(30, 40))
-            self.assertEqual(size.columns, 30)
-            self.assertEqual(size.lines, 40)
+            if not OPENVMS:
+                # OpenVMS always returns 24x80
+                with open(os.devnull, 'w') as f, \
+                    support.swap_attr(sys, '__stdout__', f):
+                    size = shutil.get_terminal_size(fallback=(30, 40))
+                self.assertEqual(size.columns, 30)
+                self.assertEqual(size.lines, 40)
 
 
 class PublicAPITests(unittest.TestCase):

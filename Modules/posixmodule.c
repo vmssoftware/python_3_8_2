@@ -4450,6 +4450,16 @@ os_rmdir_impl(PyObject *module, path_t *path, int dir_fd)
 #endif
     Py_END_ALLOW_THREADS
 
+#ifdef __VMS
+    if (result) {
+        STRUCT_STAT t_st;
+        int t_result = STAT(path->narrow, &t_st);
+        if (t_result == 0 && !S_ISDIR(t_st.st_mode)) {
+            errno = ENOTDIR;
+        }
+    }
+#endif
+
     if (result)
         return path_error(path);
 
