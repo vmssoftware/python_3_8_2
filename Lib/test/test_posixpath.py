@@ -1,8 +1,7 @@
 import os
+import sys
 import posixpath
 import unittest
-import sys
-import time
 from posixpath import realpath, abspath, dirname, basename
 from test import support, test_genericpath
 from test.support import FakePath
@@ -35,18 +34,6 @@ def safe_rmdir(dirname):
     except OSError:
         pass
 
-def safe_chmod(filepath):
-    try:
-        os.chmod(filepath, 0o777)
-    except OSError:
-        pass
-
-def safe_unlink(filepath):
-    try:
-        support.unlink(filepath)
-    except OSError:
-        pass
-
 class PosixPathTest(unittest.TestCase):
 
     def setUp(self):
@@ -54,10 +41,8 @@ class PosixPathTest(unittest.TestCase):
 
     def tearDown(self):
         for suffix in ["", "1", "2"]:
-            filepath = support.TESTFN + suffix
-            safe_chmod(filepath)
-            safe_unlink(filepath)
-            safe_rmdir(filepath)
+            support.unlink(support.TESTFN + suffix)
+            safe_rmdir(support.TESTFN + suffix)
 
     def test_join(self):
         self.assertEqual(posixpath.join("/foo", "bar", "/bar", "baz"),
@@ -215,7 +200,15 @@ class PosixPathTest(unittest.TestCase):
             self.assertIs(posixpath.ismount(ABSTFN), False)
         finally:
             os.unlink(ABSTFN)
-        time.sleep(10)
+            if sys.platform == 'OpenVMS':
+                # OpenVMS has a bug - after deleting symlink to "/" we cannot use the symlink name for some time
+                while True:
+                    try:
+                        os.mkdir(ABSTFN)
+                        os.rmdir(ABSTFN)
+                        break
+                    except:
+                        pass
 
     @unittest.skipIf(posix is None, "Test requires posix module")
     def test_ismount_different_device(self):
@@ -711,4 +704,4 @@ class PathLikeTests(unittest.TestCase):
 
 
 if __name__=="__main__":
-    unittest.main(verbosity=2)
+    unittest.main()
