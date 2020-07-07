@@ -13755,6 +13755,15 @@ os_scandir_impl(PyObject *module, path_t *path)
     }
 
     if (!iterator->dirp) {
+#ifdef __VMS
+        {
+            STRUCT_STAT t_st;
+            int t_result = STAT(path_str, &t_st);
+            if (t_result == 0 && !S_ISDIR(t_st.st_mode)) {
+                errno = ENOTDIR;
+            }
+        }
+#endif
         path_error(&iterator->path);
 #ifdef HAVE_FDOPENDIR
         if (fd != -1) {
