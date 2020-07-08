@@ -108,6 +108,8 @@ PY_OSF_CFLAGS = $(PY_CFLAGS_Q)/DEFINE=(_OSF_SOURCE,$(PY_CFLAGS_DEF))/INCLUDE_DIR
     BUILD_OBJ_DIR = F$ENVIRONMENT("DEFAULT")-"]"+".$(OBJ_DIR).]"
     define /trans=concealed python$build_out 'BUILD_OUT_DIR'
     define /trans=concealed python$build_obj 'BUILD_OBJ_DIR'
+    ! SQL
+    sqlmod :==  mcr sql$mod
 
 .SUFFIXES
 .SUFFIXES .EXE .OLB .OBJ .OBM .OBD .OBS .C
@@ -218,8 +220,8 @@ LIBDYNLOAD_VMS = -
 [.$(OUT_DIR).$(DYNLOAD_DIR)]_syidef.exe -
 [.$(OUT_DIR).$(DYNLOAD_DIR)]_sys.exe -
 [.$(OUT_DIR).$(DYNLOAD_DIR)]_uafdef.exe -
-[.$(OUT_DIR).$(DYNLOAD_DIR)]_uaidef.exe
-! [.$(OUT_DIR).$(DYNLOAD_DIR)]_rdb
+[.$(OUT_DIR).$(DYNLOAD_DIR)]_uaidef.exe -
+[.$(OUT_DIR).$(DYNLOAD_DIR)]_rdb.exe
 
 LIBDYNLOAD = -
 $(LIBDYNLOAD_VMS) -
@@ -2209,24 +2211,24 @@ SHA3_HEADERS = -
     @ pipe create/dir $(DIR $(MMS$TARGET)) | copy SYS$INPUT nl:
     $(LINK)$(LINKFLAGS)/SHARE=python$build_out:[$(DYNLOAD_DIR)]$(NOTDIR $(MMS$TARGET_NAME)).EXE $(MMS$SOURCE_LIST),[.opt]$(NOTDIR $(MMS$TARGET_NAME)).opt/OPT
 
-! ! RDB need sql$mod installed
-! [.modules.rdb]rdb_wrap.c : [.modules.rdb]rdb.i
-!     SWIG -python modules/rdb/rdb.i
-!     purge [.modules.rdb]rdb_wrap.c
+! RDB need sql$mod installed
+[.modules.rdb]rdb_wrap.c : [.modules.rdb]rdb.i, [.modules.rdb]db.h
+    SWIG -python modules/rdb/rdb.i
+    purge [.modules.rdb]rdb_wrap.c
 
-! [.$(OBJ_DIR).modules.rdb]rdb_wrap.obs : [.modules.rdb]rdb_wrap.c
+[.$(OBJ_DIR).modules.rdb]rdb_wrap.obs : [.modules.rdb]rdb_wrap.c
 
-! [.$(OBJ_DIR).modules.rdb]db.obs : [.modules.rdb]db.c
+[.$(OBJ_DIR).modules.rdb]db.obs : [.modules.rdb]db.c, [.modules.rdb]db.h
 
-! [.$(OBJ_DIR).modules.rdb]sql.obj :
-!     sqlmod [.modules.rdb]sql.sqlmod
-!     rename sql.obj python$build_obj:[modules.rdb]
+[.$(OBJ_DIR).modules.rdb]sql.obj : [.modules.rdb]sql.sqlmod
+    sqlmod [.modules.rdb]sql.sqlmod
+    rename sql.obj python$build_obj:[modules.rdb]
 
-! [.$(OUT_DIR).$(DYNLOAD_DIR)]_rdb.exe : [.$(OBJ_DIR).modules.rdb]rdb_wrap.obs,-
-! [.$(OBJ_DIR).modules.rdb]db.obs,-
-! [.$(OBJ_DIR).modules.rdb]sql.obj
-!     @ pipe create/dir $(DIR $(MMS$TARGET)) | copy SYS$INPUT nl:
-!     $(LINK)$(LINKFLAGS)/SHARE=python$build_out:[$(DYNLOAD_DIR)]$(NOTDIR $(MMS$TARGET_NAME)).EXE $(MMS$SOURCE_LIST),[.opt]$(NOTDIR $(MMS$TARGET_NAME)).opt/OPT
+[.$(OUT_DIR).$(DYNLOAD_DIR)]_rdb.exe : [.$(OBJ_DIR).modules.rdb]rdb_wrap.obs,-
+[.$(OBJ_DIR).modules.rdb]db.obs,-
+[.$(OBJ_DIR).modules.rdb]sql.obj
+    @ pipe create/dir $(DIR $(MMS$TARGET)) | copy SYS$INPUT nl:
+    $(LINK)$(LINKFLAGS)/SHARE=python$build_out:[$(DYNLOAD_DIR)]$(NOTDIR $(MMS$TARGET_NAME)).EXE $(MMS$SOURCE_LIST),[.opt]$(NOTDIR $(MMS$TARGET_NAME)).opt/OPT
 
 [.modules.vms.ile3]ile3_wrap.c : [.modules.vms.ile3]ile3.i
     SWIG -python modules/vms/ile3/ile3.i
