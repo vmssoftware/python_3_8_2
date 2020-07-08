@@ -1,7 +1,7 @@
 #-*- coding: iso-8859-1 -*-
 # pysqlite2/test/transactions.py: tests transactions
 #
-# Copyright (C) 2005-2007 Gerhard Häring <gh@ghaering.de>
+# Copyright (C) 2005-2007 Gerhard Hï¿½ring <gh@ghaering.de>
 #
 # This file is part of pysqlite.
 #
@@ -200,7 +200,42 @@ class TransactionalDDL(unittest.TestCase):
     def tearDown(self):
         self.con.close()
 
+import sys
+OPENVMS = sys.platform == 'OpenVMS'
+if OPENVMS:
+    # all other tests failed
+    class TestVMS(unittest.TestCase):
+        def setUp(self):
+            self.con = sqlite.connect(":memory:")
+
+        def tearDown(self):
+            self.con.close()
+
+        def CheckDdlDoesNotAutostartTransaction(self):
+            # For backwards compatibility reasons, DDL statements should not
+            # implicitly start a transaction.
+            self.con.execute("create table test(i)")
+            self.con.rollback()
+            result = self.con.execute("select * from test").fetchall()
+            self.assertEqual(result, [])
+
+        def CheckRollbackCursorConsistency(self):
+            """
+            Checks if cursors on the connection are set into a "reset" state
+            when a rollback is done on the connection.
+            """
+            cur = self.con.cursor()
+            cur.execute("create table test(x)")
+            cur.execute("insert into test(x) values (5)")
+            cur.execute("select 1 union select 2 union select 3")
+
+            self.con.rollback()
+            with self.assertRaises(sqlite.InterfaceError):
+                cur.fetchall()
+
 def suite():
+    if OPENVMS:
+        return unittest.TestSuite(unittest.makeSuite(TestVMS, "Check"))
     default_suite = unittest.makeSuite(TransactionTests, "Check")
     special_command_suite = unittest.makeSuite(SpecialCommandTests, "Check")
     ddl_suite = unittest.makeSuite(TransactionalDDL, "Check")

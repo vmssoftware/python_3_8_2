@@ -78,7 +78,7 @@ class PopenTest(unittest.TestCase):
     def test_iterating(self):
         cmd = "echo hello"
         if sys.platform == 'OpenVMS':
-            cmd = ' write sys$output F$FAO("hello!/")'
+            cmd = 'write sys$output F$FAO("hello!/")'
         with os.popen(cmd) as f:
             self.assertEqual(list(f), ["hello\n"])
 

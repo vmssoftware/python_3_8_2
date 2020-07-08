@@ -1,7 +1,7 @@
 #-*- coding: iso-8859-1 -*-
 # pysqlite2/test/dbapi.py: tests for DB-API compliance
 #
-# Copyright (C) 2004-2010 Gerhard Häring <gh@ghaering.de>
+# Copyright (C) 2004-2010 Gerhard Hï¿½ring <gh@ghaering.de>
 #
 # This file is part of pysqlite.
 #
@@ -23,6 +23,7 @@
 
 import threading
 import unittest
+import sys
 import sqlite3 as sqlite
 
 from test.support import TESTFN, unlink
@@ -848,6 +849,7 @@ class SqliteOnConflictTests(unittest.TestCase):
         self.cu.close()
         self.cx.close()
 
+    @unittest.skipIf(sys.platform == 'OpenVMS', 'OpenVMS sqlite3 port does not support "OR ROLLBACK"')
     def CheckOnConflictRollbackWithExplicitTransaction(self):
         self.cx.isolation_level = None  # autocommit mode
         self.cu = self.cx.cursor()
@@ -879,6 +881,7 @@ class SqliteOnConflictTests(unittest.TestCase):
         # Expect the first two inserts to work, third to do nothing.
         self.assertEqual(self.cu.fetchall(), [('abort_test', None), (None, 'foo',)])
 
+    @unittest.skipIf(sys.platform == 'OpenVMS', 'OpenVMS sqlite3 port does not support "OR ROLLBACK"')
     def CheckOnConflictRollbackWithoutTransaction(self):
         # Start of implicit transaction
         self.cu.execute("INSERT INTO test(name) VALUES ('abort_test')")

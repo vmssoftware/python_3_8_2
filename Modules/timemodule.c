@@ -795,8 +795,26 @@ time_strftime(PyObject *self, PyObject *args)
 
 #ifdef __VMS
     if (fmtlen > 0 && fmt[fmtlen-1] == '%') {
-        PyErr_SetString(PyExc_ValueError, "Invalid format string");
-        return NULL;
+        // test if percent is trailing
+        int is_trailing_percent = 0;
+        const char *fmt_ptr = fmt;
+        while(*fmt_ptr) {
+            if (*fmt_ptr == '%') {
+                ++fmt_ptr;
+                if (*fmt_ptr == '%') {
+                    ++fmt_ptr;
+                } else if (!*fmt_ptr){
+                    is_trailing_percent = 1;
+                    break;
+                }
+            } else {
+                ++fmt_ptr;
+            }
+        }
+        if (is_trailing_percent) {
+            PyErr_SetString(PyExc_ValueError, "Invalid format string");
+            return NULL;
+        }
     }
 #endif
 

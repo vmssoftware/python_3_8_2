@@ -25,6 +25,8 @@ try:
 except ImportError:
     ctypes = None
 
+OPENVMS = sys.platform == 'OpenVMS'
+
 ssl = support.import_module("ssl")
 
 from ssl import TLSVersion, _TLSContentType, _TLSMessageType
@@ -384,6 +386,7 @@ class BasicSocketTests(unittest.TestCase):
         ssl.RAND_add(bytearray(b"this is a random bytearray object"), 75.0)
 
     @unittest.skipUnless(os.name == 'posix', 'requires posix')
+    @unittest.skipIf(OPENVMS, 'requires fork()')
     def test_random_fork(self):
         status = ssl.RAND_status()
         if not status:
@@ -2014,6 +2017,7 @@ class SimpleBackgroundTests(unittest.TestCase):
         self.assertRaisesRegex(ssl.SSLError, "certificate verify failed",
                                 s.connect, self.server_addr)
 
+    @unittest.skipIf(OPENVMS, 'OpenVMS has no local issuer certificate')
     def test_connect_capath(self):
         # Verify server certificates using the `capath` argument
         # NOTE: the subject hashing algorithm has been changed between
@@ -2059,6 +2063,7 @@ class SimpleBackgroundTests(unittest.TestCase):
             self.assertTrue(cert)
 
     @unittest.skipIf(os.name == "nt", "Can't use a socket as a file under Windows")
+    @unittest.skipIf(OPENVMS, "Can't use a socket as a file under OpenVMS")
     def test_makefile_close(self):
         # Issue #5238: creating a file-like object with makefile() shouldn't
         # delay closing the underlying "real socket" (here tested with its
@@ -2120,6 +2125,7 @@ class SimpleBackgroundTests(unittest.TestCase):
                                     cert_reqs=ssl.CERT_NONE, ciphers="^$:,;?*'dorothyx")
                 s.connect(self.server_addr)
 
+    @unittest.skipIf(OPENVMS, 'OpenVMS has no local issuer certificate')
     def test_get_ca_certs_capath(self):
         # capath certs are loaded on request
         ctx = ssl.SSLContext(ssl.PROTOCOL_TLS_CLIENT)
@@ -2133,6 +2139,7 @@ class SimpleBackgroundTests(unittest.TestCase):
         self.assertEqual(len(ctx.get_ca_certs()), 1)
 
     @needs_sni
+    @unittest.skipIf(OPENVMS, 'OpenVMS has no local issuer certificate')
     def test_context_setget(self):
         # Check that the context of a connected socket can be replaced.
         ctx1 = ssl.SSLContext(ssl.PROTOCOL_TLS_CLIENT)
@@ -2620,7 +2627,10 @@ class AsyncoreEchoServer(threading.Thread):
         def __init__(self, certfile):
             self.certfile = certfile
             sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-            self.port = support.bind_port(sock, '')
+            if OPENVMS:
+                self.port = support.bind_port(sock, '127.0.0.1')
+            else:
+                self.port = support.bind_port(sock, '')
             asyncore.dispatcher.__init__(self, sock)
             self.listen(5)
 
@@ -4591,15 +4601,20 @@ class TestSSLDebug(unittest.TestCase):
         ctx.keylog_filename = support.TESTFN
         self.assertEqual(ctx.keylog_filename, support.TESTFN)
         self.assertTrue(os.path.isfile(support.TESTFN))
+        if OPENVMS:
+            # should close file before reading
+            ctx.keylog_filename = None
         self.assertEqual(self.keylog_lines(), 1)
 
         ctx.keylog_filename = None
         self.assertEqual(ctx.keylog_filename, None)
 
-        with self.assertRaises((IsADirectoryError, PermissionError)):
-            # Windows raises PermissionError
-            ctx.keylog_filename = os.path.dirname(
-                os.path.abspath(support.TESTFN))
+        if not OPENVMS:
+            # OpenVMS allows directories and files with the same name
+            with self.assertRaises((IsADirectoryError, PermissionError)):
+                # Windows raises PermissionError
+                ctx.keylog_filename = os.path.dirname(
+                    os.path.abspath(support.TESTFN))
 
         with self.assertRaises(TypeError):
             ctx.keylog_filename = 1
@@ -4616,6 +4631,9 @@ class TestSSLDebug(unittest.TestCase):
                                             server_hostname=hostname) as s:
                 s.connect((HOST, server.port))
         # header, 5 lines for TLS 1.3
+        if OPENVMS:
+            # we should close keylog before reading it
+            client_context.keylog_filename = None
         self.assertEqual(self.keylog_lines(), 6)
 
         client_context.keylog_filename = None
@@ -4625,19 +4643,24 @@ class TestSSLDebug(unittest.TestCase):
             with client_context.wrap_socket(socket.socket(),
                                             server_hostname=hostname) as s:
                 s.connect((HOST, server.port))
+        if OPENVMS:
+            # we should close keylog before reading it
+            server_context.keylog_filename = None
         self.assertGreaterEqual(self.keylog_lines(), 11)
 
-        client_context.keylog_filename = support.TESTFN
-        server_context.keylog_filename = support.TESTFN
-        server = ThreadedEchoServer(context=server_context, chatty=False)
-        with server:
-            with client_context.wrap_socket(socket.socket(),
-                                            server_hostname=hostname) as s:
-                s.connect((HOST, server.port))
-        self.assertGreaterEqual(self.keylog_lines(), 21)
+        if not OPENVMS:
+            # OpenVMS does not allow write to the same file simultaneously
+            client_context.keylog_filename = support.TESTFN
+            server_context.keylog_filename = support.TESTFN
+            server = ThreadedEchoServer(context=server_context, chatty=False)
+            with server:
+                with client_context.wrap_socket(socket.socket(),
+                                                server_hostname=hostname) as s:
+                    s.connect((HOST, server.port))
+            self.assertGreaterEqual(self.keylog_lines(), 21)
 
-        client_context.keylog_filename = None
-        server_context.keylog_filename = None
+            client_context.keylog_filename = None
+            server_context.keylog_filename = None
 
     @requires_keylog
     @unittest.skipIf(sys.flags.ignore_environment,

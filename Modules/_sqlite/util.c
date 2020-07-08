@@ -74,6 +74,10 @@ int _pysqlite_seterror(sqlite3* db, sqlite3_stmt* st)
         case SQLITE_PROTOCOL:
         case SQLITE_EMPTY:
         case SQLITE_SCHEMA:
+#ifdef __VMS
+        // when inserting to read only db
+        case 255:
+#endif
             PyErr_SetString(pysqlite_OperationalError, sqlite3_errmsg(db));
             break;
         case SQLITE_CORRUPT:

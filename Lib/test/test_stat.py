@@ -76,6 +76,12 @@ class TestFilemode:
         'FILE_ATTRIBUTE_VIRTUAL': 65536}
 
     def setUp(self):
+        if sys.platform == 'OpenVMS':
+            # grant delete privilegy
+            try:
+                os.chmod(TESTFN, 0o777)
+            except:
+                pass
         try:
             os.remove(TESTFN)
         except OSError:
