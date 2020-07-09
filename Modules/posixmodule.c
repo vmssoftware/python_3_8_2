@@ -4453,7 +4453,10 @@ os_rmdir_impl(PyObject *module, path_t *path, int dir_fd)
 #ifdef __VMS
     if (result) {
         STRUCT_STAT t_st;
-        int t_result = STAT(path->narrow, &t_st);
+        int t_result;
+        Py_BEGIN_ALLOW_THREADS
+        t_result = STAT(path->narrow, &t_st);
+        Py_END_ALLOW_THREADS
         if (t_result == 0 && !S_ISDIR(t_st.st_mode)) {
             errno = ENOTDIR;
         }
@@ -4646,23 +4649,32 @@ os_unlink_impl(PyObject *module, path_t *path, int dir_fd)
             PyMem_FREE(t_path);
         } else {
             // remove all versions
-            int t_errno = errno;
             result = unlink(path->narrow);
             if (result == 0) {
                 while (!(result = unlink(path->narrow))) {
                     // pass
                 }
                 if (errno == ENOENT) {
-                    errno = t_errno;
+                    errno = 0;
                     result = 0;
                 }
-            } else if (errno == ENOENT) {
+            } else {
+                int t_errno = errno;
                 STRUCT_STAT buf;
-                int l_stat_code = LSTAT(path->narrow, &buf);
-                if (l_stat_code == 0 && S_ISLNK(buf.st_mode)) {
-                    // unlink reports that file does not exist, but it exists and it is a link
-                    // so we will use lib$delete_file
-                    result = (1 != delete_non_unlinkable_link(path->narrow));
+                int stat_code = LSTAT(path->narrow, &buf);
+                if (stat_code == 0) {
+                    if (S_ISLNK(buf.st_mode)) {
+                        // unlink reports that file does not exist, but it exists and it is a link
+                        // so we will use lib$delete_file
+                        errno = 0;
+                        result = (1 != delete_non_unlinkable_link(path->narrow));
+                    } else if (S_ISDIR(buf.st_mode)) {
+                        errno = EISDIR;
+                    } else {
+                        errno = t_errno;
+                    }
+                } else {
+                    errno = t_errno;
                 }
             }
         }
@@ -9025,7 +9037,9 @@ os_read_pipe_impl(PyObject *module, int fd)
         return NULL;
 
     int pid = -1;
+    Py_BEGIN_ALLOW_THREADS
     n = read_pipe_bytes(fd, PyBytes_AS_STRING(buffer), length, &pid);
+    Py_END_ALLOW_THREADS
     if (n == -1) {
         Py_DECREF(buffer);
         return NULL;
@@ -13534,6 +13548,7 @@ ScandirIterator_iternext(ScandirIterator *iterator)
         is_dot = direntp->d_name[0] == '.' &&
                  (name_len == 1 || (direntp->d_name[1] == '.' && name_len == 2));
 #ifdef __VMS
+        // only first three words are usable
         direntp->d_ino = direntp->d_ino & 0xffffffffffff;
 #endif
         if (!is_dot) {
@@ -13760,20 +13775,25 @@ os_scandir_impl(PyObject *module, path_t *path)
             path_str = ".";
 
         Py_BEGIN_ALLOW_THREADS
+#ifdef __VMS
+        {
+            STRUCT_STAT t_st;
+            int t_result = STAT(path_str, &t_st);
+            if (t_result == 0) {
+                if (!S_ISDIR(t_st.st_mode)) {
+                    errno = ENOTDIR;
+                } else if (!(t_st.st_mode & (S_IRUSR | S_IRGRP | S_IROTH))) {
+                    errno = EACCES;
+                }
+            }
+        }
+        if (errno == 0) // for the next opendir()
+#endif
         iterator->dirp = opendir(path_str);
         Py_END_ALLOW_THREADS
     }
 
     if (!iterator->dirp) {
-#ifdef __VMS
-        {
-            STRUCT_STAT t_st;
-            int t_result = STAT(path_str, &t_st);
-            if (t_result == 0 && !S_ISDIR(t_st.st_mode)) {
-                errno = ENOTDIR;
-            }
-        }
-#endif
         path_error(&iterator->path);
 #ifdef HAVE_FDOPENDIR
         if (fd != -1) {

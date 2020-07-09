@@ -13,6 +13,8 @@ import stat
 import weakref
 from unittest import mock
 
+OPENVMS = sys.platform == 'OpenVMS'
+
 import unittest
 from test import support
 from test.support import script_helper
@@ -343,8 +345,7 @@ class TestBadTempdir:
             finally:
                 os.chmod(tempfile.tempdir, oldmode)
 
-    @unittest.skipIf(sys.platform == 'OpenVMS',
-                     'OpenVMS creates nested folders.')
+    @unittest.skipIf(OPENVMS, 'OpenVMS intermediate nonexistent directories are also created')
     def test_nonexisting_directory(self):
         with _inside_empty_temp_dir():
             tempdir = os.path.join(tempfile.tempdir, 'nonexistent')
@@ -352,8 +353,7 @@ class TestBadTempdir:
                 with self.assertRaises(FileNotFoundError):
                     self.make_temp()
 
-    @unittest.skipIf(sys.platform == 'OpenVMS',
-                     'OpenVMS creates nested folders, even the file with the same name exists.')
+    @unittest.skipIf(OPENVMS, 'OpenVMS allows files and directories with the same name')
     def test_non_directory(self):
         with _inside_empty_temp_dir():
             tempdir = os.path.join(tempfile.tempdir, 'file')
@@ -1359,8 +1359,7 @@ class TestTemporaryDirectory(BaseTestCase):
             with open(os.path.join(path, "test%d.txt" % i), "wb") as f:
                 f.write(b"Hello world!")
 
-    @unittest.skipIf(sys.platform == 'OpenVMS',
-                     'OpenVMS creates nested folders.')
+    @unittest.skipIf(OPENVMS, 'OpenVMS intermediate nonexistent directories are also created')
     def test_mkdtemp_failure(self):
         # Check no additional exception if mkdtemp fails
         # Previously would raise AttributeError instead
@@ -1515,6 +1514,8 @@ class TestTemporaryDirectory(BaseTestCase):
                             os.chmod(os.path.join(root, name), mode)
                         os.chmod(root, mode)
                     d.cleanup()
+                # OpenVMS CRTL has issue - it cannot see the directory with the write only permission
+                # test pass, but directory remains
                 self.assertFalse(os.path.exists(d.name))
 
     @unittest.skipUnless(hasattr(os, 'chflags'), 'requires os.lchflags')
