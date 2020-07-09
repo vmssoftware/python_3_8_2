@@ -2033,8 +2033,13 @@ class TarFile(object):
             dirpath = os.path.join(path, tarinfo.name)
             try:
                 self.chown(tarinfo, dirpath, numeric_owner=numeric_owner)
-                self.utime(tarinfo, dirpath)
-                self.chmod(tarinfo, dirpath)
+                if sys.platform == 'OpenVMS':
+                    # OpenVMS chmod modifies the time
+                    self.chmod(tarinfo, dirpath)
+                    self.utime(tarinfo, dirpath)
+                else:
+                    self.utime(tarinfo, dirpath)
+                    self.chmod(tarinfo, dirpath)
             except ExtractError as e:
                 if self.errorlevel > 1:
                     raise

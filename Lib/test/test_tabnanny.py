@@ -3,7 +3,7 @@
 Glossary:
     * errored    : Whitespace related problems present in file.
 """
-from unittest import TestCase, mock
+from unittest import TestCase, mock, main
 from unittest import mock
 import errno
 import os
@@ -14,6 +14,16 @@ import textwrap
 from test.support import (captured_stderr, captured_stdout, script_helper,
                           findfile, unlink)
 
+import sys
+OPENVMS = sys.platform == 'OpenVMS'
+if OPENVMS:
+    import vms.decc
+    import re
+    python_folder_real = '/'.join(vms.decc.from_vms(vms.decc.to_vms(sys.executable, False, 1)[0], False)[0].split('/')[:-2])
+    python_folder_pattern = re.compile(python_folder_real)
+    def normalize_vms_path(vms_path):
+        # sys.prefix (and sys.exec_prefix too) not always eq '/python$root'
+        return python_folder_pattern.sub('/python$root', vms_path)
 
 SOURCE_CODES = {
     "incomplete_expression": (
@@ -294,6 +304,9 @@ class TestCommandLine(TestCase):
         # by OS Windows.
         out = out.decode('ascii')
         err = err.decode('ascii')
+        if OPENVMS:
+            out = normalize_vms_path(out)
+            err = normalize_vms_path(err)
         if partial:
             for std, output in ((stdout, out), (stderr, err)):
                 _output = output.splitlines()
@@ -320,6 +333,8 @@ class TestCommandLine(TestCase):
     def test_command_usage(self):
         """Should display usage on no arguments."""
         path = findfile('tabnanny.py')
+        if OPENVMS:
+            path = normalize_vms_path(path)
         stderr = f"Usage: {path} [-v] file_or_directory ..."
         self.validate_cmd(stderr=stderr)
 
@@ -344,3 +359,6 @@ class TestCommandLine(TestCase):
                 "offending line: '\\tprint(\"world\")\\n'"
             ).strip()
             self.validate_cmd("-vv", path, stdout=stdout, partial=True)
+
+if __name__ == '__main__':
+    main()
