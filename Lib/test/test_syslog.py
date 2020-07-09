@@ -3,6 +3,9 @@ from test import support
 syslog = support.import_module("syslog") #skip if not supported
 import unittest
 
+import sys
+OPENVMS = sys.platform == 'OpenVMS'
+
 # XXX(nnorwitz): This test sucks.  I don't know of a platform independent way
 # to verify that the messages were really logged.
 # The only purpose of this test is to verify the code doesn't crash or leak.
@@ -23,6 +26,7 @@ class Test(unittest.TestCase):
         syslog.openlog('python')
         syslog.closelog()
 
+    @unittest.skipIf(OPENVMS, 'OpenVMS has no setlogmask() implemented')
     def test_setlogmask(self):
         syslog.setlogmask(syslog.LOG_DEBUG)
 

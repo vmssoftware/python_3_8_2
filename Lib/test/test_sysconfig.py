@@ -16,6 +16,9 @@ from sysconfig import (get_paths, get_platform, get_config_vars,
                        get_scheme_names, get_config_var, _main)
 import _osx_support
 
+if sys.platform == 'OpenVMS':
+    raise unittest.SkipTest('OpenVMS has no appropriate sysconfig yet')
+
 class TestSysConfig(unittest.TestCase):
 
     def setUp(self):
