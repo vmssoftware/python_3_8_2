@@ -10,6 +10,8 @@ from test import support
 from test.support import skip_if_buggy_ucrt_strfptime
 from datetime import date as datetime_date
 
+OPENVMS = sys.platform == 'OpenVMS'
+
 import _strptime
 
 class getlang_Tests(unittest.TestCase):
@@ -527,9 +529,10 @@ class CalculationTests(unittest.TestCase):
                         "Calculation of day of the week failed; "
                          "%s != %s" % (result.tm_wday, self.time_tuple.tm_wday))
 
-    if support.is_android:
+    if support.is_android or OPENVMS:
         # Issue #26929: strftime() on Android incorrectly formats %V or %G for
         # the last or the first incomplete week in a year.
+        # OpenVMS does not support %G
         _ymd_excluded = ((1905, 1, 1), (1906, 12, 31), (2008, 12, 29),
                         (1917, 12, 31))
         _formats_excluded = ('%G %V',)
