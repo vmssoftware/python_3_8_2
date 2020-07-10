@@ -26,6 +26,18 @@ try:
 except ImportError:
     ctypes = None
 
+OPENVMS = sys.platform == 'OpenVMS'
+if OPENVMS:
+    import vms.decc
+    import re
+    python_folder_real = '/'.join(vms.decc.from_vms(vms.decc.to_vms(sys.executable, False, 1)[0], False)[0].split('/')[:-2])
+    python_folder_pattern = re.compile(python_folder_real)
+    tmp_folder_real = vms.decc.from_vms(vms.decc.to_vms("/tmp/0123456789/", False, 1)[0], False)[0][:-10]
+    tmp_folder_pattern = re.compile(tmp_folder_real)
+    def normalize_vms_path(vms_path):
+        # sys.prefix (and sys.exec_prefix too) not always eq '/python$root'
+        return tmp_folder_pattern.sub('/tmp/', python_folder_pattern.sub('/python$root', vms_path))
+
 # Platforms that set sys._base_executable can create venvs from within
 # another venv, so no need to skip tests that require venv.create().
 requireVenvCreate = unittest.skipUnless(
@@ -155,6 +167,9 @@ class BasicTest(BaseTest):
             ('base_exec_prefix', sys.base_exec_prefix)):
             cmd[2] = 'import sys; print(sys.%s)' % prefix
             out, err = check_output(cmd)
+            if OPENVMS:
+                out = normalize_vms_path(out.decode()).encode()
+                expected = normalize_vms_path(expected)
             self.assertEqual(out.strip(), expected.encode())
 
     if sys.platform == 'win32':
@@ -211,6 +226,7 @@ class BasicTest(BaseTest):
             elif os.path.isdir(fn):
                 rmtree(fn)
 
+    @unittest.skipIf(OPENVMS, 'OpenVMS allows files and directories with the same name')
     def test_unoverwritable_fails(self):
         #create a file clashing with directories in the env dir
         for paths in self.ENV_SUBDIRS[:3]:
@@ -320,6 +336,7 @@ class BasicTest(BaseTest):
         self.assertEqual(out.strip(), '0')
 
     @requireVenvCreate
+    @unittest.skipIf(OPENVMS, 'OpenVMS does not support multiprocessing')
     def test_multiprocessing(self):
         """
         Test that the multiprocessing is able to spawn.
