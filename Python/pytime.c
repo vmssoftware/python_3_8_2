@@ -67,6 +67,13 @@ _PyLong_AsTime_t(PyObject *obj)
 #if SIZEOF_TIME_T == SIZEOF_LONG_LONG
     long long val;
     val = PyLong_AsLongLong(obj);
+#elif defined(__VMS)
+    long long val;
+    val = PyLong_AsLongLong(obj);
+    if (val < 0 || val > UINT32_MAX) {
+        error_time_t_overflow();
+        return -1;
+    }
 #else
     long val;
     Py_BUILD_ASSERT(sizeof(time_t) <= sizeof(long));
