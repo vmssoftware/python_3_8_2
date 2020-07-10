@@ -485,7 +485,11 @@ Connection: close
 
     def test_file_notexists(self):
         fd, tmp_file = tempfile.mkstemp()
-        tmp_fileurl = 'file://localhost/' + tmp_file.replace(os.path.sep, '/')
+        # OpenVMS tmp_file is absolute path
+        if tmp_file.startswith('/'):
+            tmp_fileurl = 'file://localhost' + tmp_file.replace(os.path.sep, '/')
+        else:
+            tmp_fileurl = 'file://localhost/' + tmp_file.replace(os.path.sep, '/')
         try:
             self.assertTrue(os.path.exists(tmp_file))
             with urlopen(tmp_fileurl) as fobj:
