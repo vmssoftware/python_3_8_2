@@ -843,12 +843,20 @@ def uname():
             version = ''
         # Get processor information
         try:
-            import vms.lib
+            import vms.ile3
+            import vms.sys
             import vms.syidef
         except ImportError:
             pass
         else:
-            sts, processor, csid = vms.lib.getsyi(vms.syidef.SYI__ARCH_NAME, None)
+            # sts, processor, csid = vms.lib.getsyi(vms.syidef.SYI__ARCH_NAME, None)
+            il = vms.ile3.new()
+            vms.ile3.addstr(il, vms.syidef.SYI__ARCH_NAME, None, 15)
+            status, csid = vms.sys.getsyi(0, None, il)
+            if status == 1:
+                processor = vms.ile3.getstr(il, 0, 0)
+            vms.ile3.delete(il)
+
     if not processor:
         # Get processor information from the uname system command
         processor = _syscmd_uname('-p', '')
