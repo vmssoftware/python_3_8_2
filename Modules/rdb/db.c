@@ -452,7 +452,7 @@ void *Prepare(char *stmt)
 
         for (i = 0; i < sp->sqlda_i.sqld; i++)
        	{
-               sp->sqlda_i.sqlvar[i].sqldata = malloc(sp->sqlda_i.sqlvar[i].sqldlen * sizeof(char))
+               sp->sqlda_i.sqlvar[i].sqldata = malloc(sp->sqlda_i.sqlvar[i].sqldlen * sizeof(char));
 	   assert(sp->sqlda_i.sqlvar[i].sqldata);
 	   sp->sqlda_i.sqlvar[i].sqlnind = NULL;
 	}
