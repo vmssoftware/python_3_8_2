@@ -163,7 +163,8 @@ int Attach(const char *db)
 	   goto hell;
 	}
 
-	assert(tmp = malloc((strlen(db) + 16) * sizeof(char)));
+	tmp = malloc((strlen(db) + 16) * sizeof(char));
+    assert(tmp);
 	sprintf(tmp, "filename %s", db);
 
 	eib$$db_attach(&SQLCA, tmp);
@@ -272,13 +273,15 @@ static int eib_DB_Alloc(sqlda_t *sqlda_o)
 
 	for (i = 0; i < sqlda_o->sqld; i++)
 	{
-	   assert(sqlda_o->sqlvar[i].sqlnind = malloc(sizeof(int)));
+	   sqlda_o->sqlvar[i].sqlnind = malloc(sizeof(int));
+       assert(sqlda_o->sqlvar[i].sqlnind);
 	   type = sqlda_o->sqlvar[i].sqltype;
 
 	   switch (type)
 	   {
 	      case SQLDA_VARCHAR:
-		 assert(sqlda_o->sqlvar[i].sqldata = malloc(sizeof(vc_t)));
+          sqlda_o->sqlvar[i].sqldata = malloc(sizeof(vc_t));
+		 assert(sqlda_o->sqlvar[i].sqldata);
 	         break;
 
 	      case SQLDA_CHAR:
@@ -290,7 +293,8 @@ static int eib_DB_Alloc(sqlda_t *sqlda_o)
               case SQLDA_QUADWORD:
 	      case SQLDA_DATE:
 	      case SQLDA2_DATETIME:
-		 assert(sqlda_o->sqlvar[i].sqldata = malloc(sqlda_o->sqlvar[i].sqldlen));
+          sqlda_o->sqlvar[i].sqldata = malloc(sqlda_o->sqlvar[i].sqldlen);
+		 assert(sqlda_o->sqlvar[i].sqldata);
 		 break;
 
 	      default:
@@ -408,7 +412,8 @@ void *Prepare(char *stmt)
 
      	errstr[0] = '\0';
 
-	assert(sp = calloc(1, sizeof(stmt_t)));
+	sp = calloc(1, sizeof(stmt_t));
+    assert(sp);
 
 	sp->sqlda_i.sqln = MAXARGS;
 	sp->sqlda_o.sqln = MAXARGS;
@@ -447,7 +452,8 @@ void *Prepare(char *stmt)
 
         for (i = 0; i < sp->sqlda_i.sqld; i++)
        	{
-	   assert(sp->sqlda_i.sqlvar[i].sqldata = malloc(sp->sqlda_i.sqlvar[i].sqldlen * sizeof(char)));
+               sp->sqlda_i.sqlvar[i].sqldata = malloc(sp->sqlda_i.sqlvar[i].sqldlen * sizeof(char))
+	   assert(sp->sqlda_i.sqlvar[i].sqldata);
 	   sp->sqlda_i.sqlvar[i].sqlnind = NULL;
 	}
 
@@ -529,11 +535,13 @@ char **FetchRow(void *addr)
 	}
 
 	nc = sp->sqlda_o.sqld;
-	assert(arr = calloc((nc + 1), sizeof(char *)));
+    arr = calloc((nc + 1), sizeof(char *));
+	assert(arr);
 
 	for (i = 0; i < nc; i++)
 	{
-	   assert(arr[i] = strdup(Data(addr, i)));
+        arr[i] = strdup(Data(addr, i));
+	   assert(arr[i]);
 	}
 
 	arr[i] = NULL;
