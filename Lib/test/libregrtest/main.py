@@ -21,6 +21,41 @@ from test.libregrtest.pgo import setup_pgo_tests
 from test.libregrtest.utils import removepy, count, format_duration, printlist
 from test import support
 
+if sys.platform == 'OpenVMS':
+
+    import vms.jpidef
+    import vms.syidef
+    import vms.lib
+
+    def format_mem(mem):
+        abb = ['k', 'M', 'G', 'T']
+        p = 0
+        unit = 1024
+        while mem > unit << 10:
+            unit = unit << 10
+            p = p + 1
+        if p < len(abb):
+            return "{1:,.{0}f}{2}".format(2, mem / unit, abb[p])
+        else:
+            return "{0:,d}".format(mem)
+
+    vms_page_size = None
+
+    def get_mem():
+        global vms_page_size
+        try:
+            if vms_page_size == None:
+                sts, pagesize, node = vms.lib.getsyi(vms.syidef.SYI__PAGE_SIZE, None)
+                if sts != 1:
+                    return 0
+                vms_page_size = int(pagesize)
+            sts, pagecount = vms.lib.getjpi(vms.jpidef.JPI__PPGCNT, 0, None)
+            if sts != 1:
+                return 0
+        except:
+            return 0
+        return vms_page_size * int(pagecount)
+
 
 # bpo-38203: Maximum delay in seconds to exit Python (call Py_Finalize()).
 # Used to protect against threading._shutdown() hang.
@@ -433,11 +468,19 @@ class Regrtest:
                 if module not in save_modules and module.startswith("test."):
                     support.unload(module)
 
+            #show used memory
+            if sys.platform == 'OpenVMS':
+                print('Used memory: %s' % format_mem(get_mem()))
+
             if self.ns.failfast and is_failed(result, self.ns):
                 break
 
         if previous_test:
             print(previous_test)
+
+        #show used memory
+        if sys.platform == 'OpenVMS':
+            print('Used memory: %s' % format_mem(get_mem()))
 
     def _test_forever(self, tests):
         while True:
