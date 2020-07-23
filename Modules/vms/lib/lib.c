@@ -134,6 +134,8 @@ unsigned int _getsyi(int item, char **ret, unsigned int *csid, char *node)
     assert(ret);
     assert(csid);
 
+    *csid = 0;  // output parameter must be initialized
+
     val_dsc.dsc$w_length = sizeof(val) - 1;
     val_dsc.dsc$b_class = DSC$K_CLASS_S;
     val_dsc.dsc$b_dtype = DSC$K_DTYPE_T;
