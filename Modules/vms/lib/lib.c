@@ -286,6 +286,11 @@ unsigned int _create_dir(char *spec, unsigned int uic, unsigned short pe, unsign
     spec_dsc.dsc$b_dtype = DSC$K_DTYPE_T;
     spec_dsc.dsc$a_pointer = spec;
 
-    return (lib$create_dir(&spec_dsc, &uic, &pe, &pv, NULL, NULL, NULL));
+    unsigned int *uic_ptr = NULL;
+    if (uic != (unsigned int)-1) {
+        uic_ptr = &uic;
+    }
+
+    return (lib$create_dir(&spec_dsc, uic_ptr, &pe, &pv, NULL, NULL, NULL));
 }
 
