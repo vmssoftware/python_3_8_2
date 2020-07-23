@@ -16,6 +16,7 @@ extern void _addstrn(void *, int, char *, unsigned short);
 extern char *_getstr(void *, int, int);
 extern int _getbyte(void *, int, int);
 extern void _addbin(void *, int, long long, unsigned short, unsigned short);
+extern int _size(void *);
 
 # ifdef __cplusplus
         }

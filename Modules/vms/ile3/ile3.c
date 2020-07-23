@@ -17,6 +17,16 @@
 #define OKAY(STATUS) (((STATUS) & 1) != 0)
 #endif
 
+#ifndef MIN
+#define MIN(a,b) ((a)<(b)?(a):(b))
+#endif
+
+void init_item(ILE3 *item) {
+    item->ile3$w_length = 0;
+    item->ile3$w_code = 0;
+    item->ile3$ps_bufaddr = NULL;
+    item->ile3$ps_retlen_addr = NULL;
+}
 
 
 void *_new()
@@ -31,9 +41,14 @@ void *_new()
     assert(obj->types);
     obj->size = 1;
     obj->elem = 0;
+    init_item(&obj->list[obj->elem]);
     return (obj);
 }
 
+int _size(void *addr) {
+    LCL_ile3 *obj = (LCL_ile3 *) addr;
+    return obj->size - 1;
+}
 
 void _delete(void *addr)
 {
@@ -87,10 +102,10 @@ char *_getstr(void *addr, int idx, int flag)
     ptr = (char *) item->ile3$ps_bufaddr;
 
     if (flag) {
-	len = ptr[0];
-	ptr++;
+        len = ptr[0];
+        ptr++;
     } else {
-	len = *item->ile3$ps_retlen_addr;
+        len = *item->ile3$ps_retlen_addr;
     }
 
     tmp = malloc(len + 1);
@@ -99,11 +114,11 @@ char *_getstr(void *addr, int idx, int flag)
     tmp[len] = '\0';
 
     if (!flag) {
-	char *cp = &tmp[len - 1];
-	while ((isspace(*cp)) && cp >= tmp) {
-	    *cp = '\0';
-	    cp--;
-	}
+        char *cp = &tmp[len - 1];
+        while (cp >= tmp && isspace(*cp)) {
+            *cp = '\0';
+            cp--;
+        }
     }
 
     return (tmp);
@@ -114,7 +129,6 @@ long long _getint(void *addr, int idx)
 {
     LCL_ile3 *obj = (LCL_ile3 *) addr;
     ILE3 *item;
-    unsigned short size;
     int type;
 
     assert((idx >= 0) && (idx <= obj->elem));
@@ -122,34 +136,25 @@ long long _getint(void *addr, int idx)
     type = obj->types[idx];
 
     switch (type) {
-    case DSC$K_DTYPE_BU:
-	return (*(unsigned char *) item->ile3$ps_bufaddr);
-	break;
-    case DSC$K_DTYPE_B:
-	return (*(char *) item->ile3$ps_bufaddr);
-	break;
-    case DSC$K_DTYPE_WU:
-	return (*(unsigned short *) item->ile3$ps_bufaddr);
-	break;
-    case DSC$K_DTYPE_W:
-	return (*(short *) item->ile3$ps_bufaddr);
-	break;
-    case DSC$K_DTYPE_LU:
-	return (*(unsigned int *) item->ile3$ps_bufaddr);
-	break;
-    case DSC$K_DTYPE_L:
-	return (*(int *) item->ile3$ps_bufaddr);
-	break;
-    case DSC$K_DTYPE_QU:
-    case DSC$K_DTYPE_Q:
-	return (*(long long *) item->ile3$ps_bufaddr);
-	break;
-    default:
-	abort();
-	break;
+        case DSC$K_DTYPE_BU:
+            return (*(unsigned char *) item->ile3$ps_bufaddr);
+        case DSC$K_DTYPE_B:
+            return (*(char *) item->ile3$ps_bufaddr);
+        case DSC$K_DTYPE_WU:
+            return (*(unsigned short *) item->ile3$ps_bufaddr);
+        case DSC$K_DTYPE_W:
+            return (*(short *) item->ile3$ps_bufaddr);
+        case DSC$K_DTYPE_LU:
+            return (*(unsigned int *) item->ile3$ps_bufaddr);
+        case DSC$K_DTYPE_L:
+            return (*(int *) item->ile3$ps_bufaddr);
+        case DSC$K_DTYPE_QU:
+            return (*(unsigned long long *) item->ile3$ps_bufaddr);
+        case DSC$K_DTYPE_Q:
+            return (*(long long *) item->ile3$ps_bufaddr);
+        default:
+            abort();
     }
-
-    return (0);
 }
 
 
@@ -221,19 +226,39 @@ void _addstr(void *addr, int code, char *val, unsigned short len)
     assert(item->ile3$ps_retlen_addr);
 
     if (val) {
-	item->ile3$w_length = strlen(val);
-    item->ile3$ps_bufaddr = strdup(val);
-	assert(item->ile3$ps_bufaddr);
+        item->ile3$w_length = strlen(val);
+        item->ile3$ps_bufaddr = strdup(val);
+        assert(item->ile3$ps_bufaddr);
     } else {
-	item->ile3$w_length = len;
-    item->ile3$ps_bufaddr = calloc(1, len);
-	assert(item->ile3$ps_bufaddr);
+        item->ile3$w_length = len;
+        item->ile3$ps_bufaddr = calloc(1, len);
+        assert(item->ile3$ps_bufaddr);
     }
+    *item->ile3$ps_retlen_addr = item->ile3$w_length;
 
     obj->types[obj->elem] = DSC$K_DTYPE_T;
     obj->elem++;
+    init_item(&obj->list[obj->elem]);
 }
 
+int size_by_type(int type) {
+    switch (type) {
+        case DSC$K_DTYPE_BU:
+        case DSC$K_DTYPE_B:
+            return 1;
+        case DSC$K_DTYPE_WU:
+        case DSC$K_DTYPE_W:
+            return 2;
+        case DSC$K_DTYPE_LU:
+        case DSC$K_DTYPE_L:
+            return 4;
+        case DSC$K_DTYPE_QU:
+        case DSC$K_DTYPE_Q:
+            return 8;
+        default:
+            return 0;
+    }
+}
 
 void _addint(void *addr, int code, int type, long long val)
 {
@@ -250,27 +275,8 @@ void _addint(void *addr, int code, int type, long long val)
     assert(obj->types);
     item = &obj->list[obj->elem];
 
-    switch (type) {
-    case DSC$K_DTYPE_BU:
-    case DSC$K_DTYPE_B:
-	size = 1;
-	break;
-    case DSC$K_DTYPE_WU:
-    case DSC$K_DTYPE_W:
-	size = 2;
-	break;
-    case DSC$K_DTYPE_LU:
-    case DSC$K_DTYPE_L:
-	size = 4;
-	break;
-    case DSC$K_DTYPE_QU:
-    case DSC$K_DTYPE_Q:
-	size = 8;
-	break;
-    default:
-	abort();
-	break;
-    }
+    size = size_by_type(type);
+    assert(size);
 
     item->ile3$w_length = size;
     item->ile3$w_code = code;
@@ -279,63 +285,14 @@ void _addint(void *addr, int code, int type, long long val)
     item->ile3$ps_retlen_addr = calloc(1, 2);
     assert(item->ile3$ps_retlen_addr);
 
-    switch (type) {
-    case DSC$K_DTYPE_BU:
-	{
-	    unsigned char tmp = (unsigned char) val;
-	    memcpy(item->ile3$ps_bufaddr, &tmp, size);
-	}
-	break;
-    case DSC$K_DTYPE_B:
-	{
-	    char tmp = (char) val;
-	    memcpy(item->ile3$ps_bufaddr, &tmp, size);
-	}
-	break;
-    case DSC$K_DTYPE_WU:
-	{
-	    unsigned short tmp = (unsigned short) val;
-	    memcpy(item->ile3$ps_bufaddr, &tmp, size);
-	}
-	break;
-    case DSC$K_DTYPE_W:
-	{
-	    short tmp = (short) val;
-	    memcpy(item->ile3$ps_bufaddr, &tmp, size);
-	}
-	break;
-    case DSC$K_DTYPE_LU:
-	{
-	    unsigned long tmp = (unsigned long) val;
-	    memcpy(item->ile3$ps_bufaddr, &tmp, size);
-	}
-	break;
-    case DSC$K_DTYPE_L:
-	{
-	    long tmp = (long) val;
-	    memcpy(item->ile3$ps_bufaddr, &tmp, size);
-	}
-	break;
-    case DSC$K_DTYPE_QU:
-    case DSC$K_DTYPE_Q:
-	memcpy(item->ile3$ps_bufaddr, &val, size);
-	break;
-    default:
-	abort();
-	break;
-    }
+    memcpy(item->ile3$ps_bufaddr, &val, size);
 
     obj->types[obj->elem] = type;
-    memcpy(item->ile3$ps_retlen_addr, &size, sizeof(unsigned short));
+    *item->ile3$ps_retlen_addr = size;
+
     obj->elem++;
-
-    item = &obj->list[obj->elem];
-    item->ile3$w_length = 0;
-    item->ile3$w_code = 0;
-    item->ile3$ps_bufaddr = NULL;
-    item->ile3$ps_retlen_addr = NULL;
+    init_item(&obj->list[obj->elem]);
 }
-
 
 
 void _addstrd(void *addr, int code, char *val, unsigned char len)
@@ -365,13 +322,15 @@ void _addstrd(void *addr, int code, char *val, unsigned char len)
     memset(item->ile3$ps_bufaddr, ' ', len);
 
     ptr = item->ile3$ps_bufaddr;
-    n = strlen(val);
+    n = MIN(strlen(val), len - 1);
     *ptr = n;
     ptr++;
     memcpy(ptr, val, n);
+    *item->ile3$ps_retlen_addr = (unsigned short)n;
 
     obj->types[obj->elem] = DSC$K_DTYPE_T;
     obj->elem++;
+    init_item(&obj->list[obj->elem]);
 }
 
 
@@ -399,10 +358,12 @@ void _addstrn(void *addr, int code, char *val, unsigned short len)
     item->ile3$ps_bufaddr = calloc(1, len);
     assert(item->ile3$ps_bufaddr);
     memset(item->ile3$ps_bufaddr, ' ', len);
-    memcpy(item->ile3$ps_bufaddr, val, strlen(val));
+    *item->ile3$ps_retlen_addr = (unsigned short)MIN(len, strlen(val));
+    memcpy(item->ile3$ps_bufaddr, val, *item->ile3$ps_retlen_addr);
 
     obj->types[obj->elem] = DSC$K_DTYPE_T;
     obj->elem++;
+    init_item(&obj->list[obj->elem]);
 }
 
 
@@ -410,10 +371,10 @@ void _addbin(void *addr, int code, long long val, unsigned short off, unsigned s
 {
     LCL_ile3 *obj = (LCL_ile3 *) addr;
     ILE3 *item;
-    long long *ptr;
+    char *ptr;
 
     assert(obj);
-    assert((off < num));
+    // assert((off < num));
     assert(((off + num) <= sizeof(val)));
 
     obj->size++;
@@ -430,10 +391,13 @@ void _addbin(void *addr, int code, long long val, unsigned short off, unsigned s
     item->ile3$w_length = num;
     item->ile3$ps_bufaddr = malloc(num);
     assert(item->ile3$ps_bufaddr);
-    ptr = &val + off;
+    ptr = ((char*)&val) + off;
     memcpy(item->ile3$ps_bufaddr, ptr, num);
+
+    *item->ile3$ps_retlen_addr = num;   // initialize retlen
 
     obj->types[obj->elem] = DSC$K_DTYPE_T;
     obj->elem++;
+    init_item(&obj->list[obj->elem]);
 }
 

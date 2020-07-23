@@ -30,6 +30,7 @@
 %rename(getstr) _getstr;
 %rename(getbyte) _getbyte;
 %rename(addbin) _addbin;
+%rename(size) _size;
 
 extern void *_new();
 extern void _delete(void *);
@@ -42,3 +43,4 @@ extern void _addstrn(void *, int, char *, unsigned short);
 extern char *_getstr(void *, int, int);
 extern int _getbyte(void *, int, int);
 extern void _addbin(void *, int, long long, unsigned short, unsigned short);
+extern int _size(void *);
