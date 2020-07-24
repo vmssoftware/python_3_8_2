@@ -1,6 +1,5 @@
 import sys
 import unittest
-import time
 
 if sys.platform != 'OpenVMS':
     raise unittest.SkipTest('OpenVMS required')

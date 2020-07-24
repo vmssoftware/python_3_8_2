@@ -1,6 +1,5 @@
 import sys
 import unittest
-import time
 import os
 
 if sys.platform != 'OpenVMS':
