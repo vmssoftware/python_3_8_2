@@ -431,6 +431,10 @@ class Regrtest:
 
         self.log("Run tests sequentially")
 
+        #show used memory
+        if sys.platform == 'OpenVMS':
+            print('Used memory: %s' % format_mem(get_mem()))
+
         previous_test = None
         for test_index, test_name in enumerate(self.tests, 1):
             start_time = time.monotonic()
@@ -477,10 +481,6 @@ class Regrtest:
 
         if previous_test:
             print(previous_test)
-
-        #show used memory
-        if sys.platform == 'OpenVMS':
-            print('Used memory: %s' % format_mem(get_mem()))
 
     def _test_forever(self, tests):
         while True:
