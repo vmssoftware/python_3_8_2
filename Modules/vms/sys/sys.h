@@ -37,6 +37,8 @@ extern unsigned int _uicstr(long int, char **, int);
 extern unsigned int _gettim(long long *);
 extern unsigned int _crelnm(unsigned int, char *, char *, unsigned char, void *);
 extern unsigned int _show_intrusion(char *, char **, unsigned long long *, unsigned int *, unsigned int *, unsigned int, unsigned int *);
+extern unsigned int _readvblk(unsigned short int chan, void *rbuffer, long long *rlen, long long p3, unsigned int func_mod);
+extern unsigned int _writevblk(unsigned short int chan, void *wbuffer, long long *wlen, long long p3, unsigned int func_mod);
 
 #ifdef __cplusplus
         }

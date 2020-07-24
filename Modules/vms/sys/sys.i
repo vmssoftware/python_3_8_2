@@ -8,6 +8,58 @@
 %include <cstring.i>
 %cstring_output_allocate(char **OUTPUT, free(*$1));
 
+%begin %{
+#define PY_SSIZE_T_CLEAN
+%}
+
+%typemap(default) unsigned int func_mod {
+   $1 = 0;
+}
+
+// typemap for an outgoing buffer
+%typemap(in) (void *wbuffer, long long *wlen) {
+   if (!PyBytes_Check($input)) {
+       PyErr_SetString(PyExc_ValueError, "Expecting a bytes");
+       return NULL;
+   }
+   $1 = (void *) PyBytes_AsString($input);
+   $2 = (long long *)malloc(sizeof(long long));
+   *$2 = PyBytes_Size($input);
+}
+
+%typemap(freearg) (void *wbuffer, long long *wlen) {
+    free($2);
+}
+
+%typemap(argout) (void *wbuffer, long long *wlen) {
+    $result = SWIG_Python_AppendOutput($result, Py_BuildValue("l", *$2));
+}
+
+// typemap for an incoming buffer
+%typemap(in) (void *rbuffer, long long *rlen) {
+   if (!PyInt_Check($input)) {
+       PyErr_SetString(PyExc_ValueError, "Expecting an integer");
+       return NULL;
+   }
+   int read_len = PyInt_AsLong($input);
+   if (read_len < 0) {
+       PyErr_SetString(PyExc_ValueError, "Positive integer expected");
+       return NULL;
+   }
+   $1 = (void *) malloc(read_len);
+   $2 = (long long *)malloc(sizeof(long long));
+   *$2 = read_len;
+}
+
+%typemap(freearg) (void *rbuffer, long long *rlen) {
+    free($1);
+    free($2);
+}
+
+%typemap(argout) (void *rbuffer, long long *rlen) {
+    $result = SWIG_Python_AppendOutput($result, Py_BuildValue("y#", $1, (Py_ssize_t)*$2));
+}
+
 %rename(asctim) _asctim;
 %rename(asctoid) _asctoid;
 %rename(assign) _assign;
@@ -40,6 +92,8 @@
 %rename(gettim) _gettim;
 %rename(crelnm) _crelnm;
 %rename(show_intrusion) _show_intrusion;
+%rename(readvblk) _readvblk;
+%rename(writevblk) _writevblk;
 
 extern unsigned int _asctim(long long, char **OUTPUT, char);
 extern unsigned int _asctoid(char *, unsigned int *OUTPUT, unsigned int *OUTPUT);
@@ -73,4 +127,6 @@ extern unsigned int _uicstr(long int, char **OUTPUT, int);
 extern unsigned int _gettim(long long *OUTPUT);
 extern unsigned int _crelnm(unsigned int, char *, char *, unsigned char, void *);
 extern unsigned int _show_intrusion(char *, char **OUTPUT, unsigned long long *OUTPUT, unsigned int *OUTPUT, unsigned int *OUTPUT, unsigned int, unsigned int *INOUT);
+extern unsigned int _readvblk(unsigned short int chan, void *rbuffer, long long *rlen, long long p3, unsigned int func_mod);
+extern unsigned int _writevblk(unsigned short int chan, void *wbuffer, long long *wlen, long long p3, unsigned int func_mod);
 

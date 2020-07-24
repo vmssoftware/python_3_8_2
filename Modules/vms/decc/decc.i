@@ -10,12 +10,12 @@
 
 %typemap(out) char *
 {
-   if (result) {
-      resultobj = PyUnicode_DecodeUTF8(result, strlen(result), "surrogateescape");
-      free(result);
+   if ($1 == NULL) {
+      $result = Py_None;
+      Py_INCREF($result);
    } else {
-      resultobj = Py_None;
-      Py_INCREF(resultobj);
+      $result = PyUnicode_DecodeUTF8($1, strlen($1), "surrogateescape");
+      free($1);
    }
 }
 
@@ -23,6 +23,7 @@
   int len,i;
   if ($1 == NULL) {
       $result = Py_None;
+      Py_INCREF($result);
   } else {
       len = 0;
       while ($1[len]) len++;

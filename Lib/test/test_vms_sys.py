@@ -10,6 +10,7 @@ import vms.sys as SYS
 import vms.ssdef as SS
 import vms.jpidef as JPI
 import vms.syidef as SYI
+import vms.iodef as IO
 
 class BaseTestCase(unittest.TestCase):
 
@@ -50,6 +51,27 @@ class BaseTestCase(unittest.TestCase):
         self.assertEqual(result_name, name)
         status = SYS.finish_rdb(self.context)
         self.context = 0
+        self.assertEqual(1, status)
+
+    def test_mbx(self):
+        """ test mailbox """
+        test_bytes = b'test bytes'
+        status, mbx_channel = SYS.crembx( \
+            0,      # temporary/permanent
+            0,      # maxmsg
+            0,      # bufquo
+            0,      # promsk
+            0,      # acmode
+            None,   # logname
+            0)      # flags
+        self.assertEqual(1, status)
+        status, written = SYS.writevblk(mbx_channel, test_bytes, 0, IO.IO_M_NOW | IO.IO_M_STREAM)
+        self.assertEqual(1, status)
+        self.assertEqual(len(test_bytes), written)
+        status, read_bytes = SYS.readvblk(mbx_channel, len(test_bytes), 0, IO.IO_M_NOW | IO.IO_M_STREAM)
+        self.assertEqual(1, status)
+        self.assertEqual(read_bytes, test_bytes)
+        status = SYS.delmbx(mbx_channel)
         self.assertEqual(1, status)
 
 if __name__ == "__main__":

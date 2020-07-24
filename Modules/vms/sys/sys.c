@@ -10,6 +10,7 @@
 #include <ssdef.h>
 #include <gen64def.h>
 #include <assert.h>
+#include <iodef.h>
 
 #include "sys.h"
 #include "lcl.h"
@@ -727,4 +728,38 @@ unsigned int _show_intrusion(char *criteria, char **intruder,
     }
 
     return (status);
+}
+
+unsigned int _readvblk(unsigned short int chan, void *rbuffer, long long *rlen, long long p3, unsigned int func_mod) {
+    struct _iosb iosb;
+    int status = SYS$QIOW(
+        0,                          /* efn - event flag */
+        chan,                       /* chan - channel number */
+        IO$_READVBLK | func_mod,    /* func - function modifier */
+        &iosb,                      /* iosb - I/O status block */
+        0,                          /* astadr - AST routine */
+        0,                          /* astprm - AST parameter */
+        rbuffer,                    /* p1 - input buffer */
+        *rlen,                      /* p2 - size of buffer */
+        p3,                         /* starting vblock */
+        0,0,0);                     /* p4-p6*/
+    *rlen = iosb.iosb$w_bcnt;
+    return status;
+}
+
+unsigned int _writevblk(unsigned short int chan, void *wbuffer, long long *wlen, long long p3, unsigned int func_mod) {
+    struct _iosb iosb;
+    int status = SYS$QIOW(
+        0,                          /* efn - event flag */
+        chan,                       /* chan - channel number */
+        IO$_WRITEVBLK | func_mod,   /* func - function modifier */
+        &iosb,                      /* iosb - I/O status block */
+        0,                          /* astadr - AST routine */
+        0,                          /* astprm - AST parameter */
+        wbuffer,                    /* p1 - input buffer */
+        *wlen,                      /* p2 - size of buffer */
+        p3,                         /* starting vblock */
+        0,0,0);                     /* p4-p6*/
+    *wlen = iosb.iosb$w_bcnt;
+    return status;
 }
