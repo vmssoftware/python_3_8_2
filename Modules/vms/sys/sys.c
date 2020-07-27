@@ -19,6 +19,10 @@
 #define OKAY(STATUS) (((STATUS) & 1) != 0)
 #endif
 
+#ifndef DEF_TABNAM
+#define DEF_TABNAM "LNM$FILE_DEV"
+#endif
+
 
 static const char *nil = "";
 
@@ -467,10 +471,10 @@ unsigned int _device_scan(char **name, char *patt, void *addr,
     assert(addr);
 
     if (patt) {
-	dev_dsc.dsc$w_length = strlen(patt);
-	dev_dsc.dsc$b_class = DSC$K_CLASS_S;
-	dev_dsc.dsc$b_dtype = DSC$K_DTYPE_T;
-	dev_dsc.dsc$a_pointer = patt;
+        dev_dsc.dsc$w_length = strlen(patt);
+        dev_dsc.dsc$b_class = DSC$K_CLASS_S;
+        dev_dsc.dsc$b_dtype = DSC$K_DTYPE_T;
+        dev_dsc.dsc$a_pointer = patt;
     }
 
     ret_dsc.dsc$w_length = sizeof(val) - 1;
@@ -479,8 +483,8 @@ unsigned int _device_scan(char **name, char *patt, void *addr,
     ret_dsc.dsc$a_pointer = val;
 
     status =
-	sys$device_scan(&ret_dsc, &len, patt ? &dev_dsc : NULL, obj->list,
-			(struct _generic_64 *) ctxt);
+        sys$device_scan(&ret_dsc, &len, patt ? &dev_dsc : NULL, obj->list,
+                (struct _generic_64 *) ctxt);
 
     if (OKAY(status)) {
         val[len] = '\0';
@@ -488,19 +492,41 @@ unsigned int _device_scan(char **name, char *patt, void *addr,
         assert(*name);
     } else {
         *name = strdup(nil);
-	    assert(*name);
+        assert(*name);
     }
 
     return (status);
 }
 
+unsigned int _dellnm(char *tabnam, char *lognam, unsigned char acmode) {
+    struct dsc$descriptor_s tabnam_dsc;
+    struct dsc$descriptor_s lognam_dsc;
+    assert(lognam);
 
-#ifndef DEF_TABNAM
-#define DEF_TABNAM "LNM$FILE_DEV"
-#endif
+    if (tabnam == NULL) {
+        tabnam_dsc.dsc$w_length = strlen(DEF_TABNAM);
+        tabnam_dsc.dsc$b_class = DSC$K_CLASS_S;
+        tabnam_dsc.dsc$b_dtype = DSC$K_DTYPE_T;
+        tabnam_dsc.dsc$a_pointer = DEF_TABNAM;
+    } else {
+        tabnam_dsc.dsc$w_length = strlen(tabnam);
+        tabnam_dsc.dsc$b_class = DSC$K_CLASS_S;
+        tabnam_dsc.dsc$b_dtype = DSC$K_DTYPE_T;
+        tabnam_dsc.dsc$a_pointer = tabnam;
+    }
 
-extern unsigned int _trnlnm(unsigned int attr, char *tabnam, char *lognam,
-			    unsigned char acmode, void *addr)
+    lognam_dsc.dsc$w_length = strlen(lognam);
+    lognam_dsc.dsc$b_class = DSC$K_CLASS_S;
+    lognam_dsc.dsc$b_dtype = DSC$K_DTYPE_T;
+    lognam_dsc.dsc$a_pointer = lognam;
+
+    return sys$dellnm(&tabnam_dsc, &lognam_dsc, &acmode);
+
+}
+
+
+unsigned int _trnlnm(unsigned int attr, char *tabnam, char *lognam,
+                unsigned char acmode, void *addr)
 {
     LCL_ile3 *obj = (LCL_ile3 *) addr;
     struct dsc$descriptor_s tabnam_dsc;
@@ -510,15 +536,15 @@ extern unsigned int _trnlnm(unsigned int attr, char *tabnam, char *lognam,
     assert(addr);
 
     if (tabnam == NULL) {
-	tabnam_dsc.dsc$w_length = strlen(DEF_TABNAM);
-	tabnam_dsc.dsc$b_class = DSC$K_CLASS_S;
-	tabnam_dsc.dsc$b_dtype = DSC$K_DTYPE_T;
-	tabnam_dsc.dsc$a_pointer = DEF_TABNAM;
+        tabnam_dsc.dsc$w_length = strlen(DEF_TABNAM);
+        tabnam_dsc.dsc$b_class = DSC$K_CLASS_S;
+        tabnam_dsc.dsc$b_dtype = DSC$K_DTYPE_T;
+        tabnam_dsc.dsc$a_pointer = DEF_TABNAM;
     } else {
-	tabnam_dsc.dsc$w_length = strlen(tabnam);
-	tabnam_dsc.dsc$b_class = DSC$K_CLASS_S;
-	tabnam_dsc.dsc$b_dtype = DSC$K_DTYPE_T;
-	tabnam_dsc.dsc$a_pointer = tabnam;
+        tabnam_dsc.dsc$w_length = strlen(tabnam);
+        tabnam_dsc.dsc$b_class = DSC$K_CLASS_S;
+        tabnam_dsc.dsc$b_dtype = DSC$K_DTYPE_T;
+        tabnam_dsc.dsc$a_pointer = tabnam;
     }
 
     lognam_dsc.dsc$w_length = strlen(lognam);
@@ -526,8 +552,7 @@ extern unsigned int _trnlnm(unsigned int attr, char *tabnam, char *lognam,
     lognam_dsc.dsc$b_dtype = DSC$K_DTYPE_T;
     lognam_dsc.dsc$a_pointer = lognam;
 
-    return (sys$trnlnm
-	    (&attr, &tabnam_dsc, &lognam_dsc, &acmode, obj->list));
+    return sys$trnlnm(&attr, &tabnam_dsc, &lognam_dsc, &acmode, obj->list);
 }
 
 
@@ -664,13 +689,19 @@ unsigned int _crelnm(unsigned int attr, char *tabnam, char *lognam,
     struct dsc$descriptor_s lognam_dsc;
 
     assert(lognam);
-    assert(tabnam);
     assert(addr);
 
-    tabnam_dsc.dsc$w_length = strlen(tabnam);
-    tabnam_dsc.dsc$b_class = DSC$K_CLASS_S;
-    tabnam_dsc.dsc$b_dtype = DSC$K_DTYPE_T;
-    tabnam_dsc.dsc$a_pointer = tabnam;
+    if (tabnam == NULL) {
+        tabnam_dsc.dsc$w_length = strlen(DEF_TABNAM);
+        tabnam_dsc.dsc$b_class = DSC$K_CLASS_S;
+        tabnam_dsc.dsc$b_dtype = DSC$K_DTYPE_T;
+        tabnam_dsc.dsc$a_pointer = DEF_TABNAM;
+    } else {
+        tabnam_dsc.dsc$w_length = strlen(tabnam);
+        tabnam_dsc.dsc$b_class = DSC$K_CLASS_S;
+        tabnam_dsc.dsc$b_dtype = DSC$K_DTYPE_T;
+        tabnam_dsc.dsc$a_pointer = tabnam;
+    }
 
     lognam_dsc.dsc$w_length = strlen(lognam);
     lognam_dsc.dsc$b_class = DSC$K_CLASS_S;
@@ -730,7 +761,7 @@ unsigned int _show_intrusion(char *criteria, char **intruder,
     return (status);
 }
 
-unsigned int _readvblk(unsigned short int chan, void *rbuffer, long long *rlen, long long p3, unsigned int func_mod) {
+unsigned int _readvblk(unsigned short int chan, void *rbuffer, long long *rlen, unsigned short *iostatus, long long p3, unsigned int func_mod) {
     struct _iosb iosb;
     int status = SYS$QIOW(
         0,                          /* efn - event flag */
@@ -744,10 +775,11 @@ unsigned int _readvblk(unsigned short int chan, void *rbuffer, long long *rlen, 
         p3,                         /* starting vblock */
         0,0,0);                     /* p4-p6*/
     *rlen = iosb.iosb$w_bcnt;
+    *iostatus = iosb.iosb$w_status;
     return status;
 }
 
-unsigned int _writevblk(unsigned short int chan, void *wbuffer, long long *wlen, long long p3, unsigned int func_mod) {
+unsigned int _writevblk(unsigned short int chan, void *wbuffer, long long *wlen, unsigned short *iostatus, long long p3, unsigned int func_mod) {
     struct _iosb iosb;
     int status = SYS$QIOW(
         0,                          /* efn - event flag */
@@ -761,5 +793,6 @@ unsigned int _writevblk(unsigned short int chan, void *wbuffer, long long *wlen,
         p3,                         /* starting vblock */
         0,0,0);                     /* p4-p6*/
     *wlen = iosb.iosb$w_bcnt;
+    *iostatus = iosb.iosb$w_status;
     return status;
 }

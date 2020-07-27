@@ -8,6 +8,12 @@
 %include <cstring.i>
 %cstring_output_allocate(char **OUTPUT, free(*$1));
 
+%exception {
+    Py_BEGIN_ALLOW_THREADS
+    $action
+    Py_END_ALLOW_THREADS
+}
+
 %typemap(out) char *
 {
    if ($1 == NULL) {
