@@ -16,6 +16,9 @@ import vms.iodef as IO
 import vms.lnmdef as LNM
 import vms.dscdef as DSC
 import vms.psldef as PSL
+import vms.dvsdef as DVS
+import vms.dcdef as DC
+import vms.dvidef as DVI
 
 class BaseTestCase(unittest.TestCase):
 
@@ -137,7 +140,7 @@ class BaseTestCase(unittest.TestCase):
         table_str = ILE3.getstr(il, 4, 0)
         ILE3.delete(il)
         self.assertEqual(1, status)
-        self.assertEqual(attributes & LNM.LNM_M_EXISTS, LNM.LNM_M_EXISTS)
+        self.assertTrue(attributes & LNM.LNM_M_EXISTS)
         self.assertEqual(value_length, len(log_value))
         self.assertEqual(value_str, log_value)
         self.assertEqual(table_str, log_table)
@@ -145,6 +148,47 @@ class BaseTestCase(unittest.TestCase):
         status = SYS.dellnm(log_table, log_name, PSL.PSL_C_USER)
         self.assertEqual(1, status)
 
+    def test_device_scan(self):
+        """ test device_scan """
+        il = ILE3.new()
+        ILE3.addint(il, DVS.DVS__DEVCLASS, DSC.DSC_K_DTYPE_LU, DC.DC__DISK)
+
+        devices = []
+        status, dev_name, context = SYS.device_scan('*', il, 0)
+        while status == SS.SS__NORMAL:
+            devices.append(dev_name)
+            status, dev_name, context = SYS.device_scan('*', il, context)
+
+        ILE3.delete(il)
+        self.assertGreater(len(devices), 0)
+        self.assertEqual(status, SS.SS__NOMOREDEV)
+
+    def test_uicstr(self):
+        """ test uicstr """
+        status, ret_str = SYS.uicstr(123, 0)
+        self.assertEqual(status, SS.SS__NORMAL)
+        self.assertEqual(ret_str, '[0,173]')
+
+    def test_getdvi(self):
+        """ test getdvi """
+        il = ILE3.new()
+        ILE3.addint(il, DVS.DVS__DEVCLASS, DSC.DSC_K_DTYPE_LU, DC.DC__DISK)
+        status, dev_name, _ = SYS.device_scan('*', il, 0)
+        ILE3.delete(il)
+        self.assertIn(status, (SS.SS__NORMAL, SS.SS__NOMOREDEV))
+
+        il = ILE3.new()
+        ILE3.addint(il, DVI.DVI__DEVCHAR, DSC.DSC_K_DTYPE_LU, 0)
+
+        status = SYS.getdvi(dev_name, il)
+        characteristics = ILE3.getint(il, 0)
+
+        ILE3.delete(il)
+        self.assertEqual(1, status)
+        DEV_M_DIR = 0x8     # has directories
+        self.assertTrue(characteristics & DEV_M_DIR)
+        DEV_M_FOD = 0x4000  # is file oriented
+        self.assertTrue(characteristics & DEV_M_FOD)
 
 if __name__ == "__main__":
     unittest.main(verbosity=2)

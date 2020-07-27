@@ -440,16 +440,14 @@ unsigned int _getdvi(char *dev, void *addr)
     dev_dsc.dsc$b_dtype = DSC$K_DTYPE_T;
     dev_dsc.dsc$a_pointer = dev;
 
-    status =
-	sys$getdviw(EFN$C_ENF, 0, &dev_dsc, obj->list, &iosb, NULL, 0,
-		    NULL);
+    status = sys$getdviw(EFN$C_ENF, 0, &dev_dsc, obj->list, &iosb, NULL, 0, NULL);
 
     if (!OKAY(status)) {
-	return (status);
+        return (status);
     }
 
     if (!OKAY(iosb.iosb$l_getxxi_status)) {
-	status = iosb.iosb$l_getxxi_status;
+        status = iosb.iosb$l_getxxi_status;
     }
 
     return (status);
@@ -646,9 +644,9 @@ unsigned int _uicstr(long int val, char **res, int flag)
     assert(res);
 
     if (flag) {
-	strcpy(fmt, "!%U");
+        strcpy(fmt, "!%U");
     } else {
-	strcpy(fmt, "!%I");
+        strcpy(fmt, "!%I");
     }
 
     fmt_dsc.dsc$w_length = sizeof(fmt) - 1;
