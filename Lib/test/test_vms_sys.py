@@ -19,6 +19,7 @@ import vms.psldef as PSL
 import vms.dvsdef as DVS
 import vms.dcdef as DC
 import vms.dvidef as DVI
+import vms.lkidef as LKI
 
 class BaseTestCase(unittest.TestCase):
 
@@ -189,6 +190,32 @@ class BaseTestCase(unittest.TestCase):
         self.assertTrue(characteristics & DEV_M_DIR)
         DEV_M_FOD = 0x4000  # is file oriented
         self.assertTrue(characteristics & DEV_M_FOD)
+
+    def test_getjpi(self):
+        """ test getjpi """
+        il = ILE3.new()
+        ILE3.addint(il, JPI.JPI__PPGCNT, DSC.DSC_K_DTYPE_LU, 0)
+        status, pid = SYS.getjpi(0, None, il)
+        ppgcnt = ILE3.getint(il, 0)
+        ILE3.delete(il)
+        self.assertEqual(1, status)
+        self.assertGreater(pid, 0)
+        self.assertGreater(ppgcnt, 0)
+
+    def test_getlki(self):
+        """ test getlki """
+        locks = 0
+        lkiaddr = 0
+        il = ILE3.new()
+        while True:
+            ILE3.addint(il, LKI.LKI__LOCKID, DSC.DSC_K_DTYPE_LU, 0)
+            status, lkiaddr = SYS.getlki(lkiaddr, il)
+            # lockid = ILE3.getint(il, 0)
+            if status != SS.SS__NORMAL:
+                break
+            locks = locks + 1
+        ILE3.delete(il)
+        self.assertEqual(status, SS.SS__NOMORELOCK)
 
 if __name__ == "__main__":
     unittest.main(verbosity=2)
