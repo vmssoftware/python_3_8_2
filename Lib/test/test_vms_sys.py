@@ -281,6 +281,7 @@ class BaseTestCase(unittest.TestCase):
 
     def test_getuai(self):
         """ test getuai """
+        # setuai requires BYPASS or SYSPRV
         il = ILE3.new()
         ILE3.addstr(il, JPI.JPI__ACCOUNT, None, 8)
         ILE3.addstr(il, JPI.JPI__USERNAME, None, 12)
@@ -317,6 +318,14 @@ class BaseTestCase(unittest.TestCase):
         self.assertEqual(status, SS.SS__NORMAL)
         status, time2 = SYS.gettim()
         self.assertEqual((time2 - time1)//10000, hiber_time//10000) # upto 1 msec
+
+    # # Write access to the rights database is required.
+    # def test_ident(self):
+    #     """ test add_ident, rem_ident """
+    #     status, res_id = SYS.add_ident('PythonTestID', 0, 0)
+    #     self.assertEqual(status, SS.SS__NORMAL)
+    #     status, res_id = SYS.rem_ident(res_id)
+    #     self.assertEqual(status, SS.SS__NORMAL)
 
 if __name__ == "__main__":
     unittest.main(verbosity=2)
