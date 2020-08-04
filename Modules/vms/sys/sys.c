@@ -78,6 +78,21 @@ unsigned int _hiber()
     return (sys$hiber());
 }
 
+unsigned int _schdwk(unsigned int *pidadr, char *prcnam, long long daytim, long long reptim) {
+    unsigned int status = 0;
+    struct dsc$descriptor_s prcnam_dsc;
+
+    if (prcnam) {
+        prcnam_dsc.dsc$w_length = strlen(prcnam);
+        prcnam_dsc.dsc$b_class = DSC$K_CLASS_S;
+        prcnam_dsc.dsc$b_dtype = DSC$K_DTYPE_T;
+        prcnam_dsc.dsc$a_pointer = prcnam;
+    }
+
+    status = sys$schdwk(pidadr, prcnam ? &prcnam_dsc : NULL, (struct _generic_64 *)&daytim, (struct _generic_64 *)&reptim);
+
+    return status;
+}
 
 
 unsigned int _assign(char *devnam, unsigned short int *chan,

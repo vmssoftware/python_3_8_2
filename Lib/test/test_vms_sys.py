@@ -280,7 +280,7 @@ class BaseTestCase(unittest.TestCase):
         self.assertGreater(time2, time1)
 
     def test_getuai(self):
-        """ test getuai"""
+        """ test getuai """
         il = ILE3.new()
         ILE3.addstr(il, JPI.JPI__ACCOUNT, None, 8)
         ILE3.addstr(il, JPI.JPI__USERNAME, None, 12)
@@ -307,6 +307,16 @@ class BaseTestCase(unittest.TestCase):
         self.assertNotEqual(uai_defdir, '')
         self.assertNotEqual(uai_uic, 0)
 
+    def test_hiber(self):
+        """ test hiber and schdwk """
+        hiber_time = 10000000   # in 100 nanoseconds
+        status, pid = SYS.schdwk(0, None, -hiber_time)
+        self.assertEqual(status, SS.SS__NORMAL)
+        status, time1 = SYS.gettim()
+        status = SYS.hiber()
+        self.assertEqual(status, SS.SS__NORMAL)
+        status, time2 = SYS.gettim()
+        self.assertEqual((time2 - time1)//10000, hiber_time//10000) # upto 1 msec
 
 if __name__ == "__main__":
     unittest.main(verbosity=2)
