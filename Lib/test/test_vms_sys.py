@@ -20,6 +20,10 @@ import vms.dvsdef as DVS
 import vms.dcdef as DC
 import vms.dvidef as DVI
 import vms.lkidef as LKI
+import vms.quidef as QUI
+import vms.jbcmsgdef as JBC
+import vms.rmidef as RMI
+import vms.uaidef as UAI
 
 class BaseTestCase(unittest.TestCase):
 
@@ -34,33 +38,33 @@ class BaseTestCase(unittest.TestCase):
         """ tests asctim """
         vms_time = 51022884689600846
         status, result = SYS.asctim(vms_time, 0)
-        self.assertEqual(1, status)
+        self.assertEqual(status, SS.SS__NORMAL)
         self.assertEqual('24-JUL-2020 06:21:08.96', result)
         status, result = SYS.asctim(vms_time, 1)
-        self.assertEqual(1, status)
+        self.assertEqual(status, SS.SS__NORMAL)
         self.assertEqual('06:21:08.96', result)
 
     def test_bintim(self):
         """ tests bintim """
         time_str = '24-JUL-2020 06:21:08.96'
         status, vms_time =  SYS.bintim(time_str)
-        self.assertEqual(1, status)
+        self.assertEqual(status, SS.SS__NORMAL)
         self.assertEqual(51022884689600000, vms_time)
 
     def test_id(self):
         """ tests asctoid and idtoasc """
         name = 'SYSTEM'
         status, result_id, result_attrib = SYS.asctoid(name)
-        self.assertEqual(1, status)
+        self.assertEqual(status, SS.SS__NORMAL)
         self.assertGreater(result_id, 0)
         self.assertNotEqual(result_attrib, None)
         status, result_name, result_id, result_attrib, self.context = SYS.idtoasc(result_id, 0)
-        self.assertEqual(1, status)
+        self.assertEqual(status, SS.SS__NORMAL)
         self.assertNotEqual(self.context, 0)
         self.assertEqual(result_name, name)
         status = SYS.finish_rdb(self.context)
         self.context = 0
-        self.assertEqual(1, status)
+        self.assertEqual(status, SS.SS__NORMAL)
 
     def test_mbx(self):
         """ test mailbox """
@@ -74,28 +78,28 @@ class BaseTestCase(unittest.TestCase):
             0,      # acmode
             mbx_name,   # logname
             0)      # flags
-        self.assertEqual(1, status)
+        self.assertEqual(status, SS.SS__NORMAL)
         status, written, iostatus = SYS.writevblk(mbx_channel, test_bytes, 0, IO.IO_M_NOW | IO.IO_M_STREAM)
-        self.assertEqual(1, status)
+        self.assertEqual(status, SS.SS__NORMAL)
         self.assertEqual(1, iostatus)
         self.assertEqual(len(test_bytes), written)
         status, read_channel = SYS.assign(mbx_name, 0, None, 0)
-        self.assertEqual(1, status)
+        self.assertEqual(status, SS.SS__NORMAL)
         status, read_bytes, iostatus = SYS.readvblk(read_channel, len(test_bytes), 0, IO.IO_M_NOW | IO.IO_M_STREAM)
-        self.assertEqual(1, status)
+        self.assertEqual(status, SS.SS__NORMAL)
         self.assertEqual(1, iostatus)
         self.assertEqual(read_bytes, test_bytes)
         status = SYS.dassgn(read_channel)
-        self.assertEqual(1, status)
+        self.assertEqual(status, SS.SS__NORMAL)
         status = SYS.delmbx(mbx_channel)
-        self.assertEqual(1, status)
+        self.assertEqual(status, SS.SS__NORMAL)
 
     def test_cancel(self):
         """ test cancel """
         test_bytes = b'test bytes'
         mbx_name = "PythonTest"
         status, mbx_channel = SYS.crembx(0, 0, 0, 0, 0, mbx_name, 0)
-        self.assertEqual(1, status)
+        self.assertEqual(status, SS.SS__NORMAL)
 
         def cancel_thread_fn(retstat):
             time.sleep(1.0)
@@ -106,7 +110,7 @@ class BaseTestCase(unittest.TestCase):
         cancel_thread.start()
 
         status, read_bytes, iostatus = SYS.readvblk(mbx_channel, len(test_bytes), 0, IO.IO_M_STREAM)
-        self.assertEqual(1, status)
+        self.assertEqual(status, SS.SS__NORMAL)
         self.assertIn(iostatus, (44, 2096)) # abort or cancel
         self.assertEqual(0, len(read_bytes))
 
@@ -115,7 +119,7 @@ class BaseTestCase(unittest.TestCase):
         self.assertEqual(1, cancel_thread_retstat[0])
 
         status = SYS.delmbx(mbx_channel)
-        self.assertEqual(1, status)
+        self.assertEqual(status, SS.SS__NORMAL)
 
     def test_logical_name(self):
         """ test create, translate and delete logical name """
@@ -140,14 +144,14 @@ class BaseTestCase(unittest.TestCase):
         value_str = ILE3.getstr(il, 3, 0)
         table_str = ILE3.getstr(il, 4, 0)
         ILE3.delete(il)
-        self.assertEqual(1, status)
+        self.assertEqual(status, SS.SS__NORMAL)
         self.assertTrue(attributes & LNM.LNM_M_EXISTS)
         self.assertEqual(value_length, len(log_value))
         self.assertEqual(value_str, log_value)
         self.assertEqual(table_str, log_table)
 
         status = SYS.dellnm(log_table, log_name, PSL.PSL_C_USER)
-        self.assertEqual(1, status)
+        self.assertEqual(status, SS.SS__NORMAL)
 
     def test_device_scan(self):
         """ test device_scan """
@@ -185,7 +189,7 @@ class BaseTestCase(unittest.TestCase):
         characteristics = ILE3.getint(il, 0)
 
         ILE3.delete(il)
-        self.assertEqual(1, status)
+        self.assertEqual(status, SS.SS__NORMAL)
         DEV_M_DIR = 0x8     # has directories
         self.assertTrue(characteristics & DEV_M_DIR)
         DEV_M_FOD = 0x4000  # is file oriented
@@ -198,7 +202,7 @@ class BaseTestCase(unittest.TestCase):
         status, pid = SYS.getjpi(0, None, il)
         ppgcnt = ILE3.getint(il, 0)
         ILE3.delete(il)
-        self.assertEqual(1, status)
+        self.assertEqual(status, SS.SS__NORMAL)
         self.assertGreater(pid, 0)
         self.assertGreater(ppgcnt, 0)
 
@@ -207,8 +211,8 @@ class BaseTestCase(unittest.TestCase):
         locks = 0
         lkiaddr = 0
         il = ILE3.new()
+        ILE3.addint(il, LKI.LKI__LOCKID, DSC.DSC_K_DTYPE_LU, 0)
         while True:
-            ILE3.addint(il, LKI.LKI__LOCKID, DSC.DSC_K_DTYPE_LU, 0)
             status, lkiaddr = SYS.getlki(lkiaddr, il)
             # lockid = ILE3.getint(il, 0)
             if status != SS.SS__NORMAL:
@@ -216,6 +220,93 @@ class BaseTestCase(unittest.TestCase):
             locks = locks + 1
         ILE3.delete(il)
         self.assertEqual(status, SS.SS__NOMORELOCK)
+
+    def test_getmsg(self):
+        """ test getmsg """
+        msgid = SS.SS__HBMMCREPOSTMRG
+        flags = 0x0f
+        status, message, optional = SYS.getmsg(msgid, flags)
+        self.assertEqual(status, SS.SS__NORMAL)
+        self.assertEqual(message, '%SYSTEM-I-HBMMCREPOSTMRG, HBMM master bitmaps will be created after shadow set merge completes')
+        self.assertEqual(optional, 0)
+
+    def test_getqui(self):
+        """ test getqui """
+        il = ILE3.new()
+        ILE3.addstr(il, QUI.QUI__SEARCH_NAME, '*', 32)
+        ILE3.addstr(il, QUI.QUI__QUEUE_NAME, None, 32)
+        context = -1
+        status, context = SYS.getqui(QUI.QUI__DISPLAY_QUEUE, context, il)
+        qui_name = ILE3.getstr(il, 1, 0)
+        ILE3.delete(il)
+        self.assertIn(status, (JBC.JBC__NOMOREQUE, SS.SS__NORMAL))
+        self.assertNotEqual(qui_name, '')
+        if status == SS.SS__NORMAL:
+            status, context = SYS.getqui(QUI.QUI__CANCEL_OPERATION, context, None)
+            self.assertEqual(status, SS.SS__NORMAL)
+
+    def test_getrmi(self):
+        """ test getrmi """
+        il = ILE3.new()
+        ILE3.addint(il, RMI.RMI__CPUIDLE, DSC.DSC_K_DTYPE_QU, 0)
+        status = SYS.getrmi(il)
+        cpu_idle = ILE3.getint(il, 0)
+        ILE3.delete(il)
+        self.assertEqual(status, SS.SS__NORMAL)
+        self.assertGreater(cpu_idle, 0)
+
+    def test_getsyi(self):
+        """ test getsyi """
+        il = ILE3.new()
+        ILE3.addstr(il, SYI.SYI__ARCH_NAME, None, 16)
+        ILE3.addint(il, SYI.SYI__ARCH_TYPE, DSC.DSC_K_DTYPE_LU, 0)
+        csid = -1
+        status, csid = SYS.getsyi(csid, None, il)
+        arch_name = ILE3.getstr(il, 0, 0)
+        arch_type = ILE3.getint(il, 1)
+        ILE3.delete(il)
+        self.assertEqual(status, SS.SS__NORMAL)
+        self.assertNotEqual(arch_name, '')
+        self.assertIn(arch_type, (1,2,3))
+
+    def test_gettim(self):
+        """ test gettim """
+        status, time1 = SYS.gettim()
+        self.assertEqual(status, SS.SS__NORMAL)
+        self.assertGreater(time1, 0)
+        time.sleep(0.1)
+        status, time2 = SYS.gettim()
+        self.assertEqual(status, SS.SS__NORMAL)
+        self.assertGreater(time2, time1)
+
+    def test_getuai(self):
+        """ test getuai"""
+        il = ILE3.new()
+        ILE3.addstr(il, JPI.JPI__ACCOUNT, None, 8)
+        ILE3.addstr(il, JPI.JPI__USERNAME, None, 12)
+        status, pid = SYS.getjpi(0, None, il)
+        jpi_account = ILE3.getstr(il, 0, 0)
+        jpi_username = ILE3.getstr(il, 1, 0)
+        ILE3.delete(il)
+        self.assertEqual(status, SS.SS__NORMAL)
+        self.assertNotEqual(jpi_account, '')
+        self.assertNotEqual(jpi_username, '')
+        self.assertNotEqual(pid, 0)
+
+        il = ILE3.new()
+        ILE3.addstr(il, UAI.UAI__ACCOUNT, None, 32)
+        ILE3.addstr(il, UAI.UAI__DEFDIR, None, 64)
+        ILE3.addint(il, UAI.UAI__UIC, DSC.DSC_K_DTYPE_LU, 0)
+        status = SYS.getuai(jpi_username, il)
+        uai_account = ILE3.getstr(il, 0, 0)
+        uai_defdir = ILE3.getstr(il, 1, 1)
+        uai_uic = ILE3.getint(il, 2)
+        ILE3.delete(il)
+        self.assertEqual(status, SS.SS__NORMAL)
+        self.assertEqual(jpi_account.strip(), uai_account.strip())
+        self.assertNotEqual(uai_defdir, '')
+        self.assertNotEqual(uai_uic, 0)
+
 
 if __name__ == "__main__":
     unittest.main(verbosity=2)

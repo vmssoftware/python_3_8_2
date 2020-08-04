@@ -340,19 +340,17 @@ unsigned int _getqui(unsigned short func, int *context, void *addr)
     IOSB iosb;
     unsigned long status;
 
-    assert(obj);
+    // assert(obj);
     assert(context);
 
-    status =
-	sys$getquiw(EFN$C_ENF, func, (unsigned int *) context, obj->list,
-		    &iosb, NULL, 0);
+    status = sys$getquiw(EFN$C_ENF, func, (unsigned int *) context, obj ? obj->list : NULL, &iosb, NULL, 0);
 
     if (!OKAY(status)) {
-	return (status);
+        return (status);
     }
 
     if (!OKAY(iosb.iosb$l_getxxi_status)) {
-	status = iosb.iosb$l_getxxi_status;
+        status = iosb.iosb$l_getxxi_status;
     }
 
     return (status);
@@ -369,22 +367,22 @@ unsigned int _getsyi(int *csidadr, char *node, void *addr)
     assert(obj);
 
     if (node) {
-	node_dsc.dsc$w_length = strlen(node);
-	node_dsc.dsc$b_class = DSC$K_CLASS_S;
-	node_dsc.dsc$b_dtype = DSC$K_DTYPE_T;
-	node_dsc.dsc$a_pointer = node;
+        node_dsc.dsc$w_length = strlen(node);
+        node_dsc.dsc$b_class = DSC$K_CLASS_S;
+        node_dsc.dsc$b_dtype = DSC$K_DTYPE_T;
+        node_dsc.dsc$a_pointer = node;
     }
 
     status =
-	sys$getsyiw(EFN$C_ENF, node ? NULL : (unsigned int *) csidadr,
-		    node ? &node_dsc : NULL, obj->list, &iosb, NULL, 0);
+        sys$getsyiw(EFN$C_ENF, node ? NULL : (unsigned int *) csidadr,
+                node ? &node_dsc : NULL, obj->list, &iosb, NULL, 0);
 
     if (!OKAY(status)) {
-	return (status);
+        return (status);
     }
 
     if (!OKAY(iosb.iosb$l_getxxi_status)) {
-	status = iosb.iosb$l_getxxi_status;
+        status = iosb.iosb$l_getxxi_status;
     }
 
     return (status);
