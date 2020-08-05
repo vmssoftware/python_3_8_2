@@ -25,6 +25,10 @@ class BaseTestCase(unittest.TestCase):
         self.assertIn(status, (SS.SS__CREATED, SS.SS__NORMAL))
         if status == SS.SS__CREATED:
             os.rmdir(dirname)
+        status = LIB.create_dir('[.' + dirname + ']', None, 0xffff, 0)
+        self.assertIn(status, (SS.SS__CREATED, SS.SS__NORMAL))
+        if status == SS.SS__CREATED:
+            os.rmdir(dirname)
 
     def test_date_time(self):
         """ tests date_time """

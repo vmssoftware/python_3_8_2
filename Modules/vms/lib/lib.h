@@ -15,7 +15,7 @@ extern unsigned int _spawn(char *, char *, char *, unsigned int, char *, unsigne
 extern unsigned int _do_command(char *);
 extern unsigned int _put_common(char *);
 extern unsigned int _get_common(char **);
-extern unsigned int _create_dir(char *, unsigned int, unsigned short, unsigned short);
+extern unsigned int _create_dir(char *, unsigned int *, unsigned short, unsigned short);
 
 #ifdef __cplusplus
         }

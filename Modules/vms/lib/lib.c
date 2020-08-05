@@ -96,10 +96,10 @@ unsigned int _getjpi(int item, unsigned int *pid, char *prn, char **ret)
     assert(ret);
 
     if (prn) {
-	prn_dsc.dsc$w_length = strlen(prn);
-	prn_dsc.dsc$b_class = DSC$K_CLASS_S;
-	prn_dsc.dsc$b_dtype = DSC$K_DTYPE_T;
-	prn_dsc.dsc$a_pointer = prn;
+        prn_dsc.dsc$w_length = strlen(prn);
+        prn_dsc.dsc$b_class = DSC$K_CLASS_S;
+        prn_dsc.dsc$b_dtype = DSC$K_DTYPE_T;
+        prn_dsc.dsc$a_pointer = prn;
     }
 
     val_dsc.dsc$w_length = sizeof(val) - 1;
@@ -108,7 +108,7 @@ unsigned int _getjpi(int item, unsigned int *pid, char *prn, char **ret)
     val_dsc.dsc$a_pointer = val;
 
     status =
-	lib$getjpi(&item, pid, (prn ? &prn_dsc : NULL), 0, &val_dsc, &len);
+        lib$getjpi(&item, pid, (prn ? &prn_dsc : NULL), 0, &val_dsc, &len);
 
     if (OKAY(status)) {
         val[len] = '\0';
@@ -116,7 +116,7 @@ unsigned int _getjpi(int item, unsigned int *pid, char *prn, char **ret)
         assert(*ret);
     } else {
         *ret = strdup(nil);
-	    assert(*ret);
+        assert(*ret);
     }
 
     return (status);
@@ -132,9 +132,11 @@ unsigned int _getsyi(int item, char **ret, unsigned int *csid, char *node)
     unsigned short len;
 
     assert(ret);
-    assert(csid);
+    // assert(csid);
 
-    *csid = 0;  // output parameter must be initialized
+    if (csid) {
+        *csid = 0;  // output parameter must be initialized
+    }
 
     val_dsc.dsc$w_length = sizeof(val) - 1;
     val_dsc.dsc$b_class = DSC$K_CLASS_S;
@@ -142,15 +144,15 @@ unsigned int _getsyi(int item, char **ret, unsigned int *csid, char *node)
     val_dsc.dsc$a_pointer = val;
 
     if (node) {
-	node_dsc.dsc$w_length = strlen(node);
-	node_dsc.dsc$b_class = DSC$K_CLASS_S;
-	node_dsc.dsc$b_dtype = DSC$K_DTYPE_T;
-	node_dsc.dsc$a_pointer = node;
+        node_dsc.dsc$w_length = strlen(node);
+        node_dsc.dsc$b_class = DSC$K_CLASS_S;
+        node_dsc.dsc$b_dtype = DSC$K_DTYPE_T;
+        node_dsc.dsc$a_pointer = node;
     }
 
     status =
-	lib$getsyi(&item, NULL, &val_dsc, &len, csid,
-		   (node ? &node_dsc : NULL));
+        lib$getsyi(&item, NULL, &val_dsc, &len, csid,
+                (node ? &node_dsc : NULL));
 
     if (OKAY(status)) {
         val[len] = '\0';
@@ -276,7 +278,7 @@ unsigned int _get_common(char **str)
 
 
 
-unsigned int _create_dir(char *spec, unsigned int uic, unsigned short pe, unsigned short pv)
+unsigned int _create_dir(char *spec, unsigned int *uic, unsigned short pe, unsigned short pv)
 {
     struct dsc$descriptor_s spec_dsc;
     assert(spec);
@@ -286,11 +288,6 @@ unsigned int _create_dir(char *spec, unsigned int uic, unsigned short pe, unsign
     spec_dsc.dsc$b_dtype = DSC$K_DTYPE_T;
     spec_dsc.dsc$a_pointer = spec;
 
-    unsigned int *uic_ptr = NULL;
-    if (uic != (unsigned int)-1) {
-        uic_ptr = &uic;
-    }
-
-    return (lib$create_dir(&spec_dsc, uic_ptr, &pe, &pv, NULL, NULL, NULL));
+    return (lib$create_dir(&spec_dsc, uic, &pe, &pv, NULL, NULL, NULL));
 }
 

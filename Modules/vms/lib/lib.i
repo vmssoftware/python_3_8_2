@@ -8,6 +8,15 @@
 %include <cstring.i>
 %cstring_output_allocate(char **OUTPUT, free(*$1));
 
+%typemap(in) unsigned int *owner_uic (unsigned int ouic) {
+   if (PyInt_Check($input)) {
+        ouic = PyInt_AsLong($input);
+        $1 = &ouic;
+    } else {
+        $1 = NULL;
+    }
+}
+
 %exception {
     Py_BEGIN_ALLOW_THREADS
     $action
@@ -36,5 +45,5 @@ extern unsigned int _spawn(char *, char *, char *, unsigned int, char *, unsigne
 extern unsigned int _do_command(char *);
 extern unsigned int _put_common(char *);
 extern unsigned int _get_common(char **OUTPUT);
-extern unsigned int _create_dir(char *, unsigned int, unsigned short, unsigned short);
+extern unsigned int _create_dir(char *, unsigned int *owner_uic, unsigned short, unsigned short);
 

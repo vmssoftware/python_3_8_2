@@ -45,8 +45,7 @@ class BaseTestCase(unittest.TestCase):
 
     def test_sysconf(self):
         """ try to get PAGESIZE """
-        _SC_PAGESIZE = 117
-        pagesize_decc = DECC.sysconf(_SC_PAGESIZE)
+        pagesize_decc = DECC.sysconf(DECC._SC_PAGESIZE)
         status, pagesize_sys, _ = LIB.getsyi(SYIDEF.SYI__PAGE_SIZE, None)
         self.assertEqual(1, status)
         pagesize_sys = int(pagesize_sys)
