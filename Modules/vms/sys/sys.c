@@ -415,23 +415,23 @@ unsigned int _getjpi(int *pidadr, char *prcnam, void *addr)
     assert(obj);
 
     if (prcnam) {
-	prcnam_dsc.dsc$w_length = strlen(prcnam);
-	prcnam_dsc.dsc$b_class = DSC$K_CLASS_S;
-	prcnam_dsc.dsc$b_dtype = DSC$K_DTYPE_T;
-	prcnam_dsc.dsc$a_pointer = prcnam;
+        prcnam_dsc.dsc$w_length = strlen(prcnam);
+        prcnam_dsc.dsc$b_class = DSC$K_CLASS_S;
+        prcnam_dsc.dsc$b_dtype = DSC$K_DTYPE_T;
+        prcnam_dsc.dsc$a_pointer = prcnam;
     }
 
     status =
-	sys$getjpiw(EFN$C_ENF, (unsigned int *) pidadr,
-		    prcnam ? &prcnam_dsc : NULL, obj->list, &iosb, NULL,
-		    0);
+        sys$getjpiw(EFN$C_ENF, (unsigned int *) pidadr,
+                prcnam ? &prcnam_dsc : NULL, obj->list, &iosb, NULL,
+                0);
 
     if (!OKAY(status)) {
-	return (status);
+        return (status);
     }
 
     if (!OKAY(iosb.iosb$l_getxxi_status)) {
-	status = iosb.iosb$l_getxxi_status;
+        status = iosb.iosb$l_getxxi_status;
     }
 
     return (status);
@@ -621,7 +621,7 @@ unsigned int _add_holder(unsigned int id, unsigned long long holder,
 
 
 
-unsigned int _getlki(int *lkidadr, void *addr)
+unsigned int _getlki(unsigned int *lkidadr, void *addr)
 {
     LCL_ile3 *obj = (LCL_ile3 *) addr;
     IOSB iosb;
@@ -631,15 +631,15 @@ unsigned int _getlki(int *lkidadr, void *addr)
     assert(obj);
 
     status =
-	sys$getlkiw(EFN$C_ENF, (unsigned int *) lkidadr, obj->list, &iosb,
-		    NULL, 0, 0);
+        sys$getlkiw(EFN$C_ENF, lkidadr, obj->list, &iosb,
+                NULL, 0, 0);
 
     if (!OKAY(status)) {
-	return (status);
+        return (status);
     }
 
     if (!OKAY(iosb.iosb$l_getxxi_status)) {
-	status = iosb.iosb$l_getxxi_status;
+        status = iosb.iosb$l_getxxi_status;
     }
 
     return (status);

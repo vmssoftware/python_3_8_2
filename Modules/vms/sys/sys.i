@@ -128,7 +128,7 @@ extern unsigned int _finish_rdb(unsigned int *INPUT);
 extern unsigned int _forcex(int, char *, unsigned int);
 extern unsigned int _getdvi(char *, void *);
 extern unsigned int _getjpi(int *INOUT, char *, void *);
-extern unsigned int _getlki(int *INOUT, void *);
+extern unsigned int _getlki(unsigned int *INOUT, void *);
 extern unsigned int _getmsg(unsigned int, char **OUTPUT, unsigned int, unsigned int *OUTPUT);
 extern unsigned int _getqui(unsigned short, int *INOUT, void *);
 extern unsigned int _getrmi(void *);

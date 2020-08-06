@@ -111,7 +111,7 @@ class BaseTestCase(unittest.TestCase):
 
         status, read_bytes, iostatus = SYS.readvblk(mbx_channel, len(test_bytes), 0, IO.IO_M_STREAM)
         self.assertEqual(status, SS.SS__NORMAL)
-        self.assertIn(iostatus, (44, 2096)) # abort or cancel
+        self.assertIn(iostatus, (SS.SS__ABORT, SS.SS__CANCEL))
         self.assertEqual(0, len(read_bytes))
 
         cancel_thread.join()
@@ -214,9 +214,10 @@ class BaseTestCase(unittest.TestCase):
         ILE3.addint(il, LKI.LKI__LOCKID, DSC.DSC_K_DTYPE_LU, 0)
         while True:
             status, lkiaddr = SYS.getlki(lkiaddr, il)
-            # lockid = ILE3.getint(il, 0)
             if status != SS.SS__NORMAL:
                 break
+            lockid = ILE3.getint(il, 0)
+            self.assertEqual(lockid & 0xffff, lkiaddr & 0xffff)
             locks = locks + 1
         ILE3.delete(il)
         self.assertEqual(status, SS.SS__NOMORELOCK)
@@ -317,7 +318,7 @@ class BaseTestCase(unittest.TestCase):
         status = SYS.hiber()
         self.assertEqual(status, SS.SS__NORMAL)
         status, time2 = SYS.gettim()
-        self.assertEqual((time2 - time1)//10000, hiber_time//10000) # upto 1 msec
+        self.assertLessEqual(abs((time2 - time1)-hiber_time), 10000)
 
     # # Write access to the rights database is required.
     # def test_ident(self):
