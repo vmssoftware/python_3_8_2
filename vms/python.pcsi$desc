@@ -1,6 +1,6 @@
 -- (C) Copyright 2020 VMS Software Inc.
 --
-product VSI I64VMS PYTHON A3.8-2date20200713 FULL ;
+product VSI I64VMS PYTHON A3.8-2date20200806 FULL ;
 
 --
 --  Execute the preconfigure procedure
