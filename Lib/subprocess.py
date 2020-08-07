@@ -1699,6 +1699,15 @@ class Popen(object):
                             errpipe_read, errpipe_write,
                             restore_signals, start_new_session, preexec_fn)
                     self._child_created = True
+                    if _openvms:
+                        for pipe in [self.stdout, self.stderr]:
+                            while pipe:
+                                if hasattr(pipe, "_pid"):
+                                    pipe._pid = self.pid
+                                if hasattr(pipe, "raw"):
+                                    pipe = pipe.raw
+                                else:
+                                    break
                 finally:
                     # be sure the FD is closed no matter what
                     os.close(errpipe_write)

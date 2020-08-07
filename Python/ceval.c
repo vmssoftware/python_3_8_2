@@ -3468,6 +3468,10 @@ main_loop:
                 */
                 res = call_function(tstate, &sp, oparg, NULL);
                 stack_pointer = sp;
+                // {
+                //     PyAddrPair bounds;
+                //     int line = _PyCode_CheckLineNumber(f->f_code, f->f_lasti, &bounds);
+                // }
                 (void)POP(); /* POP the NULL. */
             }
             else {
