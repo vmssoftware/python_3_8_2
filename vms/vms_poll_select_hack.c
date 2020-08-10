@@ -105,12 +105,19 @@ unsigned long read_pipe_bytes(int fd, char *buf, int size, int *pid_ptr) {
       unsigned short bytes_read;
       unsigned long pid;
     } mbx_iosb_read;
-    int status = SYS$QIOW(EFN$C_ENF, channel, IO$_READVBLK | IO$M_STREAM, &mbx_iosb_read,
+    int status = SYS$QIOW(EFN$C_ENF, channel, IO$_READVBLK, &mbx_iosb_read,
                           NULL, NULL, buf, size, 0, 0, 0, 0);
     if ($VMS_STATUS_SUCCESS(status)) {
+      if (mbx_iosb_read.sts == SS$_ENDOFFILE) {
+        nbytes = 0;
+      } else {
         nbytes = mbx_iosb_read.bytes_read;
-    }
-    SYS$DASSGN(channel);
+        if (nbytes == 0) {
+          nbytes = 1;
+          buf[0] = '\n';
+        }
+      }
+    }    SYS$DASSGN(channel);
     if (pid_ptr) {
       *pid_ptr = mbx_iosb_read.pid;
     }
