@@ -722,6 +722,9 @@ class build_ext(Command):
                 # don't extend ext.libraries, it may be shared with other
                 # extensions, it is a reference to the original list
                 return ext.libraries + [pythonlib]
+        elif sys.platform == "OpenVMS":
+            pythonlib = "/python$root/lib/python$shr.exe"
+            return ext.libraries + [pythonlib]
         else:
             # On Android only the main executable and LD_PRELOADs are considered
             # to be RTLD_GLOBAL, all the dependencies of the main executable

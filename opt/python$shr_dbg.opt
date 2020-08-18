@@ -1,5 +1,5 @@
 ! from [$(OUTDIR)]
-python$build_out:[000000]libpython3.olb/LIBRARY
+python$build_out:[000000]libpython3^.8.olb/LIBRARY
 !
 sys$library:pthread$rtl.exe/share
 !

@@ -8,6 +8,7 @@ executable name.
 
 import sys
 import os
+import re
 
 from distutils.errors import DistutilsPlatformError, DistutilsExecError
 from distutils.debug import DEBUG
@@ -33,12 +34,7 @@ def spawn(cmd, search_path=1, verbose=0, dry_run=0):
     # in, protect our %-formatting code against horrible death
     cmd = list(cmd)
     if sys.platform == 'OpenVMS':
-        import subprocess
-        p = subprocess.Popen(cmd)
-        p.wait()
-        if p.returncode != 0:
-            raise DistutilsExecError(
-                  "command %r failed with exit status %d" % (cmd, p.returncode))
+        _spawn_openvms(cmd, search_path, dry_run=dry_run)
     else:
         if os.name == 'posix':
             _spawn_posix(cmd, search_path, dry_run=dry_run)
@@ -47,6 +43,25 @@ def spawn(cmd, search_path=1, verbose=0, dry_run=0):
         else:
             raise DistutilsPlatformError(
                 "don't know how to spawn programs on platform '%s'" % os.name)
+
+vms_error = re.compile(r'^%\S+-\S-\S+')
+
+def _spawn_openvms(cmd, search_path=1, verbose=0, dry_run=0):
+    cmd = ' '.join(cmd)
+    log.info(cmd)
+    if dry_run:
+        return
+    p = os.popen(cmd)
+    data = p.read()
+    p.close()
+    if data:
+        if verbose:
+            log.info(data)
+        lines = data.splitlines()
+        errors = list(filter(lambda line: vms_error.match(line), lines))
+        if errors:
+            raise DistutilsExecError(
+                    "command %r failed: %r" % (cmd, errors))
 
 def _nt_quote_args(args):
     """Quote command-line arguments for DOS/Windows conventions.

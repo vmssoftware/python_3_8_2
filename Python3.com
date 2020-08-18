@@ -43,4 +43,4 @@ $ backup 'vms_pat'*.pcsi* python$root:[000000]
 $
 $ backup 'dyn_pat'*.* python$root:[lib.python3^.8.lib-dynload...]*.*
 $ ! next file must be present
-$ backup 'cnf_pat'_sysconfigdata__linux_x86_64-linux-gnu.py python$root:[lib.python3^.8]_sysconfigdata_m_OpenVMS_cpython-38m-ia64-openvms.py
+$ backup 'cnf_pat'_sysconfigdata__OpenVMS_cpython-38-ia64-openvms.py python$root:[lib.python3^.8]

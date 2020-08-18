@@ -3,11 +3,11 @@
 #endif
 
 #ifndef ABIFLAGS
-#define ABIFLAGS "m"
+#define ABIFLAGS ""
 #endif
 
 #ifndef SOABI
-#define SOABI "cpython-38m-ia64-openvms"
+#define SOABI "cpython-38-ia64-openvms"
 #endif
 
 #ifndef PYTHONPATH

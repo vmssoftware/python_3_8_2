@@ -923,6 +923,7 @@ int main (int argc, char **argv) {
 _default_compilers = (
 
     # Platform string mappings
+    ('OpenVMS', 'openvms'),
 
     # on a cygwin built python we can use gcc like an ordinary UNIXish
     # compiler
@@ -968,6 +969,8 @@ compiler_class = { 'unix':    ('unixccompiler', 'UnixCCompiler',
                                "Mingw32 port of GNU C Compiler for Win32"),
                    'bcpp':    ('bcppcompiler', 'BCPPCompiler',
                                "Borland C++ Compiler"),
+                   'openvms': ('openvmsccompiler', 'OpenVMSCCompiler',
+                               "OpenVMS-style compiler"),
                  }
 
 def show_compilers():

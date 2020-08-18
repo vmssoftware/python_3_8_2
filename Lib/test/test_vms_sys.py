@@ -68,7 +68,7 @@ class BaseTestCase(unittest.TestCase):
 
     def test_mbx(self):
         """ test mailbox """
-        test_bytes = b'test bytes'
+        test_bytes = b'test bytes\n'
         mbx_name = "PythonTest"
         status, mbx_channel = SYS.crembx( \
             0,      # temporary/permanent

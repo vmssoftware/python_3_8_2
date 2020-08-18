@@ -708,13 +708,13 @@
 #undef HAVE_MKFIFO
 
 /* Define to 1 if you have the `mkfifoat' function. */
-#define HAVE_MKFIFOAT 1
+#undef HAVE_MKFIFOAT
 
 /* Define to 1 if you have the `mknod' function. */
 #undef HAVE_MKNOD
 
 /* Define to 1 if you have the `mknodat' function. */
-#define HAVE_MKNODAT 1
+#undef HAVE_MKNODAT
 
 /* Define to 1 if you have the `mktime' function. */
 #define HAVE_MKTIME 1
@@ -795,7 +795,7 @@
 #define HAVE_PROTOTYPES 1
 
 /* Define to 1 if you have the `pthread_atfork' function. */
-#define HAVE_PTHREAD_ATFORK 1
+#undef HAVE_PTHREAD_ATFORK
 
 /* Define to 1 if you have the `pthread_condattr_setclock' function. */
 #undef HAVE_PTHREAD_CONDATTR_SETCLOCK
@@ -1019,8 +1019,8 @@
 /* Define if sockaddr has sa_len member */
 #undef HAVE_SOCKADDR_SA_LEN
 #undef _SOCKADDR_LEN
-#define HAVE_SOCKADDR_SA_LEN
-#define _SOCKADDR_LEN
+#define HAVE_SOCKADDR_SA_LEN 1
+#define _SOCKADDR_LEN 1
 
 /* struct sockaddr_storage (sys/socket.h) */
 #define HAVE_SOCKADDR_STORAGE 1
