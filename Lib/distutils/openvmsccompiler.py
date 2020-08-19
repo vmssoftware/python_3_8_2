@@ -39,7 +39,8 @@ class OpenVMSCCompiler(CCompiler):
     # are pretty generic; they will probably have to be set by an outsider
     # (eg. using information discovered by the sysconfig about building
     # Python extensions).
-    executables = {'compiler'     : ["CC"],
+    executables = {'compiler_c'   : ["CC"],
+                   'compiler_cxx' : ["CXX"],
                    'linker'       : ["LINK"],
                    'archiver'     : ["LIBRARY"],
                   }
@@ -105,12 +106,8 @@ class OpenVMSCCompiler(CCompiler):
 
     def _gen_preprocess_options(self, macros, include_dirs):
         """ Generate C pre-processor options
-            /DEFINE=(_USE_STD_STAT,__STDC_FORMAT_MACROS + defined macros)
-            /UNDEFINE=(undefined macros)
-            /INCLUDE_DIRECTORY=(include_dirs)
-            /NAMES=(AS_IS,SHORTENED)/WARNINGS=WARNINGS=ALL
         """
-        pp_define = ['_USE_STD_STAT', '__STDC_FORMAT_MACROS']
+        pp_define = []
         pp_undefine = []
         for macro in macros:
             if not (isinstance(macro, tuple) and 1 <= len(macro) <= 2):
@@ -130,7 +127,10 @@ class OpenVMSCCompiler(CCompiler):
                     else:
                         pp_define.append("%s=%s" % macro)
 
-        pp_opts = ['/NAMES=(AS_IS,SHORTENED)','/WARNINGS=WARNINGS=ALL']
+        pp_opts = [ \
+            '/NAMES=(AS_IS,SHORTENED)',
+            '/WARNINGS=WARNINGS=ALL',
+            ]
         if len(pp_undefine):
             pp_opts.append("/UNDEFINE=(" + ",".join(pp_undefine) + ")")
         if len(pp_define):
@@ -146,9 +146,9 @@ class OpenVMSCCompiler(CCompiler):
         """
         cc_args = []
         if debug:
-            cc_args.append("/DEBUG/NOOPTIMIZE/LIST")
+            cc_args.append("/DEBUG/NOOPTIMIZE")
         else:
-            cc_args.append("/NODEBUG/OPTIMIZE/NOLIST")
+            cc_args.append("/NODEBUG/OPTIMIZE")
 
         if before:
             cc_args[:0] = before
@@ -156,7 +156,11 @@ class OpenVMSCCompiler(CCompiler):
         return cc_args
 
     def _compile(self, obj, src, ext, cc_args, extra_postargs, pp_opts):
-        compiler = self.compiler
+        lang = self.detect_language(src)
+        if lang == "c++":
+            compiler = self.compiler_cxx
+        else:
+            compiler = self.compiler_c
         try:
             src_vms = vms.decc.to_vms(src, 0, 0)[0]
             obj_vms = vms.decc.to_vms(obj, 0, 0)[0]
@@ -274,29 +278,29 @@ class OpenVMSCCompiler(CCompiler):
         if lib.lower() == 'python$shr.exe':
             return os.path.join('/python$root/lib', lib)
 
-        shared_f = self.library_filename(lib, lib_type='shared')
-        dylib_f = self.library_filename(lib, lib_type='dylib')
-        xcode_stub_f = self.library_filename(lib, lib_type='xcode_stub')
-        static_f = self.library_filename(lib, lib_type='static')
+        # shared_f = self.library_filename(lib, lib_type='shared')
+        # dylib_f = self.library_filename(lib, lib_type='dylib')
+        # xcode_stub_f = self.library_filename(lib, lib_type='xcode_stub')
+        # static_f = self.library_filename(lib, lib_type='static')
 
-        for dir in dirs:
-            shared = os.path.join(dir, shared_f)
-            dylib = os.path.join(dir, dylib_f)
-            static = os.path.join(dir, static_f)
-            xcode_stub = os.path.join(dir, xcode_stub_f)
+        # for dir in dirs:
+        #     shared = os.path.join(dir, shared_f)
+        #     dylib = os.path.join(dir, dylib_f)
+        #     static = os.path.join(dir, static_f)
+        #     xcode_stub = os.path.join(dir, xcode_stub_f)
 
-            # We're second-guessing the linker here, with not much hard
-            # data to go on: GCC seems to prefer the shared library, so I'm
-            # assuming that *all* Unix C compilers do.  And of course I'm
-            # ignoring even GCC's "-static" option.  So sue me.
-            if os.path.exists(dylib):
-                return dylib
-            elif os.path.exists(xcode_stub):
-                return xcode_stub
-            elif os.path.exists(shared):
-                return shared
-            elif os.path.exists(static):
-                return static
+        #     # We're second-guessing the linker here, with not much hard
+        #     # data to go on: GCC seems to prefer the shared library, so I'm
+        #     # assuming that *all* Unix C compilers do.  And of course I'm
+        #     # ignoring even GCC's "-static" option.  So sue me.
+        #     if os.path.exists(dylib):
+        #         return dylib
+        #     elif os.path.exists(xcode_stub):
+        #         return xcode_stub
+        #     elif os.path.exists(shared):
+        #         return shared
+        #     elif os.path.exists(static):
+        #         return static
 
         # Oops, didn't find it in *any* of 'dirs'
         return None

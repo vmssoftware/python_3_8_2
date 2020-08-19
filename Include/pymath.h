@@ -36,11 +36,25 @@ extern double hypot(double, double);
 /* extra declarations */
 #ifndef _MSC_VER
 #ifndef __STDC__
+
+#ifdef __VMS
+#ifdef __NAMESPACE_STD
+namespace std {
+#endif
+#endif
+
 extern double fmod (double, double);
 extern double frexp (double, int *);
 extern double ldexp (double, int);
 extern double modf (double, double *);
 extern double pow(double, double);
+
+#ifdef __VMS
+#ifdef __NAMESPACE_STD
+} /* namespace std */
+#endif
+#endif
+
 #endif /* __STDC__ */
 #endif /* _MSC_VER */
 
