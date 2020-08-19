@@ -617,6 +617,8 @@ class build_ext(Command):
         just "swig" -- it should be in the PATH.  Tries a bit harder on
         Windows.
         """
+        if sys.platform == "OpenVMS":
+            return "mcr swig$root:[bin]swig.exe"
         if os.name == "posix":
             return "swig"
         elif os.name == "nt":
