@@ -1,6 +1,6 @@
 {
     "connection": {
-        "host": "<SKOGUL>",
+        "host": "<KVASER>",
         "keyFile": "",
         "password": "",
         "port": 22,
