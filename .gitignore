@@ -1,5 +1,5 @@
 out
-.vscode
+.vscode/*
 *.o
 *.pyc
 *.gcda
@@ -7,3 +7,5 @@ out
 *.zip
 _testembed
 libpython3.8.a
+!**/vmssoftware.ssh-helper-settings.json
+!**/vmssoftware.synchronizer-settings.json
