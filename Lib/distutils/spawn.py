@@ -44,7 +44,7 @@ def spawn(cmd, search_path=1, verbose=0, dry_run=0):
             raise DistutilsPlatformError(
                 "don't know how to spawn programs on platform '%s'" % os.name)
 
-vms_error = re.compile(r'[-%]\S+-E-\S+,')
+vms_error = re.compile(r'[-%](\S+)-(E|F)-(\S+),')
 
 def _spawn_openvms(cmd, search_path=1, verbose=0, dry_run=0):
     cmd = ' '.join(cmd)

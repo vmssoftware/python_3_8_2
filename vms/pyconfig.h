@@ -497,7 +497,7 @@
 #undef HAVE_GETPWNAM_R
 
 /* Define to 1 if you have the `getpwuid_r' function. */
-#define HAVE_GETPWUID_R
+#define HAVE_GETPWUID_R 1
 
 /* Define to 1 if the getrandom() function is available */
 #undef HAVE_GETRANDOM
@@ -876,7 +876,7 @@
 #undef HAVE_RL_RESIZE_TERMINAL
 
 /* Define to 1 if you have the `round' function. */
-#define HAVE_ROUND
+#define HAVE_ROUND 1
 
 /* Define to 1 if you have the `rtpSpawn' function. */
 #undef HAVE_RTPSPAWN
@@ -972,22 +972,22 @@
 #undef HAVE_SHADOW_H
 
 /* Define to 1 if you have the `shm_open' function. */
-#define HAVE_SHM_OPEN
+#define HAVE_SHM_OPEN 1
 
 /* Define to 1 if you have the `shm_unlink' function. */
-#define HAVE_SHM_UNLINK
+#define HAVE_SHM_UNLINK 1
 
 /* Define to 1 if you have the `sigaction' function. */
-#define HAVE_SIGACTION
+#define HAVE_SIGACTION 1
 
 /* Define to 1 if you have the `sigaltstack' function. */
 #undef HAVE_SIGALTSTACK
 
 /* Define to 1 if you have the `sigfillset' function. */
-#define HAVE_SIGFILLSET
+#define HAVE_SIGFILLSET 1
 
 /* Define to 1 if `si_band' is a member of `siginfo_t'. */
-#define HAVE_SIGINFO_T_SI_BAND
+#define HAVE_SIGINFO_T_SI_BAND 1
 
 /* Define to 1 if you have the `siginterrupt' function. */
 #undef HAVE_SIGINTERRUPT
@@ -1167,7 +1167,7 @@
 #undef HAVE_SYS_MKDEV_H
 
 /* Define to 1 if you have the <sys/mman.h> header file. */
-#define HAVE_SYS_MMAN_H
+#define HAVE_SYS_MMAN_H 1
 
 /* Define to 1 if you have the <sys/modem.h> header file. */
 #undef HAVE_SYS_MODEM_H

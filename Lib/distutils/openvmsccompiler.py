@@ -130,6 +130,7 @@ class OpenVMSCCompiler(CCompiler):
         pp_opts = [ \
             '/NAMES=(AS_IS,SHORTENED)',
             '/WARNINGS=WARNINGS=ALL',
+            '/WARNINGS=ERRORS=IMPLICITFUNC'
             ]
         if len(pp_undefine):
             pp_opts.append("/UNDEFINE=(" + ",".join(pp_undefine) + ")")
@@ -137,7 +138,11 @@ class OpenVMSCCompiler(CCompiler):
             pp_opts.append("/DEFINE=(" + ",".join(pp_define) + ")")
 
         if len(include_dirs):
-            pp_opts.append("/INCLUDE_DIRECTORY=(\"" + "\",\"".join(include_dirs) + "\")")
+            def fix_dir(directory):
+                if not '[]' in directory:
+                    return '"' + directory + '"'
+                return directory
+            pp_opts.append(f"/INCLUDE_DIRECTORY=({','.join(map(fix_dir, include_dirs))})")
 
         return pp_opts
 
@@ -217,7 +222,10 @@ class OpenVMSCCompiler(CCompiler):
                 if ext:
                     ext = ext.upper()
                     if ext in ('.OLB', '.EXE'):
-                        lib_file_vms = vms.decc.to_vms(lib_file, 0, 0)[0]
+                        if not '[]' in lib_file:
+                            lib_file_vms = vms.decc.to_vms(lib_file, 0, 0)[0]
+                        else:
+                            lib_file_vms = lib_file
                         opt_file.write(lib_file_vms.encode())
                         opt_file.write(b'/LIBRARY\n' if ext == '.OLB' else b'/SHAREABLE\n' )
 
