@@ -458,7 +458,7 @@ product VSI I64VMS PYTHON A3.8-2date20200904 FULL ;
    file "[python.lib.python3^.8]_py_abc.py" source "[python.lib.python3^.8]_py_abc.py";
    file "[python.lib.python3^.8]_sitebuiltins.py" source "[python.lib.python3^.8]_sitebuiltins.py";
    file "[python.lib.python3^.8]_strptime.py" source "[python.lib.python3^.8]_strptime.py";
-   file "[python.lib.python3^.8]_sysconfigdata_m_OpenVMS_cpython-38m-ia64-openvms.py" source "[python.lib.python3^.8]_sysconfigdata_m_OpenVMS_cpython-38m-ia64-openvms.py";
+   file "[python.lib.python3^.8]_sysconfigdata__OpenVMS_cpython-38-ia64-openvms.py" source "[python.lib.python3^.8]_sysconfigdata__OpenVMS_cpython-38-ia64-openvms.py";
    file "[python.lib.python3^.8]_threading_local.py" source "[python.lib.python3^.8]_threading_local.py";
    file "[python.lib.python3^.8]_weakrefset.py" source "[python.lib.python3^.8]_weakrefset.py";
    file "[python.lib.python3^.8]__future__.py" source "[python.lib.python3^.8]__future__.py";
