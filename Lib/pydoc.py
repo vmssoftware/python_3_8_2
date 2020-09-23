@@ -1467,6 +1467,8 @@ def pager(text):
 
 def getpager():
     """Decide what method to use for paging through text."""
+    if sys.platform == 'OpenVMS':
+        return plainpager
     if not hasattr(sys.stdin, "isatty"):
         return plainpager
     if not hasattr(sys.stdout, "isatty"):
