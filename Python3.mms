@@ -222,8 +222,8 @@ LIBDYNLOAD_VMS = -
 [.$(OUT_DIR).$(DYNLOAD_DIR)]_sys.exe -
 [.$(OUT_DIR).$(DYNLOAD_DIR)]_uafdef.exe -
 [.$(OUT_DIR).$(DYNLOAD_DIR)]_uaidef.exe -
+[.$(OUT_DIR).$(DYNLOAD_DIR)]_dtr.exe -
 [.$(OUT_DIR).$(DYNLOAD_DIR)]_rdb.exe
-! [.$(OUT_DIR).$(DYNLOAD_DIR)]_dtr.exe
 
 LIBDYNLOAD = -
 $(LIBDYNLOAD_VMS) -

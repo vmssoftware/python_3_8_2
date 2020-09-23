@@ -21,7 +21,9 @@
 #define LONG_BIT (CHAR_BIT*sizeof(long))
 #endif
 
+#ifndef __STDINT_LOADED
 typedef unsigned int uintmax_t;
+#endif
 
 enum flags {
 	FL_SPLAT = 0x01,	/* Drop the value, do not assign */
@@ -321,32 +323,32 @@ int rsscanf(const char *buffer, const char *format, char ***argv)
 					if (!(flags & FL_SPLAT)) {
 						switch (rank) {
 						case rank_char:
-							sprintf(tmp, "%c", val);
+							sprintf(tmp, "%c", *(char*)&val);
 							*argv = realloc(*argv, (converted + 1) * sizeof(char *));
 							(*argv)[converted - 1] = strdup(tmp);
 							break;
 						case rank_short:
-							sprintf(tmp, "%d", val);
+							sprintf(tmp, "%d", *(short*)&val);
 							*argv = realloc(*argv, (converted + 1) * sizeof(char *));
 							(*argv)[converted - 1] = strdup(tmp);
 							break;
 						case rank_int:
-							sprintf(tmp, "%d", val);
+							sprintf(tmp, "%d", *(int*)&val);
 							*argv = realloc(*argv, (converted + 1) * sizeof(char *));
 							(*argv)[converted - 1] = strdup(tmp);
 							break;
 						case rank_long:
-							sprintf(tmp, "%ld", val);
+							sprintf(tmp, "%ld", *(long*)&val);
 							*argv = realloc(*argv, (converted + 1) * sizeof(char *));
 							(*argv)[converted - 1] = strdup(tmp);
 							break;
 						case rank_longlong:
-							sprintf(tmp, "%lld", val);
+							sprintf(tmp, "%lld", *(long long int*)&val);
 							*argv = realloc(*argv, (converted + 1) * sizeof(char *));
 							(*argv)[converted - 1] = strdup(tmp);
 							break;
 						case rank_ptr:
-							sprintf(tmp, "%llx", val);
+							sprintf(tmp, "%llx", *(void**)&val);
 							*argv = realloc(*argv, (converted + 1) * sizeof(char *));
 							(*argv)[converted - 1] = strdup(tmp);
 							break;
