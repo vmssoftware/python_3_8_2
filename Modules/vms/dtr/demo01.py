@@ -1,8 +1,8 @@
 # Before running this example "copy dtr$library:yacht.dat []"
 #
 import sys
-import rec
-import dtr
+import vms.rec as rec
+import vms.dtr as dtr
 import vms.ssdef as SS
 
 r = rec.new()

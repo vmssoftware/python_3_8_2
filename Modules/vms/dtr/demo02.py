@@ -1,5 +1,5 @@
 import sys
-import dtr
+import vms.dtr as dtr
 import vms.ssdef as SS
 
 sts, dab = dtr.init(100, 0)
