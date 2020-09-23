@@ -85,6 +85,8 @@ PY_CORE_BUILTIN_CFLAGS_IO = $(PY_CFLAGS_Q)/DEFINE=("Py_BUILD_CORE_BUILTIN",$(PY_
 
 PY_OSF_CFLAGS = $(PY_CFLAGS_Q)/DEFINE=(_OSF_SOURCE,$(PY_CFLAGS_DEF))/INCLUDE_DIRECTORY=($(PY_CFLAGS_INC))
 
+PY_CFLAGS_DTR = $(PY_CFLAGS_Q)/DEFINE=($(PY_CFLAGS_DEF),__PYTHON)/INCLUDE_DIRECTORY=($(PY_CFLAGS_INC),dtr$library)
+
 .FIRST
     ! defines for nested includes, like:
     ! #include "clinic/transmogrify.h.h"
@@ -220,6 +222,7 @@ LIBDYNLOAD_VMS = -
 [.$(OUT_DIR).$(DYNLOAD_DIR)]_sys.exe -
 [.$(OUT_DIR).$(DYNLOAD_DIR)]_uafdef.exe -
 [.$(OUT_DIR).$(DYNLOAD_DIR)]_uaidef.exe -
+[.$(OUT_DIR).$(DYNLOAD_DIR)]_dtr.exe -
 [.$(OUT_DIR).$(DYNLOAD_DIR)]_rdb.exe
 
 LIBDYNLOAD = -
@@ -2207,6 +2210,46 @@ SHA3_HEADERS = -
 
 [.$(OUT_DIR).$(DYNLOAD_DIR)]_sys.exe : [.$(OBJ_DIR).modules.vms.sys]sys_wrap.obs,-
 [.$(OBJ_DIR).modules.vms.sys]sys.obs
+    @ pipe create/dir $(DIR $(MMS$TARGET)) | copy SYS$INPUT nl:
+    $(LINK)$(LINKFLAGS)/SHARE=python$build_out:[$(DYNLOAD_DIR)]$(NOTDIR $(MMS$TARGET_NAME)).EXE $(MMS$SOURCE_LIST),[.opt]$(NOTDIR $(MMS$TARGET_NAME)).opt/OPT
+
+[.modules.vms.dtr]dtr_wrap.c : [.modules.vms.dtr]dtr.i
+    SWIG -python modules/vms/dtr/dtr.i
+    purge [.modules.vms.dtr]dtr_wrap.c
+
+[.$(OBJ_DIR).modules.vms.dtr]dtr_wrap.obs : [.modules.vms.dtr]dtr_wrap.c
+   @ pipe create/dir $(DIR $(MMS$TARGET)) | copy SYS$INPUT nl:
+    $(CC)$(PY_CFLAGS_DTR)/OBJECT=$(MMS$TARGET) $(MMS$SOURCE)
+
+[.$(OBJ_DIR).modules.vms.dtr]dtr.obs : [.modules.vms.dtr]dtr.c
+   @ pipe create/dir $(DIR $(MMS$TARGET)) | copy SYS$INPUT nl:
+    $(CC)$(PY_CFLAGS_DTR)/OBJECT=$(MMS$TARGET) $(MMS$SOURCE)
+
+[.$(OBJ_DIR).modules.vms.dtr]rec.obs : [.modules.vms.dtr]rec.c
+   @ pipe create/dir $(DIR $(MMS$TARGET)) | copy SYS$INPUT nl:
+    $(CC)$(PY_CFLAGS_DTR)/OBJECT=$(MMS$TARGET) $(MMS$SOURCE)
+
+[.$(OBJ_DIR).modules.vms.dtr]rsscanf.obs : [.modules.vms.dtr]rsscanf.c
+   @ pipe create/dir $(DIR $(MMS$TARGET)) | copy SYS$INPUT nl:
+    $(CC)$(PY_CFLAGS_DTR)/OBJECT=$(MMS$TARGET) $(MMS$SOURCE)
+
+[.$(OUT_DIR).$(DYNLOAD_DIR)]_dtr.exe : [.$(OBJ_DIR).modules.vms.dtr]dtr_wrap.obs,-
+[.$(OBJ_DIR).modules.vms.dtr]dtr.obs,-
+[.$(OBJ_DIR).modules.vms.dtr]rec.obs,-
+[.$(OBJ_DIR).modules.vms.dtr]rsscanf.obs
+    @ pipe create/dir $(DIR $(MMS$TARGET)) | copy SYS$INPUT nl:
+    $(LINK)$(LINKFLAGS)/SHARE=python$build_out:[$(DYNLOAD_DIR)]$(NOTDIR $(MMS$TARGET_NAME)).EXE $(MMS$SOURCE_LIST),[.opt]$(NOTDIR $(MMS$TARGET_NAME)).opt/OPT
+
+[.modules.vms.dtr]rec_wrap.c : [.modules.vms.dtr]rec.i
+    SWIG -python modules/vms/dtr/rec.i
+    purge [.modules.vms.dtr]rec_wrap.c
+
+[.$(OBJ_DIR).modules.vms.dtr]rec_wrap.obs : [.modules.vms.dtr]rec_wrap.c
+   @ pipe create/dir $(DIR $(MMS$TARGET)) | copy SYS$INPUT nl:
+    $(CC)$(PY_CFLAGS_DTR)/OBJECT=$(MMS$TARGET) $(MMS$SOURCE)
+
+[.$(OUT_DIR).$(DYNLOAD_DIR)]_rec.exe : [.$(OBJ_DIR).modules.vms.dtr]rec_wrap.obs,-
+[.$(OBJ_DIR).modules.vms.dtr]rec.obs
     @ pipe create/dir $(DIR $(MMS$TARGET)) | copy SYS$INPUT nl:
     $(LINK)$(LINKFLAGS)/SHARE=python$build_out:[$(DYNLOAD_DIR)]$(NOTDIR $(MMS$TARGET_NAME)).EXE $(MMS$SOURCE_LIST),[.opt]$(NOTDIR $(MMS$TARGET_NAME)).opt/OPT
 
