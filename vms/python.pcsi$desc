@@ -1,6 +1,6 @@
 -- (C) Copyright 2020 VMS Software Inc.
 --
-product VSI I64VMS PYTHON A3.8-2date20200924 FULL ;
+product VSI I64VMS PYTHON A3.8-2date20200925 FULL ;
 
 --
 --  Execute the preconfigure procedure
@@ -2556,6 +2556,7 @@ product VSI I64VMS PYTHON A3.8-2date20200924 FULL ;
    file "[python.lib.python3^.8.vms]ile3.py" source "[python.lib.python3^.8.vms]ile3.py";
    file "[python.lib.python3^.8.vms]iledef.py" source "[python.lib.python3^.8.vms]iledef.py";
    file "[python.lib.python3^.8.vms]impdef.py" source "[python.lib.python3^.8.vms]impdef.py";
+   file "[python.lib.python3^.8.vms]install_lib.py" source "[python.lib.python3^.8.vms]install_lib.py";
    file "[python.lib.python3^.8.vms]initdef.py" source "[python.lib.python3^.8.vms]initdef.py";
    file "[python.lib.python3^.8.vms]iodef.py" source "[python.lib.python3^.8.vms]iodef.py";
    file "[python.lib.python3^.8.vms]issdef.py" source "[python.lib.python3^.8.vms]issdef.py";
