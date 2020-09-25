@@ -11,17 +11,86 @@ except:
 pkg_folder = None
 
 modules = {
-    'async_generator': (('setuptools',),('python setup.py install',)),
-    'attrs': (('setuptools',),('python setup.py install',)),
-    'automat': (('setuptools','m2r','setuptools_scm','six','attrs',),('python setup.py install',)),
-    'betamax': (('setuptools','requests',),('python setup.py install',)),
-    'bottle': (('setuptools',),('python setup.py install',)),
-    'brotli': ((),('python setup.py install',)),
-    'cffi': (('setuptools','pycparser','py'),('python setup.py install',)),
-    'chardet': (('setuptools',),('python setup.py install',)),
-    'cheroot': (('setuptools','setuptools_scm_git_archive','more_itertools','six',),('python setup.py install',)),
-    'cherrypy': (('setuptools','setuptools_scm','jaraco.collections','zc.lockfile','portend','cheroot',),('python setup.py install',)),
-    'click': (('setuptools',),('python setup.py install',)),
+    'async_generator':
+        (   (   'setuptools',
+            ),
+            (   'python setup.py install',
+            ),
+        ),
+    'attrs':
+        (   (   'setuptools',
+            ),
+            (   'python setup.py install',
+            ),
+        ),
+    'automat':
+        (   (   'setuptools',
+                'm2r',
+                'setuptools_scm',
+                'six',
+                'attrs',
+            ),
+            (   'python setup.py install',
+            ),
+        ),
+    'betamax':
+        (   (   'setuptools',
+                'requests',
+            ),
+            (   'python setup.py install',
+            )
+        ),
+    'bottle':
+        (   (   'setuptools',
+            ),
+            (   'python setup.py install',
+            )
+        ),
+    'brotli':
+        (   (),
+            (   'python setup.py install',
+            )
+        ),
+    'cffi':
+        (   (   'setuptools',
+                'pycparser',
+                'py',
+            ),
+            (   'python setup.py install',
+            )
+        ),
+    'chardet':
+        (   (   'setuptools',
+            ),
+            (   'python setup.py install',
+            )
+        ),
+    'cheroot':
+        (   (   'setuptools',
+                'setuptools_scm_git_archive',
+                'more_itertools',
+                'six',
+            ),
+            (   'python setup.py install',
+            )
+        ),
+    'cherrypy':
+        (   (   'setuptools',
+                'setuptools_scm',
+                'jaraco.collections',
+                'zc.lockfile',
+                'portend',
+                'cheroot',
+            ),
+            (   'python setup.py install',
+            )
+        ),
+    'click':
+        (   (   'setuptools',
+            ),
+            ('  python setup.py install',
+            )
+        ),
     'constantly': (('setuptools',),('python setup.py install',)),
     'coverage': (('setuptools',),('python setup.py install',)),
     'cryptography': (('setuptools','cffi','six',),('python setup.py install',)),
@@ -34,7 +103,7 @@ modules = {
     'flask': (('setuptools','click','itsdangerous','jinja2','werkzeug',),('python setup.py install',)),
     'freezegun': (('setuptools','dateutil',),('python setup.py install',)),
     'future_fstrings': (('setuptools',),('python setup.py install',)),
-    'httpbin': (('setuptools','flasgger',),('python setup.py install',)),
+    'httpbin': (('setuptools','flasgger','decorator',),('python setup.py install',)),
     'hyperlink': (('setuptools','idna',),('python setup.py install',)),
     'hypothesis': (('setuptools','sortedcontainers','attrs',),('python setup.py install',)),
     'idna': (('setuptools',),('python setup.py install',)),
