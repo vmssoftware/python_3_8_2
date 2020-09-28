@@ -1,5 +1,8 @@
 // Adapted from original code developed by Jean-Fran�ois Pieronne...
 //
+
+#define PY_SSIZE_T_CLEAN
+
 #define __NEW_STARLET
 #include <ssdef.h>
 #include <stsdef.h>
@@ -12,8 +15,6 @@
 
 #include "Python.h"
 #include "structmember.h"
-
-#define PY_SSIZE_T_CLEAN
 
 #define PYRMS_M_OPEN 1
 
