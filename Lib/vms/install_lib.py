@@ -23,6 +23,20 @@ modules = {
             (   'python setup.py install',
             ),
         ),
+    'apispec':
+        (   (   'setuptools',
+            ),
+            (   'python setup.py install',
+            ),
+        ),
+    'apispec_webframeworks':
+        (   (   'setuptools',
+                'apispec',
+                'pyyaml',
+            ),
+            (   'python setup.py install',
+            ),
+        ),
     'automat':
         (   (   'setuptools',
                 'm2r',
@@ -102,6 +116,7 @@ modules = {
     'flasgger': (('setuptools','six','mistune','jsonschema','pyyaml','flask',),('python setup.py install',)),
     'flask': (('setuptools','click','itsdangerous','jinja2','werkzeug',),('python setup.py install',)),
     'freezegun': (('setuptools','dateutil',),('python setup.py install',)),
+    'ftputil': (('setuptools',),('python setup.py install',)),
     'future_fstrings': (('setuptools',),('python setup.py install',)),
     'httpbin': (('setuptools','flasgger','decorator',),('python setup.py install',)),
     'hyperlink': (('setuptools','idna',),('python setup.py install',)),

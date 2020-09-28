@@ -2299,9 +2299,9 @@ SHA3_HEADERS = -
     @ pipe create/dir $(DIR $(MMS$TARGET)) | copy SYS$INPUT nl:
     $(LINK)$(LINKFLAGS)/SHARE=python$build_out:[$(DYNLOAD_DIR)]$(NOTDIR $(MMS$TARGET_NAME)).EXE $(MMS$SOURCE_LIST),[.opt]$(NOTDIR $(MMS$TARGET_NAME)).opt/OPT
 
-[.$(OBJ_DIR).Modules.vms.rms]pyrms.obs : [.Modules.vms.rms]pyrms.c
+[.$(OBJ_DIR).Modules.vms.rms]rms.obs : [.Modules.vms.rms]rms.c
 
-[.$(OUT_DIR).$(DYNLOAD_DIR)]_rms.exe : [.$(OBJ_DIR).Modules.vms.rms]pyrms.obs
+[.$(OUT_DIR).$(DYNLOAD_DIR)]_rms.exe : [.$(OBJ_DIR).Modules.vms.rms]rms.obs
     @ pipe create/dir $(DIR $(MMS$TARGET)) | copy SYS$INPUT nl:
     $(LINK)$(LINKFLAGS)/SHARE=python$build_out:[$(DYNLOAD_DIR)]$(NOTDIR $(MMS$TARGET_NAME)).EXE $(MMS$SOURCE_LIST),[.opt]$(NOTDIR $(MMS$TARGET_NAME)).opt/OPT
 

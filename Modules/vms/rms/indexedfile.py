@@ -308,15 +308,15 @@ class Record:
                  val.append(v.encode())
             else:
                  val.append(v)
-        # print(*val)
+        print(*val)
         lst = [struct.pack(self._fmt, *val)]
         for v in self._varrec:
             lst.append(v.pack())
         r = b''.join(lst)
-        # if (r != self._rec):
-        #     print 'OOps!'
-        #     print repr(r)
-        #     print repr(self.rec)
+#        if (r != self._rec):
+#            print 'OOps!'
+#            print repr(r)
+#            print repr(self.rec)
 
         return r
 

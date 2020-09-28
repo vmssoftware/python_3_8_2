@@ -1,6 +1,6 @@
 {
     "connection": {
-        "host": "<KVASER>",
+        "host": "<KVASER test1>",
         "keyFile": "",
         "password": "",
         "port": 22,
@@ -47,6 +47,18 @@
                 "unzipCmd": "unzip /restore=NODATE /EXISTING=NEW_VERSION",
                 "zipCmd": "zip ${ZIPFILE} [...]${ADDFILE}",
                 "label": "KVASER"
+            },
+            {
+                "host": "172.16.1.101",
+                "keyFile": "C:/ssh/sv01",
+                "password": "",
+                "port": 22,
+                "username": "test1",
+                "skipSignatureVerification": true,
+                "supportSetFileTime": true,
+                "unzipCmd": "unzip /restore=NODATE /EXISTING=NEW_VERSION",
+                "zipCmd": "zip ${ZIPFILE} [...]${ADDFILE}",
+                "label": "KVASER test1"
             },
             {
                 "host": "104.207.199.181",
