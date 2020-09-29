@@ -205,16 +205,14 @@ def setup_module(entry, installed, in_process):
             setup_module((dep_name, modules[dep_name]), installed, in_process)
         except Exception as ex:
             print(str(ex))
-    already_installed = False
     if pkg_resources_module:
         try:
             distr = pkg_resources_module.get_distribution(name)
             if not name in sys.argv[1:]:
-                already_installed = True
+                installed.add(name)
         except Exception as ex:
             print(str(ex))
-            already_installed = False
-    if not (already_installed or name in installed):
+    if not name in installed:
         print('\ninstalling %s' % name)
         try:
             if pkg_folder:
