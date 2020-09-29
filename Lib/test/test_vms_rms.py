@@ -280,5 +280,46 @@ class BaseTestCase(unittest.TestCase):
             pos = pos + 1
 
 
+    def test_demo_3(self):
+        acc = FABDEF.FAB_M_GET
+        shr = FABDEF.FAB_M_SHRPUT + FABDEF.FAB_M_SHRGET + FABDEF.FAB_M_SHRDEL + FABDEF.FAB_M_SHRUPD
+        try:
+            f = RMS.file('sysuaf',fac=acc, shr=shr)
+        except:
+            raise unittest.SkipTest('High privileges required')
+
+        # Alphabetic order
+
+        for i in range(10):
+            s,r = f.fetch()
+            lst = struct.unpack("=i32shhiQ32s32p", r[:116])
+            self.assertIsNotNone(lst)
+            # print('%s [%o,%o]' % (lst[1], lst[3], lst[2]))
+
+        # UIC order
+
+        f.usekey(1)
+        f.rewind()
+        i = 0
+        for r in f:
+            i += 1
+            if (i > 10): break
+            lst = struct.unpack("=i32shhiQ32s32p", r[:116])
+            self.assertIsNotNone(lst)
+            # print('%s [%o,%o]' % (lst[1], lst[3], lst[2]))
+
+
+        # Alphabetic order
+
+        f.usekey(0)
+        f.rewind()
+        for r in f:
+            lst = struct.unpack("=i32shhiQ32s32p", r[:116])
+            self.assertIsNotNone(lst)
+            # print('%s [%o,%o]' % (lst[1], lst[3], lst[2]))
+
+        f.close()
+
+
 if __name__ == "__main__":
     unittest.main(verbosity=2)
