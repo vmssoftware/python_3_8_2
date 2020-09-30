@@ -16,18 +16,21 @@ modules = {
             ),
             (   'python setup.py install',
             ),
+            'async_generator',
         ),
     'attrs':
         (   (   'setuptools',
             ),
             (   'python setup.py install',
             ),
+            'attrs',
         ),
     'apispec':
         (   (   'setuptools',
             ),
             (   'python setup.py install',
             ),
+            'apispec',
         ),
     'apispec_webframeworks':
         (   (   'setuptools',
@@ -36,6 +39,7 @@ modules = {
             ),
             (   'python setup.py install',
             ),
+            'apispec_webframeworks',
         ),
     'automat':
         (   (   'setuptools',
@@ -46,24 +50,28 @@ modules = {
             ),
             (   'python setup.py install',
             ),
+            'automat',
         ),
     'betamax':
         (   (   'setuptools',
                 'requests',
             ),
             (   'python setup.py install',
-            )
+            ),
+            'betamax',
         ),
     'bottle':
         (   (   'setuptools',
             ),
             (   'python setup.py install',
-            )
+            ),
+            'bottle',
         ),
     'brotli':
         (   (),
             (   'python setup.py install',
-            )
+            ),
+            'brotli',
         ),
     'cffi':
         (   (   'setuptools',
@@ -71,13 +79,15 @@ modules = {
                 'py',
             ),
             (   'python setup.py install',
-            )
+            ),
+            'cffi',
         ),
     'chardet':
         (   (   'setuptools',
             ),
             (   'python setup.py install',
-            )
+            ),
+            'chardet',
         ),
     'cheroot':
         (   (   'setuptools',
@@ -86,7 +96,8 @@ modules = {
                 'six',
             ),
             (   'python setup.py install',
-            )
+            ),
+            'cheroot',
         ),
     'cherrypy':
         (   (   'setuptools',
@@ -97,83 +108,564 @@ modules = {
                 'cheroot',
             ),
             (   'python setup.py install',
-            )
+            ),
+            'cherrypy',
         ),
     'click':
         (   (   'setuptools',
             ),
             ('  python setup.py install',
-            )
+            ),
+            'click',
         ),
-    'constantly': (('setuptools',),('python setup.py install',)),
-    'coverage': (('setuptools',),('python setup.py install',)),
-    'cryptography': (('setuptools','cffi','six',),('python setup.py install',)),
-    'cython': ((),('python setup.py install',)),
-    'dateutil': (('setuptools',),('python setup.py install',)),
-    'decorator': (('setuptools',),('python setup.py install',)),
-    'docutils': (('setuptools',),('python setup.py install',)),
-    'elementpath': (('setuptools',),('python setup.py install',)),
-    'flasgger': (('setuptools','six','mistune','jsonschema','pyyaml','flask',),('python setup.py install',)),
-    'flask': (('setuptools','click','itsdangerous','jinja2','werkzeug',),('python setup.py install',)),
-    'freezegun': (('setuptools','dateutil',),('python setup.py install',)),
-    'ftputil': (('setuptools',),('python setup.py install',)),
-    'future_fstrings': (('setuptools',),('python setup.py install',)),
-    'httpbin': (('setuptools','flasgger','decorator',),('python setup.py install',)),
-    'hyperlink': (('setuptools','idna',),('python setup.py install',)),
-    'hypothesis': (('setuptools','sortedcontainers','attrs',),('python setup.py install',)),
-    'idna': (('setuptools',),('python setup.py install',)),
-    'incremental': (('setuptools',),('python setup.py install',)),
-    'iso8601': (('setuptools',),('python setup.py install',)),
-    'itsdangerous': (('setuptools',),('python setup.py install',)),
-    'jaraco.classes': (('setuptools','setuptools_scm','more_itertools',),('python setup.py install',)),
-    'jaraco.collections': (('setuptools','setuptools_scm','six','jaraco.classes','jaraco.text',),('python setup.py install',)),
-    'jaraco.functools': (('setuptools','setuptools_scm','toml','more_itertools',),('python setup.py install',)),
-    'jaraco.text': (('setuptools','setuptools_scm','six','jaraco.functools',),('python setup.py install',)),
-    'jinja2': (('setuptools','markupsafe',),('python setup.py install',)),
-    'jsonschema': (('setuptools','setuptools_scm','pyrsistent','attrs',),('python setup.py install',)),
-    'm2r': (('setuptools','docutils','mistune',),('python setup.py install',)),
-    'markupsafe': (('setuptools',),('python setup.py install',)),
-    'mistune': (('setuptools',),('python setup.py install',)),
-    'mock': (('setuptools',),('python setup.py install',)),
-    'more_itertools': (('setuptools',),('python setup.py install',)),
-    'numpy': (('setuptools','cython',),('python setup.py install',)),
-    'outcome': (('setuptools','attrs',),('python setup.py install',)),
-    'packaging': (('attrs','six','pyparsing',),('python setup.py install',)),
-    'path': (('setuptools','setuptools_scm','toml',),('python setup.py install',)),
-    'pluggy': (('setuptools','setuptools_scm',),('python setup.py install',)),
-    'portend': (('setuptools','setuptools_scm','six','future_fstrings','tempora',),('python setup.py install',)),
-    'pretend': (('setuptools',),('python setup.py install',)),
-    'py': (('setuptools','setuptools_scm',),('python setup.py install',)),
-    'pycparser': ((),('python setup.py install',)),
-    'pygments': (('setuptools',),('python setup.py install',)),
-    'pyhamcrest': (('setuptools',),('python setup.py install',)),
-    'pyparsing': (('setuptools',),('python setup.py install',)),
-    'pyrsistent': (('setuptools',),('python setup.py install',)),
-    'py_cpuinfo': (('setuptools',),('python setup.py install',)),
-    'pytest': (('setuptools','setuptools_scm','wcwidth','pluggy','more_itertools','attrs','packaging','py',),('python setup.py install',)),
-    'pytest_benchmark': (('setuptools','py_cpuinfo','pytest',),('python setup.py install',)),
-    'pytest_cov': (('setuptools','coverage','pytest',),('python setup.py install',)),
-    'pytz': ((),('python setup.py install',)),
-    'pyyaml': ((),('python setup.py install',)),
-    'requests': (('setuptools',),('python setup.py install',)),
-    'setuptools': ((),('python bootstrap.py','python setup.py install',)),
-    'setuptools_scm': (('setuptools',),('python setup.py install',)),
-    'setuptools_scm_git_archive': (('setuptools','setuptools_scm',),('python setup.py install',)),
-    'simplejson': ((),('python setup.py install',)),
-    'six': ((),('python setup.py install',)),
-    'sniffio': (('setuptools',),('python setup.py install',)),
-    'sortedcontainers': (('setuptools',),('python setup.py install',)),
-    'suds_py3': (('setuptools',),('python setup.py install',)),
-    'sure': (('setuptools','six','mock',),('python setup.py install',)),
-    'tempora': (('setuptools','setuptools_scm','jaraco.functools','pytz',),('python setup.py install',)),
-    'toml': ((),('python setup.py install',)),
-    'toolbelt': (('setuptools','requests',),('python setup.py install',)),
-    'twisted': (('setuptools','incremental','attrs','pyhamcrest','hyperlink','automat','constantly','zope.interface',),('python setup.py install',)),
-    'werkzeug': ((),('python setup.py install',)),
-    'wcwidth': (('setuptools',),('python setup.py install',)),
-    'xmlschema': (('setuptools','elementpath',),('python setup.py install',)),
-    'zc.lockfile': (('setuptools',),('python setup.py install',)),
-    'zope.interface': (('setuptools',),('python setup.py install',)),
+    'constantly':
+        (   (   'setuptools',
+            ),
+            (   'python setup.py install',
+            ),
+            'constantly',
+        ),
+    'coverage':
+        (   (   'setuptools',
+            ),
+            (   'python setup.py install',
+            ),
+            'coverage',
+        ),
+    'cryptography':
+        (   (   'setuptools',
+                'cffi',
+                'six',
+            ),
+            (   'python setup.py install',
+            ),
+            'cryptography',
+        ),
+    'cryptography/vectors':
+        (   (   'cryptography',
+            ),
+            (   'python setup.py install',
+            ),
+            'cryptography-vectors',
+        ),
+    'cython':
+        (   (),
+            (   'python setup.py install',
+            ),
+            'cython',
+        ),
+    'dateutil':
+        (   (   'setuptools',
+            ),
+            (   'python setup.py install',
+            ),
+            'python-dateutil',
+        ),
+    'decorator':
+        (   (   'setuptools',
+            ),
+            (   'python setup.py install',
+            ),
+            'decorator',
+        ),
+    'docutils':
+        (   (   'setuptools',
+            ),
+            (   'python setup.py install',
+            ),
+            'docutils',
+        ),
+    'elementpath':
+        (   (   'setuptools',
+            ),
+            (   'python setup.py install',
+            ),
+            'elementpath',
+        ),
+    'flasgger':
+        (   (   'setuptools',
+                'six',
+                'mistune',
+                'jsonschema',
+                'pyyaml',
+                'flask',
+            ),
+            (   'python setup.py install',
+            ),
+            'flasgger',
+        ),
+    'flask':
+        (   (   'setuptools',
+                'click',
+                'itsdangerous',
+                'jinja2',
+                'werkzeug',
+            ),
+            (   'python setup.py install',
+            ),
+            'flask',
+        ),
+    'freezegun':
+        (   (   'setuptools',
+                'dateutil',
+            ),
+            (   'python setup.py install',
+            ),
+            'freezegun',
+        ),
+    'ftputil':
+        (   (   'setuptools',
+            ),
+            (   'python setup.py install',
+            ),
+            'ftputil',
+        ),
+    'future_fstrings':
+        (   (   'setuptools',
+            ),
+            (   'python setup.py install',
+            ),
+            'future_fstrings',
+        ),
+    'httpbin':
+        (   (   'setuptools',
+                'flasgger',
+                'decorator',
+            ),
+            (   'python setup.py install',
+            ),
+            'httpbin',
+        ),
+    'hyperlink':
+        (   (   'setuptools',
+                'idna',
+            ),
+            (   'python setup.py install',
+            ),
+            'hyperlink',
+        ),
+    'hypothesis':
+        (   (   'setuptools',
+                'sortedcontainers',
+                'attrs',
+            ),
+            (   'python setup.py install',
+            ),
+            'hypothesis',
+        ),
+    'idna':
+        (   (   'setuptools',
+            ),
+            (   'python setup.py install',
+            ),
+            'idna',
+        ),
+    'incremental':
+        (   (   'setuptools',
+            ),
+            (   'python setup.py install',
+            ),
+            'incremental',
+        ),
+    'iso8601':
+        (   (   'setuptools',
+            ),
+            (   'python setup.py install',
+            ),
+            'iso8601',
+        ),
+    'itsdangerous':
+        (   (   'setuptools',
+            ),
+            (   'python setup.py install',
+            ),
+            'itsdangerous',
+        ),
+    'jaraco.classes':
+        (   (   'setuptools',
+                'setuptools_scm',
+                'more_itertools',
+            ),
+            (   'python setup.py install',
+            ),
+            'jaraco.classes',
+        ),
+    'jaraco.collections':
+        (   (   'setuptools',
+                'setuptools_scm',
+                'six',
+                'jaraco.classes',
+                'jaraco.text',
+            ),
+            (   'python setup.py install',
+            ),
+            'jaraco.collections',
+        ),
+    'jaraco.functools':
+        (   (   'setuptools',
+                'setuptools_scm',
+                'toml',
+                'more_itertools',
+            ),
+            (   'python setup.py install',
+            ),
+            'jaraco.functools',
+        ),
+    'jaraco.text':
+        (   (   'setuptools',
+                'setuptools_scm',
+                'six',
+                'jaraco.functools',
+            ),
+            (   'python setup.py install',
+            ),
+            'jaraco.text',
+        ),
+    'jinja2':
+        (   (   'setuptools',
+                'markupsafe',
+            ),
+            (   'python setup.py install',
+            ),
+            'jinja2',
+        ),
+    'jsonschema':
+        (   (   'setuptools',
+                'setuptools_scm',
+                'pyrsistent',
+                'attrs',
+            ),
+            (   'python setup.py install',
+            ),
+            'jsonschema',
+        ),
+    'm2r':
+        (   (   'setuptools',
+                'docutils',
+                'mistune',
+            ),
+            (   'python setup.py install',
+            ),
+            'm2r',
+        ),
+    'markupsafe':
+        (   (   'setuptools',
+            ),
+            (   'python setup.py install',
+            ),
+            'markupsafe',
+        ),
+    'mistune':
+        (   (   'setuptools',
+            ),
+            (   'python setup.py install',
+            ),
+            'mistune',
+        ),
+    'mock':
+        (   (   'setuptools',
+            ),
+            (   'python setup.py install',
+            ),
+            'mock',
+        ),
+    'more_itertools':
+        (   (   'setuptools',
+            ),
+            (   'python setup.py install',
+            ),
+            'more-itertools',
+        ),
+    'outcome':
+        (   (   'setuptools',
+                'attrs',
+            ),
+            (   'python setup.py install',
+            ),
+            'outcome',
+        ),
+    'packaging':
+        (   (   'attrs',
+                'six',
+                'pyparsing',
+            ),
+            (   'python setup.py install',
+            ),
+            'packaging',
+        ),
+    'path':
+        (   (   'setuptools',
+                'setuptools_scm',
+                'toml',
+            ),
+            (   'python setup.py install',
+            ),
+            'path',
+        ),
+    'pluggy':
+        (   (   'setuptools',
+                'setuptools_scm',
+            ),
+            (   'python setup.py install',
+            ),
+            'pluggy',
+        ),
+    'portend':
+        (   (   'setuptools',
+                'setuptools_scm',
+                'six',
+                'future_fstrings',
+                'tempora',
+            ),
+            (   'python setup.py install',
+            ),
+            'portend',
+        ),
+    'pretend':
+        (   (   'setuptools',
+            ),
+            (   'python setup.py install',
+            ),
+            'pretend',
+        ),
+    'py':
+        (   (   'setuptools',
+                'setuptools_scm',
+            ),
+            (   'python setup.py install',
+            ),
+            'py',
+        ),
+    'pycparser':
+        (   (),
+            (   'python setup.py install',
+            ),
+            'pycparser',
+        ),
+    'pygments':
+        (   (   'setuptools',
+            ),
+            (   'python setup.py install',
+            ),
+            'pygments',
+        ),
+    'pyhamcrest':
+        (   (   'setuptools',
+            ),
+            (   'python setup.py install',
+            ),
+            'pyhamcrest',
+        ),
+    'pyparsing':
+        (   (   'setuptools',
+            ),
+            (   'python setup.py install',
+            ),
+            'pyparsing',
+        ),
+    'pyrsistent':
+        (   (   'setuptools',
+            ),
+            (   'python setup.py install',
+            ),
+            'pyrsistent',
+        ),
+    'py_cpuinfo':
+        (   (   'setuptools',
+            ),
+            (   'python setup.py install',
+            ),
+            'py-cpuinfo',
+        ),
+    'pytest':
+        (   (   'setuptools',
+                'setuptools_scm',
+                'wcwidth',
+                'pluggy',
+                'more_itertools',
+                'attrs',
+                'packaging',
+                'py',
+            ),
+            (   'python setup.py install',
+            ),
+            'pytest',
+        ),
+    'pytest_benchmark':
+        (   (   'setuptools',
+                'py_cpuinfo',
+                'pytest',
+            ),
+            (   'python setup.py install',
+            ),
+            'pytest-benchmark',
+        ),
+    'pytest_cov':
+        (   (   'setuptools',
+                'coverage',
+                'pytest',
+            ),
+            (   'python setup.py install',
+            ),
+            'pytest-cov',
+        ),
+    'pytz':
+        (   (),
+            (   'python setup.py install',
+            ),
+            'pytz',
+        ),
+    'pyyaml':
+        (
+            (),
+            (   'python setup.py install',
+            ),
+            'pyyaml'
+        ),
+    'requests':
+        (   (   'setuptools',
+            ),
+            (   'python setup.py install',
+            ),
+            'requests',
+        ),
+    'setuptools':
+        (   (),
+            (   'python bootstrap.py',
+                'python setup.py install',
+            ),
+            'setuptools',
+        ),
+    'setuptools_scm':
+        (   (   'setuptools',
+            ),
+            (   'python setup.py install',
+            ),
+            'setuptools_scm',
+        ),
+    'setuptools_scm_git_archive':
+        (   (   'setuptools',
+                'setuptools_scm',
+            ),
+            (   'python setup.py install',
+            ),
+            'setuptools_scm_git_archive',
+        ),
+    'simplejson':
+        (   (),
+            (   'python setup.py install',
+            ),
+            'simplejson',
+        ),
+    'six':
+        (   (),
+            (   'python setup.py install',
+            ),
+            'six',
+        ),
+    'sniffio':
+        (   (   'setuptools',
+            ),
+            (   'python setup.py install',
+            ),
+            'sniffio',
+        ),
+    'sortedcontainers':
+        (   (   'setuptools',
+            ),
+            (   'python setup.py install',
+            ),
+            'sortedcontainers',
+        ),
+    'suds_py3':
+        (   (   'setuptools',
+            ),
+            (   'python setup.py install',
+            ),
+            'suds_py3',
+        ),
+    'sure':
+        (   (   'setuptools',
+                'six',
+                'mock',
+            ),
+            (   'python setup.py install',
+            ),
+            'sure',
+        ),
+    'tempora':
+        (   (   'setuptools',
+                'setuptools_scm',
+                'jaraco.functools',
+                'pytz',
+            ),
+            (   'python setup.py install',
+            ),
+            'tempora',
+        ),
+    'toml':
+        (   (),
+            (   'python setup.py install',
+            ),
+            'toml',
+        ),
+    'toolbelt':
+        (   (   'setuptools',
+                'requests',
+            ),
+            (   'python setup.py install',
+            ),
+            'toolbelt',
+        ),
+    'twisted':
+        (   (   'setuptools',
+                'incremental',
+                'attrs',
+                'pyhamcrest',
+                'hyperlink',
+                'automat',
+                'constantly',
+                'zope.interface',
+            ),
+            (   'python setup.py install',
+            ),
+            'twisted',
+        ),
+    'werkzeug':
+        (   (),
+            (   'python setup.py install',
+            ),
+            'werkzeug',
+        ),
+    'wcwidth':
+        (   (   'setuptools',
+            ),
+            (   'python setup.py install',
+            ),
+            'wcwidth',
+        ),
+    'xmlschema':
+        (   (   'setuptools',
+                'elementpath',
+            ),
+            (   'python setup.py install',
+            ),
+            'xmlschema',
+        ),
+    'zc.lockfile':
+        (   (   'setuptools',
+            ),
+            (   'python setup.py install',
+            ),
+            'zc.lockfile',
+        ),
+    'zope.interface':
+        (   (   'setuptools',
+            ),
+            (   'python setup.py install',
+            ),
+            'zope.interface',
+        ),
 }
 
 def setup_all():
@@ -181,55 +673,68 @@ def setup_all():
     in_process = set()
     for entry in modules.items():
         setup_module(entry, installed, in_process)
-    for name in modules:
-        if not name in installed:
-            print('%s not installed' % name)
+    for folder in modules:
+        if not folder in installed:
+            print('%s not installed' % folder)
 
-def setup_one(name):
+def setup_one(folder):
     installed = set()
     in_process = set()
     try:
-        setup_module((name, modules[name]), installed, in_process)
+        setup_module((folder, modules[folder]), installed, in_process)
     except Exception as ex:
         print(str(ex))
 
 def setup_module(entry, installed, in_process):
-    name, (deps, commands) = entry
-    if name in in_process:
+    folder, (deps, commands, module_name) = entry
+    if folder in in_process:
         raise Exception('%s already in process\n%s' % repr(in_process))
-    in_process.add(name)
-    for dep_name in deps:
-        if not dep_name in modules:
-            raise Exception('%s is not configured' % dep_name)
+    in_process.add(folder)
+    for dep_folder in deps:
+        if not dep_folder in modules:
+            raise Exception('%s is not configured' % dep_folder)
         try:
-            setup_module((dep_name, modules[dep_name]), installed, in_process)
+            setup_module((dep_folder, modules[dep_folder]), installed, in_process)
         except Exception as ex:
             print(str(ex))
     if pkg_resources_module:
         try:
-            distr = pkg_resources_module.get_distribution(name)
-            if not name in sys.argv[1:]:
-                installed.add(name)
+            distr = pkg_resources_module.get_distribution(module_name)
+            if not folder in sys.argv[1:]:
+                installed.add(folder)
         except Exception as ex:
             print(str(ex))
-    if not name in installed:
-        print('\ninstalling %s' % name)
+    if not folder in installed:
+        print('\nInstalling from %s' % folder)
         try:
             if pkg_folder:
-                os.chdir(os.path.join(pkg_folder,name))
+                os.chdir(os.path.join(pkg_folder, folder))
             else:
-                os.chdir(name)
+                cur_folder = os.getcwd()
+                os.chdir(folder)
             try:
                 for command in commands:
                     os.system(command)
-                installed.add(name)
+
+                # test if it has been installed
+                if pkg_resources_module:
+                    try:
+                        distr = pkg_resources_module.get_distribution(module_name)
+                        # add to installed if distribution is found
+                        installed.add(folder)
+                    except Exception as ex:
+                        pass
+                else:
+                    # add to installed in any case
+                    installed.add(folder)
+
             except Exception as ex:
                 print(str(ex))
             if not pkg_folder:
-                os.chdir('..')
+                os.chdir(cur_folder)
         except Exception as ex:
             print(str(ex))
-    in_process.remove(name)
+    in_process.remove(folder)
 
 def dynamic_import(module):
     try:
@@ -261,7 +766,7 @@ if __name__ == '__main__':
         pkg_resources_module = dynamic_import('pkg_resources')
 
     if len(sys.argv) > 1:
-        for name in sys.argv[1:]:
-            setup_one(name)
+        for folder in sys.argv[1:]:
+            setup_one(folder)
     else:
         setup_all()
