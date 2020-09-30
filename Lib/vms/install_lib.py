@@ -615,7 +615,7 @@ modules = {
             ),
             (   'python setup.py install',
             ),
-            'toolbelt',
+            'requests-toolbelt',
         ),
     'twisted':
         (   (   'setuptools',
