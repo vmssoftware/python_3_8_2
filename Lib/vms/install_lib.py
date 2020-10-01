@@ -461,6 +461,23 @@ modules = {
             (),
             'pytest-cov',
         ),
+    'pytest_flask':
+        (   (   'setuptools',
+                'pytest',
+                'flask',
+                'werkzeug',
+            ),
+            (),
+            'pytest_flask',
+        ),
+    'pytest_httpbin':
+        (   (   'setuptools',
+                'pytest',
+                'httpbin',
+            ),
+            (),
+            'pytest_httpbin',
+        ),
     'pytz':
         (   (),
             (),
