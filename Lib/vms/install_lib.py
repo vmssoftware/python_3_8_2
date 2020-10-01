@@ -320,6 +320,12 @@ modules = {
             (),
             'markupsafe',
         ),
+    'marshmallow':
+        (   (   'setuptools',
+            ),
+            (),
+            'marshmallow',
+        ),
     'mistune':
         (   (   'setuptools',
             ),
