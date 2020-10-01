@@ -573,6 +573,8 @@ modules = {
         ),
     'trustme':
         (   (   'setuptools',
+                'idna',
+                'cryptography',
             ),
             (),
             'trustme',
