@@ -14,7 +14,7 @@ pkg_folder = None
 # key is the folder
 # value is the tuple:
 #   tuple of dependencies
-#   tuple of install commands, last must be setup.py
+#   tuple of pre-install commands
 #   name of the module
 modules = {
     'async_generator':
