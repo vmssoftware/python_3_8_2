@@ -10,26 +10,29 @@ except:
 
 pkg_folder = None
 
+# modules is dictionary
+# key is the folder
+# value is the tuple:
+#   tuple of dependencies
+#   tuple of install commands, last must be setup.py
+#   name of the module
 modules = {
     'async_generator':
         (   (   'setuptools',
             ),
-            (   'python setup.py install',
-            ),
+            (),
             'async_generator',
         ),
     'attrs':
         (   (   'setuptools',
             ),
-            (   'python setup.py install',
-            ),
+            (),
             'attrs',
         ),
     'apispec':
         (   (   'setuptools',
             ),
-            (   'python setup.py install',
-            ),
+            (),
             'apispec',
         ),
     'apispec_webframeworks':
@@ -37,8 +40,7 @@ modules = {
                 'apispec',
                 'pyyaml',
             ),
-            (   'python setup.py install',
-            ),
+            (),
             'apispec_webframeworks',
         ),
     'automat':
@@ -48,29 +50,25 @@ modules = {
                 'six',
                 'attrs',
             ),
-            (   'python setup.py install',
-            ),
+            (),
             'automat',
         ),
     'betamax':
         (   (   'setuptools',
                 'requests',
             ),
-            (   'python setup.py install',
-            ),
+            (),
             'betamax',
         ),
     'bottle':
         (   (   'setuptools',
             ),
-            (   'python setup.py install',
-            ),
+            (),
             'bottle',
         ),
     'brotli':
         (   (),
-            (   'python setup.py install',
-            ),
+            (),
             'brotli',
         ),
     'cffi':
@@ -78,15 +76,13 @@ modules = {
                 'pycparser',
                 'py',
             ),
-            (   'python setup.py install',
-            ),
+            (),
             'cffi',
         ),
     'chardet':
         (   (   'setuptools',
             ),
-            (   'python setup.py install',
-            ),
+            (),
             'chardet',
         ),
     'cheroot':
@@ -95,8 +91,7 @@ modules = {
                 'more_itertools',
                 'six',
             ),
-            (   'python setup.py install',
-            ),
+            (),
             'cheroot',
         ),
     'cherrypy':
@@ -107,8 +102,7 @@ modules = {
                 'portend',
                 'cheroot',
             ),
-            (   'python setup.py install',
-            ),
+            (),
             'cherrypy',
         ),
     'click':
@@ -121,15 +115,13 @@ modules = {
     'constantly':
         (   (   'setuptools',
             ),
-            (   'python setup.py install',
-            ),
+            (),
             'constantly',
         ),
     'coverage':
         (   (   'setuptools',
             ),
-            (   'python setup.py install',
-            ),
+            (),
             'coverage',
         ),
     'cryptography':
@@ -137,49 +129,42 @@ modules = {
                 'cffi',
                 'six',
             ),
-            (   'python setup.py install',
-            ),
+            (),
             'cryptography',
         ),
     'cryptography/vectors':
         (   (   'cryptography',
             ),
-            (   'python setup.py install',
-            ),
+            (),
             'cryptography-vectors',
         ),
     'cython':
         (   (),
-            (   'python setup.py install',
-            ),
+            (),
             'cython',
         ),
     'dateutil':
         (   (   'setuptools',
             ),
-            (   'python setup.py install',
-            ),
+            (),
             'python-dateutil',
         ),
     'decorator':
         (   (   'setuptools',
             ),
-            (   'python setup.py install',
-            ),
+            (),
             'decorator',
         ),
     'docutils':
         (   (   'setuptools',
             ),
-            (   'python setup.py install',
-            ),
+            (),
             'docutils',
         ),
     'elementpath':
         (   (   'setuptools',
             ),
-            (   'python setup.py install',
-            ),
+            (),
             'elementpath',
         ),
     'flasgger':
@@ -190,8 +175,7 @@ modules = {
                 'pyyaml',
                 'flask',
             ),
-            (   'python setup.py install',
-            ),
+            (),
             'flasgger',
         ),
     'flask':
@@ -201,30 +185,26 @@ modules = {
                 'jinja2',
                 'werkzeug',
             ),
-            (   'python setup.py install',
-            ),
+            (),
             'flask',
         ),
     'freezegun':
         (   (   'setuptools',
                 'dateutil',
             ),
-            (   'python setup.py install',
-            ),
+            (),
             'freezegun',
         ),
     'ftputil':
         (   (   'setuptools',
             ),
-            (   'python setup.py install',
-            ),
+            (),
             'ftputil',
         ),
     'future_fstrings':
         (   (   'setuptools',
             ),
-            (   'python setup.py install',
-            ),
+            (),
             'future_fstrings',
         ),
     'httpbin':
@@ -232,16 +212,14 @@ modules = {
                 'flasgger',
                 'decorator',
             ),
-            (   'python setup.py install',
-            ),
+            (),
             'httpbin',
         ),
     'hyperlink':
         (   (   'setuptools',
                 'idna',
             ),
-            (   'python setup.py install',
-            ),
+            (),
             'hyperlink',
         ),
     'hypothesis':
@@ -249,36 +227,31 @@ modules = {
                 'sortedcontainers',
                 'attrs',
             ),
-            (   'python setup.py install',
-            ),
+            (),
             'hypothesis',
         ),
     'idna':
         (   (   'setuptools',
             ),
-            (   'python setup.py install',
-            ),
+            (),
             'idna',
         ),
     'incremental':
         (   (   'setuptools',
             ),
-            (   'python setup.py install',
-            ),
+            (),
             'incremental',
         ),
     'iso8601':
         (   (   'setuptools',
             ),
-            (   'python setup.py install',
-            ),
+            (),
             'iso8601',
         ),
     'itsdangerous':
         (   (   'setuptools',
             ),
-            (   'python setup.py install',
-            ),
+            (),
             'itsdangerous',
         ),
     'jaraco.classes':
@@ -286,8 +259,7 @@ modules = {
                 'setuptools_scm',
                 'more_itertools',
             ),
-            (   'python setup.py install',
-            ),
+            (),
             'jaraco.classes',
         ),
     'jaraco.collections':
@@ -297,8 +269,7 @@ modules = {
                 'jaraco.classes',
                 'jaraco.text',
             ),
-            (   'python setup.py install',
-            ),
+            (),
             'jaraco.collections',
         ),
     'jaraco.functools':
@@ -307,8 +278,7 @@ modules = {
                 'toml',
                 'more_itertools',
             ),
-            (   'python setup.py install',
-            ),
+            (),
             'jaraco.functools',
         ),
     'jaraco.text':
@@ -317,16 +287,14 @@ modules = {
                 'six',
                 'jaraco.functools',
             ),
-            (   'python setup.py install',
-            ),
+            (),
             'jaraco.text',
         ),
     'jinja2':
         (   (   'setuptools',
                 'markupsafe',
             ),
-            (   'python setup.py install',
-            ),
+            (),
             'jinja2',
         ),
     'jsonschema':
@@ -335,8 +303,7 @@ modules = {
                 'pyrsistent',
                 'attrs',
             ),
-            (   'python setup.py install',
-            ),
+            (),
             'jsonschema',
         ),
     'm2r':
@@ -344,44 +311,38 @@ modules = {
                 'docutils',
                 'mistune',
             ),
-            (   'python setup.py install',
-            ),
+            (),
             'm2r',
         ),
     'markupsafe':
         (   (   'setuptools',
             ),
-            (   'python setup.py install',
-            ),
+            (),
             'markupsafe',
         ),
     'mistune':
         (   (   'setuptools',
             ),
-            (   'python setup.py install',
-            ),
+            (),
             'mistune',
         ),
     'mock':
         (   (   'setuptools',
             ),
-            (   'python setup.py install',
-            ),
+            (),
             'mock',
         ),
     'more_itertools':
         (   (   'setuptools',
             ),
-            (   'python setup.py install',
-            ),
+            (),
             'more-itertools',
         ),
     'outcome':
         (   (   'setuptools',
                 'attrs',
             ),
-            (   'python setup.py install',
-            ),
+            (),
             'outcome',
         ),
     'packaging':
@@ -389,8 +350,7 @@ modules = {
                 'six',
                 'pyparsing',
             ),
-            (   'python setup.py install',
-            ),
+            (),
             'packaging',
         ),
     'path':
@@ -398,16 +358,14 @@ modules = {
                 'setuptools_scm',
                 'toml',
             ),
-            (   'python setup.py install',
-            ),
+            (),
             'path',
         ),
     'pluggy':
         (   (   'setuptools',
                 'setuptools_scm',
             ),
-            (   'python setup.py install',
-            ),
+            (),
             'pluggy',
         ),
     'portend':
@@ -417,64 +375,55 @@ modules = {
                 'future_fstrings',
                 'tempora',
             ),
-            (   'python setup.py install',
-            ),
+            (),
             'portend',
         ),
     'pretend':
         (   (   'setuptools',
             ),
-            (   'python setup.py install',
-            ),
+            (),
             'pretend',
         ),
     'py':
         (   (   'setuptools',
                 'setuptools_scm',
             ),
-            (   'python setup.py install',
-            ),
+            (),
             'py',
         ),
     'pycparser':
         (   (),
-            (   'python setup.py install',
-            ),
+            (),
             'pycparser',
         ),
     'pygments':
         (   (   'setuptools',
             ),
-            (   'python setup.py install',
-            ),
+            (),
             'pygments',
         ),
     'pyhamcrest':
         (   (   'setuptools',
             ),
-            (   'python setup.py install',
-            ),
+            (),
             'pyhamcrest',
         ),
     'pyparsing':
         (   (   'setuptools',
             ),
-            (   'python setup.py install',
-            ),
+            (),
             'pyparsing',
         ),
     'pyrsistent':
         (   (   'setuptools',
             ),
-            (   'python setup.py install',
-            ),
+            (),
             'pyrsistent',
         ),
     'py_cpuinfo':
         (   (   'setuptools',
             ),
-            (   'python setup.py install',
-            ),
+            (),
             'py-cpuinfo',
         ),
     'pytest':
@@ -487,8 +436,7 @@ modules = {
                 'packaging',
                 'py',
             ),
-            (   'python setup.py install',
-            ),
+            (),
             'pytest',
         ),
     'pytest_benchmark':
@@ -496,8 +444,7 @@ modules = {
                 'py_cpuinfo',
                 'pytest',
             ),
-            (   'python setup.py install',
-            ),
+            (),
             'pytest-benchmark',
         ),
     'pytest_cov':
@@ -505,83 +452,71 @@ modules = {
                 'coverage',
                 'pytest',
             ),
-            (   'python setup.py install',
-            ),
+            (),
             'pytest-cov',
         ),
     'pytz':
         (   (),
-            (   'python setup.py install',
-            ),
+            (),
             'pytz',
         ),
     'pyyaml':
         (
             (),
-            (   'python setup.py install',
-            ),
+            (),
             'pyyaml'
         ),
     'requests':
         (   (   'setuptools',
             ),
-            (   'python setup.py install',
-            ),
+            (),
             'requests',
         ),
     'setuptools':
         (   (),
             (   'python bootstrap.py',
-                'python setup.py install',
             ),
             'setuptools',
         ),
     'setuptools_scm':
         (   (   'setuptools',
             ),
-            (   'python setup.py install',
-            ),
+            (),
             'setuptools_scm',
         ),
     'setuptools_scm_git_archive':
         (   (   'setuptools',
                 'setuptools_scm',
             ),
-            (   'python setup.py install',
-            ),
+            (),
             'setuptools_scm_git_archive',
         ),
     'simplejson':
         (   (),
-            (   'python setup.py install',
-            ),
+            (),
             'simplejson',
         ),
     'six':
         (   (),
-            (   'python setup.py install',
-            ),
+            (),
             'six',
         ),
     'sniffio':
         (   (   'setuptools',
             ),
-            (   'python setup.py install',
-            ),
+            (),
             'sniffio',
         ),
     'sortedcontainers':
         (   (   'setuptools',
             ),
-            (   'python setup.py install',
-            ),
+            (),
             'sortedcontainers',
         ),
     'suds_py3':
         (   (   'setuptools',
             ),
-            (   'python setup.py install',
-            ),
+            (),
             'suds_py3',
         ),
     'sure':
@@ -589,8 +524,7 @@ modules = {
                 'six',
                 'mock',
             ),
-            (   'python setup.py install',
-            ),
+            (),
             'sure',
         ),
     'tempora':
@@ -599,22 +533,19 @@ modules = {
                 'jaraco.functools',
                 'pytz',
             ),
-            (   'python setup.py install',
-            ),
+            (),
             'tempora',
         ),
     'toml':
         (   (),
-            (   'python setup.py install',
-            ),
+            (),
             'toml',
         ),
     'toolbelt':
         (   (   'setuptools',
                 'requests',
             ),
-            (   'python setup.py install',
-            ),
+            (),
             'requests-toolbelt',
         ),
     'twisted':
@@ -627,65 +558,59 @@ modules = {
                 'constantly',
                 'zope.interface',
             ),
-            (   'python setup.py install',
-            ),
+            (),
             'twisted',
         ),
     'werkzeug':
         (   (),
-            (   'python setup.py install',
-            ),
+            (),
             'werkzeug',
         ),
     'wcwidth':
         (   (   'setuptools',
             ),
-            (   'python setup.py install',
-            ),
+            (),
             'wcwidth',
         ),
     'xmlschema':
         (   (   'setuptools',
                 'elementpath',
             ),
-            (   'python setup.py install',
-            ),
+            (),
             'xmlschema',
         ),
     'zc.lockfile':
         (   (   'setuptools',
             ),
-            (   'python setup.py install',
-            ),
+            (),
             'zc.lockfile',
         ),
     'zope.interface':
         (   (   'setuptools',
             ),
-            (   'python setup.py install',
-            ),
+            (),
             'zope.interface',
         ),
 }
 
-def setup_all():
+def setup_all(options):
     installed = set()
     in_process = set()
     for entry in modules.items():
-        setup_module(entry, installed, in_process)
+        setup_module(entry, installed, in_process, options)
     for folder in modules:
         if not folder in installed:
             print('%s not installed' % folder)
 
-def setup_one(folder):
+def setup_one(folder, options):
     installed = set()
     in_process = set()
     try:
-        setup_module((folder, modules[folder]), installed, in_process)
+        setup_module((folder, modules[folder]), installed, in_process, options)
     except Exception as ex:
         print(str(ex))
 
-def setup_module(entry, installed, in_process):
+def setup_module(entry, installed, in_process, options):
     folder, (deps, commands, module_name) = entry
     if folder in in_process:
         raise Exception('%s already in process\n%s' % repr(in_process))
@@ -694,7 +619,7 @@ def setup_module(entry, installed, in_process):
         if not dep_folder in modules:
             raise Exception('%s is not configured' % dep_folder)
         try:
-            setup_module((dep_folder, modules[dep_folder]), installed, in_process)
+            setup_module((dep_folder, modules[dep_folder]), installed, in_process, options)
         except Exception as ex:
             print(str(ex))
     if pkg_resources_module:
@@ -713,8 +638,17 @@ def setup_module(entry, installed, in_process):
                 cur_folder = os.getcwd()
                 os.chdir(folder)
             try:
+                # pre-install
                 for command in commands:
                     os.system(command)
+
+                install_cmd = 'python setup.py install ' + ' '.join(options)
+                # test for version option
+                for opt in options:
+                    if opt == '--version':
+                        install_cmd = 'python setup.py --version'
+                        break
+                os.system(install_cmd)
 
                 # test if it has been installed
                 if pkg_resources_module:
@@ -745,10 +679,18 @@ def dynamic_import(module):
 
 if __name__ == '__main__':
 
+    folders = []
+    options = []
+    for arg in sys.argv[1:]:
+        if arg.startswith('-'):
+            options.append(arg)
+        else:
+            folders.append(arg)
+
     pkg_folder = os.getenv('PYTHON_LIB_REPOSITORY')
 
     if not pkg_resources_module:
-        setup_one('setuptools')
+        setup_one('setuptools', [])
         # add /python$root/lib/python3.8/site-packages/setuptools... into sys.path
         setuptools_appended = False
         for dir_entry in os.walk('/python$root/lib/python3.8/site-packages/'):
@@ -765,8 +707,8 @@ if __name__ == '__main__':
                 break
         pkg_resources_module = dynamic_import('pkg_resources')
 
-    if len(sys.argv) > 1:
-        for folder in sys.argv[1:]:
-            setup_one(folder)
+    if len(folders) > 0:
+        for folder in folders:
+            setup_one(folder, options)
     else:
-        setup_all()
+        setup_all(options)
