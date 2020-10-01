@@ -571,6 +571,12 @@ modules = {
             (),
             'requests-toolbelt',
         ),
+    'trustme':
+        (   (   'setuptools',
+            ),
+            (),
+            'trustme',
+        ),
     'twisted':
         (   (   'setuptools',
                 'incremental',
