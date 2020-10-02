@@ -374,6 +374,12 @@ modules = {
             (),
             'pluggy',
         ),
+    'prance':
+        (   (   'setuptools',
+            ),
+            (),
+            'prance',
+        ),
     'portend':
         (   (   'setuptools',
                 'setuptools_scm',
@@ -721,7 +727,7 @@ if __name__ == '__main__':
     pkg_folder = os.getenv('PYTHON_LIB_REPOSITORY')
 
     if not pkg_resources_module:
-        setup_one('setuptools', [])
+        setup_one('setuptools', options)
         # add /python$root/lib/python3.8/site-packages/setuptools... into sys.path
         setuptools_appended = False
         for dir_entry in os.walk('/python$root/lib/python3.8/site-packages/'):
@@ -736,7 +742,8 @@ if __name__ == '__main__':
                     break
             if setuptools_appended:
                 break
-        pkg_resources_module = dynamic_import('pkg_resources')
+        if setuptools_appended:
+            pkg_resources_module = dynamic_import('pkg_resources')
 
     if len(folders) > 0:
         for folder in folders:
