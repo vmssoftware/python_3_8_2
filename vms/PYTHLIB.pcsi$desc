@@ -1,0 +1,20 @@
+-- (C) Copyright 2020 VMS Software Inc.
+--
+product VSI I64VMS PYTHLIB A0.0-1d20201005 patch ;
+    apply to VSI I64VMS PYTHON ;
+
+--
+-- Directories...
+--
+
+   directory "[python.lib.python3^.8.site-packages]" version limit 1;
+
+--
+-- Files...
+--
+
+   file "[python.lib.python3^.8.site-packages]README.txt" source "[000000]README.txt";
+
+end product;
+
+
