@@ -17,7 +17,7 @@ $ product package python -
         /log -
         /producer=VSI
 $
-$ product copy python/dest=[]/format=compressed/opt=noconf
+$ product copy python/source=[]/dest=[]/format=compressed/opt=noconf
 $ purge/log
 $
 $ purge/log [...]

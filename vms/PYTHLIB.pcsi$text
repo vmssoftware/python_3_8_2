@@ -1,9 +1,0 @@
-=product VSI I64VMS PYTHLIB A0.0-1d20201005 patch
-1 'PRODUCT
-=prompt Libs for Python for OpenVMS (2020 Oct 05)
-
-1 'PRODUCER
-=prompt VSI Software Inc.
-
-1 'NOTICE
-=prompt (C) Copyright 2020 VMS Software Inc.

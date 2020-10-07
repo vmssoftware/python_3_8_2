@@ -29,6 +29,7 @@ import subprocess
 if sys.platform == 'OpenVMS':
     import vms.decc
 
+
 class OpenVMSCCompiler(CCompiler):
 
     compiler_type = 'openvms'
@@ -231,8 +232,29 @@ class OpenVMSCCompiler(CCompiler):
 
             opt_file.write(b'GSMATCH=LEQUAL,1,0\nCASE_SENSITIVE=YES\n')
 
+            proc_names = dict()
+            try:
+                repository = open('CXX_REPOSITORY/CXX$DEMANGLER_DB')
+                for line in repository:
+                    full_name = line[31:-1]
+                    short_name = line[:31]
+                    proc_names[full_name] = short_name
+                repository.close()
+            except:
+                pass
+
+            def shorten_name(name):
+                if len(name) <= 31:
+                    return name
+                try:
+                    return proc_names[name]
+                except:
+                    return name[:31]
+
             if export_symbols and len(export_symbols):
-                opt_file.write(('SYMBOL_VECTOR=(' + '=PROCEDURE,'.join(export_symbols) + '=PROCEDURE)\n').encode())
+                opt_file.write(('SYMBOL_VECTOR=(' + \
+                    '\n'.join(list(shorten_name(x) + '=PROCEDURE' for x in export_symbols)) + \
+                    ')\n').encode())
 
             opt_file.close()
             opt_name_vms = vms.decc.to_vms(opt_file.name, 0, 0)[0]
