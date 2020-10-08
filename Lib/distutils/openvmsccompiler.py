@@ -167,13 +167,21 @@ class OpenVMSCCompiler(CCompiler):
             compiler = self.compiler_cxx
         else:
             compiler = self.compiler_c
+
+        cmd_file = tempfile.NamedTemporaryFile(suffix='.COM', delete=False)
+
         try:
             src_vms = vms.decc.to_vms(src, 0, 0)[0]
             obj_vms = vms.decc.to_vms(obj, 0, 0)[0]
-            self.spawn(compiler + cc_args + pp_opts + [src_vms, '/OBJECT=' + obj_vms] +
-                       extra_postargs)
+            cmd = ' '.join(compiler + cc_args + pp_opts + [src_vms, '/OBJECT=' + obj_vms] + extra_postargs)
+            cmd_file.write(cmd.encode())
+            cmd_file.close()
+            self.spawn(['@' + vms.decc.to_vms(cmd_file.name, 0, 0)[0]])
+            # self.spawn(compiler + cc_args + pp_opts + [src_vms, '/OBJECT=' + obj_vms] + extra_postargs)
         except DistutilsExecError as msg:
             raise CompileError(msg)
+        finally:
+            os.unlink(cmd_file.name)
 
     def create_static_lib(self, objects, output_libname,
                           output_dir=None, debug=0, target_lang=None):

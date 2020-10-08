@@ -47,11 +47,18 @@ def spawn(cmd, search_path=1, verbose=0, dry_run=0):
 vms_error = re.compile(r'[-%](\S+)-(E|F)-(\S+),')
 
 def _spawn_openvms(cmd, search_path=1, verbose=0, dry_run=0):
-    cmd = ' '.join(cmd)
-    log.info(cmd)
+    cmd_line = ' '.join(cmd)
+    if cmd_line.startswith('@'):
+        # read COM file and show its content
+        p = os.popen('type ' + cmd[0][1:])
+        d = p.read()
+        p.close()
+        log.info(d)
+    else:
+        log.info(cmd_line)
     if dry_run:
         return
-    p = os.popen(cmd)
+    p = os.popen(cmd_line)
     data = p.read()
     p.close()
     if data:
@@ -61,7 +68,7 @@ def _spawn_openvms(cmd, search_path=1, verbose=0, dry_run=0):
         errors = list(filter(lambda line: vms_error.search(line), lines))
         if errors:
             raise DistutilsExecError(
-                    "command %r failed: %r" % (cmd, errors))
+                    "command %r failed: %r" % (cmd_line, errors))
 
 def _nt_quote_args(args):
     """Quote command-line arguments for DOS/Windows conventions.
