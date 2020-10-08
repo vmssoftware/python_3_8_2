@@ -64,8 +64,10 @@ class OpenVMSCCompiler(CCompiler):
 
     sys_defines = dict()
 
-    def add_sys_defines(self, sys_defines):
-        self.sys_defines = sys_defines
+    def set_sys_defines(self, sys_defines):
+        self.sys_defines = dict()
+        for name, value in self.sys_defines.items():
+            self.sys_defines[name] = value
 
     def _setup_compile(self, outdir, macros, incdirs, sources, depends,
                        extra):
