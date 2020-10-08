@@ -62,6 +62,11 @@ class OpenVMSCCompiler(CCompiler):
     xcode_stub_lib_format = dylib_lib_format
     exe_extension = ".exe"
 
+    sys_defines = dict()
+
+    def add_sys_defines(self, sys_defines):
+        self.sys_defines = sys_defines
+
     def _setup_compile(self, outdir, macros, incdirs, sources, depends,
                        extra):
         """Process arguments and decide which source files to compile."""
@@ -171,9 +176,12 @@ class OpenVMSCCompiler(CCompiler):
         cmd_file = tempfile.NamedTemporaryFile(suffix='.COM', delete=False)
 
         try:
+            for name, value in self.sys_defines.items():
+                define_line = '$' + 'define ' + name + ' "' + value + '"\n'
+                cmd_file.write(define_line.encode())
             src_vms = vms.decc.to_vms(src, 0, 0)[0]
             obj_vms = vms.decc.to_vms(obj, 0, 0)[0]
-            cmd = ' '.join(compiler + cc_args + pp_opts + [src_vms, '/OBJECT=' + obj_vms] + extra_postargs)
+            cmd = '$' + ' '.join(compiler + cc_args + pp_opts + [src_vms, '/OBJECT=' + obj_vms] + extra_postargs) + '\n'
             cmd_file.write(cmd.encode())
             cmd_file.close()
             self.spawn(['@' + vms.decc.to_vms(cmd_file.name, 0, 0)[0]])
