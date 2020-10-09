@@ -175,23 +175,28 @@ class OpenVMSCCompiler(CCompiler):
         else:
             compiler = self.compiler_c
 
-        cmd_file = tempfile.NamedTemporaryFile(suffix='.COM', delete=False)
+        cmd_file = None
 
         try:
-            for name, value in self.sys_defines.items():
-                define_line = '$' + 'define ' + name + ' "' + value + '"\n'
-                cmd_file.write(define_line.encode())
             src_vms = vms.decc.to_vms(src, 0, 0)[0]
             obj_vms = vms.decc.to_vms(obj, 0, 0)[0]
-            cmd = '$' + ' '.join(compiler + cc_args + pp_opts + [src_vms, '/OBJECT=' + obj_vms] + extra_postargs) + '\n'
-            cmd_file.write(cmd.encode())
-            cmd_file.close()
-            self.spawn(['@' + vms.decc.to_vms(cmd_file.name, 0, 0)[0]])
-            # self.spawn(compiler + cc_args + pp_opts + [src_vms, '/OBJECT=' + obj_vms] + extra_postargs)
+            cmd_list = compiler + cc_args + pp_opts + [src_vms, '/OBJECT=' + obj_vms] + extra_postargs
+            if len(self.sys_defines) > 0:
+                cmd_file = tempfile.NamedTemporaryFile(suffix='.COM', delete=False)
+                for name, value in self.sys_defines.items():
+                    define_line = '$' + 'define ' + name + ' "' + value + '"\n'
+                    cmd_file.write(define_line.encode())
+                cmd_line = '$' + ' '.join(cmd_list) + '\n'
+                cmd_file.write(cmd_line.encode())
+                cmd_file.close()
+                self.spawn(['@' + vms.decc.to_vms(cmd_file.name, 0, 0)[0]])
+            else:
+                self.spawn(cmd_list)
         except DistutilsExecError as msg:
             raise CompileError(msg)
         finally:
-            os.unlink(cmd_file.name)
+            if cmd_file:
+                os.unlink(cmd_file.name)
 
     def create_static_lib(self, objects, output_libname,
                           output_dir=None, debug=0, target_lang=None):

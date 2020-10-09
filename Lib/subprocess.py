@@ -490,6 +490,9 @@ def run(*popenargs,
         kwargs['stdout'] = PIPE
         kwargs['stderr'] = PIPE
 
+    if sys.platform == 'OpenVMS':
+        kwargs['shell'] = True
+
     with Popen(*popenargs, **kwargs) as process:
         try:
             stdout, stderr = process.communicate(input, timeout=timeout)
