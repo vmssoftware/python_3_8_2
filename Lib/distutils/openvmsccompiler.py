@@ -207,9 +207,11 @@ class OpenVMSCCompiler(CCompiler):
 
         if self._need_link(objects, output_filename):
             self.mkpath(os.path.dirname(output_filename))
-            self.spawn(self.archiver +
-                       [output_filename] +
-                       objects + self.objects)
+            output_filename_vms = vms.decc.to_vms(output_filename, 0, 0)[0]
+            self.spawn(self.archiver + ['/CREATE', output_filename_vms])
+            for input_name in objects + self.objects:
+                input_name_vms = vms.decc.to_vms(input_name, 0, 0)[0]
+                self.spawn(self.archiver + [output_filename_vms, input_name_vms])
         else:
             log.debug("skipping %s (up-to-date)", output_filename)
 
