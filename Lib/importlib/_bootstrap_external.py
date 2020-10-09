@@ -1487,7 +1487,7 @@ class FileFinder:
             contents = []
         # We store two cached versions, to handle runtime changes of the
         # PYTHONCASEOK environment variable.
-        if not sys.platform.startswith('win'):
+        if not sys.platform.startswith('win') and not sys.platform.startswith('OpenVMS'):
             self._path_cache = set(contents)
         else:
             # Windows users can import modules with case-insensitive file

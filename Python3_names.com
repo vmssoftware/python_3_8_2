@@ -6,7 +6,8 @@ $ INSTALL_DIR = com_pat - "]" + ".out.python.]"
 $ pipe create/dir 'INSTALL_DIR' | copy SYS$INPUT nl:
 $ define /trans=concealed python$root 'INSTALL_DIR'
 $ define PYTHONHOME "/python$root"
-$ define PYTHONCASEOK "YES"
+$
+$ ! define PYTHONCASEOK "YES"
 $
 $ ! define PYTHONMALLOC "malloc_debug"
 $
