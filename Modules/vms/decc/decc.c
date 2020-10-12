@@ -45,14 +45,14 @@ unsigned int _unixtime(long long dt)
     __int64 diff;
 
     if (epoch == 0)  {
-    	struct dsc$descriptor_s epoch_dsc;
+        struct dsc$descriptor_s epoch_dsc;
 
-    	epoch_dsc.dsc$w_length = strlen(UNIX_EPOCH);
-    	epoch_dsc.dsc$b_class = DSC$K_CLASS_S;
-    	epoch_dsc.dsc$b_dtype = DSC$K_DTYPE_T;
-    	epoch_dsc.dsc$a_pointer = UNIX_EPOCH;
+        epoch_dsc.dsc$w_length = strlen(UNIX_EPOCH);
+        epoch_dsc.dsc$b_class = DSC$K_CLASS_S;
+        epoch_dsc.dsc$b_dtype = DSC$K_DTYPE_T;
+        epoch_dsc.dsc$a_pointer = UNIX_EPOCH;
 
-	sys$bintim(&epoch_dsc, (struct _generic_64 *) &epoch);
+        sys$bintim(&epoch_dsc, (struct _generic_64 *) &epoch);
     }
 
     diff = dt - epoch;
@@ -68,14 +68,14 @@ long long _vmstime(unsigned int dt)
     long long tmp;
 
     if (epoch == 0)  {
-    	struct dsc$descriptor_s epoch_dsc;
+        struct dsc$descriptor_s epoch_dsc;
 
-    	epoch_dsc.dsc$w_length = strlen(UNIX_EPOCH);
-    	epoch_dsc.dsc$b_class = DSC$K_CLASS_S;
-    	epoch_dsc.dsc$b_dtype = DSC$K_DTYPE_T;
-    	epoch_dsc.dsc$a_pointer = UNIX_EPOCH;
+        epoch_dsc.dsc$w_length = strlen(UNIX_EPOCH);
+        epoch_dsc.dsc$b_class = DSC$K_CLASS_S;
+        epoch_dsc.dsc$b_dtype = DSC$K_DTYPE_T;
+        epoch_dsc.dsc$a_pointer = UNIX_EPOCH;
 
-	sys$bintim(&epoch_dsc, (struct _generic_64 *) &epoch);
+        sys$bintim(&epoch_dsc, (struct _generic_64 *) &epoch);
     }
 
     tmp = dt;
@@ -195,3 +195,24 @@ int _dlopen_test(char *name) {
     return 0;
 }
 
+int _get_symbol(char *name, char** value) {
+    struct dsc$descriptor_s symbol_name;
+    symbol_name.dsc$w_length = strlen(name);
+    symbol_name.dsc$b_class = DSC$K_CLASS_S;
+    symbol_name.dsc$b_dtype = DSC$K_DTYPE_T;
+    symbol_name.dsc$a_pointer = name;
+
+    char buffer[256];
+    buffer[0] = 0;
+    struct dsc$descriptor_s symbol_value;
+    symbol_value.dsc$w_length = 255;
+    symbol_value.dsc$b_class = DSC$K_CLASS_S;
+    symbol_value.dsc$b_dtype = DSC$K_DTYPE_T;
+    symbol_value.dsc$a_pointer = buffer;
+
+    short result_len = 0;
+    int status = lib$get_symbol(&symbol_name, &symbol_value, &result_len);
+    buffer[result_len] = 0;
+    *value = strdup(buffer);
+    return status;
+}

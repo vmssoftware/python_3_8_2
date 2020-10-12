@@ -120,6 +120,7 @@
 %rename(sysconf) _sysconf;
 %rename(sleep) _sleep;
 %rename(dlopen_test) _dlopen_test;
+%rename(get_symbol) _get_symbol;
 
 %newobject _from_vms;
 %newobject _to_vms;
@@ -133,5 +134,6 @@ extern char *_getenv(char *, char *);
 extern long _sysconf(int);
 extern int _sleep(unsigned int);
 extern int _dlopen_test(char *name);
+extern int _get_symbol(char *name, char** OUTPUT);
 
 

@@ -14,6 +14,7 @@ extern char *_getenv(char *, char *);
 extern long _sysconf(int);
 extern int _sleep(unsigned int);
 extern int _dlopen_test(char *name);
+extern int _get_symbol(char *name, char** value);
 
 #ifdef __cplusplus
         }
