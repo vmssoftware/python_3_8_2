@@ -9,6 +9,7 @@ executable name.
 import sys
 import os
 import re
+import subprocess
 
 from distutils.errors import DistutilsPlatformError, DistutilsExecError
 from distutils.debug import DEBUG
@@ -47,25 +48,31 @@ def spawn(cmd, search_path=1, verbose=0, dry_run=0):
 vms_error = re.compile(r'[-%](\S+)-(E|F)-(\S+),')
 
 def _spawn_openvms(cmd, search_path=1, verbose=0, dry_run=0):
-    cmd_line = ' '.join(cmd)
-    if cmd_line.startswith('@'):
-        # read COM file and show its content
-        p = os.popen('type ' + cmd[0][1:])
-        d = p.read()
-        p.close()
-        log.info(d)
-    else:
-        log.info(cmd_line)
+    log.info(' '.join(cmd))
     if dry_run:
         return
-    p = os.popen(cmd_line)
-    data = p.read()
-    rc = p.close()
-    if data and verbose:
+    try:
+        proc = subprocess.Popen(cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+    except OSError:
+        proc = subprocess.Popen(cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE, shell=True)
+    data, error = proc.communicate()
+    rc = proc.wait()
+    if data:
+        data = data.decode()
+    else:
+        data = ''
+    if error:
+        error = error.decode()
+    else:
+        error = ''
+    if verbose:
         log.info(data)
+        log.info(error)
     if rc:
+        if error == '':
+            error = data
         raise DistutilsExecError(
-                "command %r failed: %r" % (cmd_line, data or "unknown"))
+                "command %r failed: %r" % (cmd, error))
 
 def _nt_quote_args(args):
     """Quote command-line arguments for DOS/Windows conventions.

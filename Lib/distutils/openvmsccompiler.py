@@ -62,13 +62,6 @@ class OpenVMSCCompiler(CCompiler):
     xcode_stub_lib_format = dylib_lib_format
     exe_extension = ".exe"
 
-    sys_defines = dict()
-
-    def set_sys_defines(self, sys_defines):
-        self.sys_defines = dict()
-        for name, value in self.sys_defines.items():
-            self.sys_defines[name] = value
-
     def _setup_compile(self, outdir, macros, incdirs, sources, depends,
                        extra):
         """Process arguments and decide which source files to compile."""
@@ -181,17 +174,7 @@ class OpenVMSCCompiler(CCompiler):
             src_vms = vms.decc.to_vms(src, 0, 0)[0]
             obj_vms = vms.decc.to_vms(obj, 0, 0)[0]
             cmd_list = compiler + cc_args + pp_opts + [src_vms, '/OBJECT=' + obj_vms] + extra_postargs
-            if len(self.sys_defines) > 0:
-                cmd_file = tempfile.NamedTemporaryFile(suffix='.COM', delete=False)
-                for name, value in self.sys_defines.items():
-                    define_line = '$' + 'define ' + name + ' "' + value + '"\n'
-                    cmd_file.write(define_line.encode())
-                cmd_line = '$' + ' '.join(cmd_list) + '\n'
-                cmd_file.write(cmd_line.encode())
-                cmd_file.close()
-                self.spawn(['@' + vms.decc.to_vms(cmd_file.name, 0, 0)[0]])
-            else:
-                self.spawn(cmd_list)
+            self.spawn(cmd_list)
         except DistutilsExecError as msg:
             raise CompileError(msg)
         finally:
