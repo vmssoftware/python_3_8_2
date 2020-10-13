@@ -54,6 +54,8 @@ import contextlib
 from time import monotonic as _time
 
 _openvms = (sys.platform == "OpenVMS")
+if _openvms:
+    import ctypes
 
 __all__ = ["Popen", "PIPE", "STDOUT", "call", "check_call", "getstatusoutput",
            "getoutput", "check_output", "run", "CalledProcessError", "DEVNULL",
@@ -782,6 +784,8 @@ class Popen(object):
         self.stderr = None
         self.pid = None
         self.returncode = None
+        if _openvms:
+            self.returncode_ast = ctypes.c_int(-1)
         self.encoding = encoding
         self.errors = errors
 
@@ -1690,14 +1694,25 @@ class Popen(object):
                             for dir in os.get_exec_path(env))
                     fds_to_keep = set(pass_fds)
                     fds_to_keep.add(errpipe_write)
-                    self.pid = _posixsubprocess.fork_exec(
-                            args, executable_list,
-                            close_fds, tuple(sorted(map(int, fds_to_keep))),
-                            cwd, env_list,
-                            p2cread, p2cwrite, c2pread, c2pwrite,
-                            errread, errwrite,
-                            errpipe_read, errpipe_write,
-                            restore_signals, start_new_session, preexec_fn)
+                    if _openvms:
+                        self.pid = _posixsubprocess.fork_exec(
+                                args, executable_list,
+                                close_fds, tuple(sorted(map(int, fds_to_keep))),
+                                cwd, env_list,
+                                p2cread, p2cwrite, c2pread, c2pwrite,
+                                errread, errwrite,
+                                errpipe_read, errpipe_write,
+                                restore_signals, start_new_session, preexec_fn,
+                                self.returncode_ast)
+                    else:
+                        self.pid = _posixsubprocess.fork_exec(
+                                args, executable_list,
+                                close_fds, tuple(sorted(map(int, fds_to_keep))),
+                                cwd, env_list,
+                                p2cread, p2cwrite, c2pread, c2pwrite,
+                                errread, errwrite,
+                                errpipe_read, errpipe_write,
+                                restore_signals, start_new_session, preexec_fn)
                     self._child_created = True
                     if _openvms:
                         for pipe in [self.stdout, self.stderr]:
@@ -1775,15 +1790,28 @@ class Popen(object):
             """All callers to this function MUST hold self._waitpid_lock."""
             # This method is called (indirectly) by __del__, so it cannot
             # refer to anything outside of its local scope.
-            if _WIFSIGNALED(sts):
-                self.returncode = -_WTERMSIG(sts)
-            elif _WIFEXITED(sts):
-                self.returncode = _WEXITSTATUS(sts)
-            elif _WIFSTOPPED(sts):
-                self.returncode = -_WSTOPSIG(sts)
+            if _openvms and self.returncode_ast.value != -1:
+                # Get return code from AST
+                def vms_code_convert(code):
+                    code = code & 7
+                    return {
+                        1: 0,   # success
+                        0: 1,   # warning
+                        3: 2,   # information
+                        2: 3,   # error
+                        4: 4,   # fatal
+                    }[code]
+                self.returncode = vms_code_convert(self.returncode_ast.value)
             else:
-                # Should never happen
-                raise SubprocessError("Unknown child exit status!")
+                if _WIFSIGNALED(sts):
+                    self.returncode = -_WTERMSIG(sts)
+                elif _WIFEXITED(sts):
+                    self.returncode = _WEXITSTATUS(sts)
+                elif _WIFSTOPPED(sts):
+                    self.returncode = -_WSTOPSIG(sts)
+                else:
+                    # Should never happen
+                    raise SubprocessError("Unknown child exit status!")
 
 
         def _internal_poll(self, _deadstate=None, _waitpid=os.waitpid,

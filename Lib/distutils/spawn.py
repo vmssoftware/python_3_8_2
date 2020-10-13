@@ -60,15 +60,12 @@ def _spawn_openvms(cmd, search_path=1, verbose=0, dry_run=0):
         return
     p = os.popen(cmd_line)
     data = p.read()
-    p.close()
-    if data:
-        if verbose:
-            log.info(data)
-        lines = data.splitlines()
-        errors = list(filter(lambda line: vms_error.search(line), lines))
-        if errors:
-            raise DistutilsExecError(
-                    "command %r failed: %r" % (cmd_line, errors))
+    rc = p.close()
+    if data and verbose:
+        log.info(data)
+    if rc:
+        raise DistutilsExecError(
+                "command %r failed: %r" % (cmd_line, data or "unknown"))
 
 def _nt_quote_args(args):
     """Quote command-line arguments for DOS/Windows conventions.

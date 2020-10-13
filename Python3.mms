@@ -100,6 +100,7 @@ PY_CFLAGS_DTR = $(PY_CFLAGS_Q)/DEFINE=($(PY_CFLAGS_DEF),__PYTHON)/INCLUDE_DIRECT
     define _ssl [.Modules._ssl]
     define impl [.Modules._blake2.impl]
     define kcp  [.Modules._sha3.kcp]
+    define ctypes [.Modules._ctypes]
     ! SWIG
     swig :== $swig$root:[bin]swig.exe
     ! OPENSSL 111

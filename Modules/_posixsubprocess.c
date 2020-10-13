@@ -397,8 +397,19 @@ _close_open_fds_maybe_unsafe(long start_fd, PyObject* py_fds_to_keep)
 #include <descrip.h>
 #include <lib$routines.h>
 
+#include <ffi.h>
+#include "ctypes/ctypes.h"
+
+static void child_complete(int arg) {
+    if (arg) {
+        // now return_code_ast object can be freed
+        Py_XDECREF(arg);
+    }
+    return;
+}
+
 static int
-exec_dcl(char *const argv[], int p2cread, int c2pwrite) {
+exec_dcl(char *const argv[], int p2cread, int c2pwrite, PyObject* returncode_ast) {
     int status = -1;
     int pid = -1;
     unsigned char efn = EFN$C_ENF;
@@ -449,9 +460,29 @@ exec_dcl(char *const argv[], int p2cread, int c2pwrite) {
     execute.dsc$w_length = strlen(execute_str);
     execute.dsc$a_pointer = (char *)execute_str;
 
-    status = lib$spawn(&execute, input_ptr, output_ptr, &flags, NULL, &pid, NULL, &efn);
+    int *returncode_ast_ref = NULL;
+    if (returncode_ast) {
+        returncode_ast_ref = &((CDataObject *)returncode_ast)->b_value.i;
+        Py_XINCREF(returncode_ast);
+    }
+
+    status = lib$spawn(
+        &execute,
+        input_ptr,
+        output_ptr,
+        &flags,
+        NULL,
+        &pid,
+        returncode_ast_ref,
+        &efn,
+        &child_complete,
+        returncode_ast);
+
     if (!$VMS_STATUS_SUCCESS(status)) {
         pid = -1;
+        if (returncode_ast) {
+            Py_XDECREF(returncode_ast);
+        }
     }
 
     PyMem_FREE(execute_str);
@@ -485,7 +516,8 @@ child_exec_vfork(char *const exec_array[],
            int call_setsid,
            PyObject *py_fds_to_keep,
            PyObject *preexec_fn,
-           PyObject *preexec_fn_args_tuple)
+           PyObject *preexec_fn_args_tuple,
+           PyObject *returncode_ast)
 {
     int pid = -1;
     int exec_error = 0;
@@ -529,7 +561,7 @@ child_exec_vfork(char *const exec_array[],
     }
 
     if (argv && *argv && strcmp(*argv, "DCL") == 0) {
-        pid = exec_dcl(argv, p2cread, c2pwrite);
+        pid = exec_dcl(argv, p2cread, c2pwrite, returncode_ast);
     } else {
         decc$set_child_standard_streams(p2cread, c2pwrite, errwrite);
         pid = vfork();
@@ -735,6 +767,7 @@ subprocess_fork_exec(PyObject* self, PyObject *args)
     PyObject *env_list, *preexec_fn;
     PyObject *process_args, *converted_args = NULL, *fast_args = NULL;
     PyObject *preexec_fn_args_tuple = NULL;
+    PyObject *returncode_ast = NULL;
     int p2cread, p2cwrite, c2pread, c2pwrite, errread, errwrite;
     int errpipe_read, errpipe_write, close_fds, restore_signals;
     int call_setsid;
@@ -748,13 +781,14 @@ subprocess_fork_exec(PyObject* self, PyObject *args)
     int saved_errno = 0;
 
     if (!PyArg_ParseTuple(
-            args, "OOpO!OOiiiiiiiiiiO:fork_exec",
+            args, "OOpO!OOiiiiiiiiiiO|O:fork_exec",
             &process_args, &executable_list,
             &close_fds, &PyTuple_Type, &py_fds_to_keep,
             &cwd_obj, &env_list,
             &p2cread, &p2cwrite, &c2pread, &c2pwrite,
             &errread, &errwrite, &errpipe_read, &errpipe_write,
-            &restore_signals, &call_setsid, &preexec_fn))
+            &restore_signals, &call_setsid, &preexec_fn,
+            &returncode_ast))
         return NULL;
 
     if ((preexec_fn != Py_None) &&
@@ -871,7 +905,8 @@ subprocess_fork_exec(PyObject* self, PyObject *args)
                    p2cread, p2cwrite, c2pread, c2pwrite,
                    errread, errwrite, errpipe_read, errpipe_write,
                    close_fds, restore_signals, call_setsid,
-                   py_fds_to_keep, preexec_fn, preexec_fn_args_tuple);
+                   py_fds_to_keep, preexec_fn, preexec_fn_args_tuple,
+                   returncode_ast);
 #else
     pid = fork();
     if (pid == 0) {
