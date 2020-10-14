@@ -492,7 +492,13 @@ def run(*popenargs,
         kwargs['stdout'] = PIPE
         kwargs['stderr'] = PIPE
 
-    with Popen(*popenargs, **kwargs) as process:
+    try:
+        kwargs['shell'] = False
+        process = Popen(*popenargs, **kwargs)
+    except OSError:
+        kwargs['shell'] = True
+        process = Popen(*popenargs, **kwargs)
+    with process:
         try:
             stdout, stderr = process.communicate(input, timeout=timeout)
         except TimeoutExpired as exc:
@@ -785,7 +791,7 @@ class Popen(object):
         self.pid = None
         self.returncode = None
         if _openvms:
-            self.returncode_ast = ctypes.c_int(-1)
+            self.returncode_ast = ctypes.c_longlong(-1)
         self.encoding = encoding
         self.errors = errors
 

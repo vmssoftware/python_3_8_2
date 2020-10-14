@@ -400,10 +400,35 @@ _close_open_fds_maybe_unsafe(long start_fd, PyObject* py_fds_to_keep)
 #include <ffi.h>
 #include "ctypes/ctypes.h"
 
+#ifdef _USE_AST_USER_DATA_
+// use special structure
+// system writes return code into this structure
+// ast routine copies return code from this structure into the returncode_ast object
+struct returncode_ast_struct {
+    CDataObject *returncode_ast;        // object
+    int*    returncode_ast_value_ref;   // for testing purpose, address of the value inside the object before
+    int     returncode_ast_value;       // the place where the system writes return code
+};
+#else
+// use returncode_ast as user data
+// system writes return code directly into returncode_ast object
+#endif
+
 static void child_complete(int arg) {
     if (arg) {
-        // now return_code_ast object can be freed
+        #ifdef _USE_AST_USER_DATA_
+        // arg is a structure
+        struct returncode_ast_struct *userdata = (struct returncode_ast_struct *)arg;
+        if (&userdata->returncode_ast->b_value.i != userdata->returncode_ast_value_ref) {
+            __assert("Memory was moved", "_posixsubprocess", 414);
+        }
+        userdata->returncode_ast->b_value.i = userdata->returncode_ast_value;
+        Py_XDECREF(userdata->returncode_ast);
+        PyMem_Free(userdata);
+        #else
+        // arg is a returncode_ast object
         Py_XDECREF(arg);
+        #endif
     }
     return;
 }
@@ -461,8 +486,22 @@ exec_dcl(char *const argv[], int p2cread, int c2pwrite, PyObject* returncode_ast
     execute.dsc$a_pointer = (char *)execute_str;
 
     int *returncode_ast_ref = NULL;
+    #ifdef _USE_AST_USER_DATA_
+    struct returncode_ast_struct *userdata = NULL;
+    #else
+    void *userdata = returncode_ast;
+    #endif
     if (returncode_ast) {
+        #ifdef _USE_AST_USER_DATA_
+        // create and fill a structure
+        userdata = (struct returncode_ast_struct *)PyMem_Malloc(sizeof(struct returncode_ast_struct));
+        userdata->returncode_ast = (CDataObject *)returncode_ast;
+        userdata->returncode_ast_value = -1;
+        userdata->returncode_ast_value_ref = &userdata->returncode_ast->b_value.i;
+        returncode_ast_ref = &userdata->returncode_ast_value;
+        #else
         returncode_ast_ref = &((CDataObject *)returncode_ast)->b_value.i;
+        #endif
         Py_XINCREF(returncode_ast);
     }
 
@@ -476,11 +515,14 @@ exec_dcl(char *const argv[], int p2cread, int c2pwrite, PyObject* returncode_ast
         returncode_ast_ref,
         &efn,
         &child_complete,
-        returncode_ast);
+        userdata);
 
     if (!$VMS_STATUS_SUCCESS(status)) {
         pid = -1;
         if (returncode_ast) {
+            #ifdef _USE_AST_USER_DATA_
+            PyMem_Free(userdata);
+            #endif
             Py_XDECREF(returncode_ast);
         }
     }
