@@ -762,6 +762,21 @@ def _createenviron():
 environ = _createenviron()
 del _createenviron
 
+if sys.platform == 'OpenVMS':
+    import re
+    def getenv_bymask(name):
+        items = dict()
+
+        out_stream = popen('SHOW LOGICAL {name}'.format(name = name))
+        data = out_stream.read()
+        out_stream.close()
+
+        rgx = re.compile(r'\"(.*?)\" = \"(.*?)\"')
+        found = rgx.findall(data)
+        for key, value in found:
+            items[key] = value
+
+        return items
 
 def getenv(key, default=None):
     """Get an environment variable, return None if it doesn't exist.
