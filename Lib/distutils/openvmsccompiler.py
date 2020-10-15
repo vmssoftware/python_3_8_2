@@ -15,6 +15,7 @@ the OpenVMS-style command-line C compiler:
 
 import os, sys, re
 import tempfile
+import stat
 
 from distutils import sysconfig
 from distutils.dep_util import newer
@@ -227,16 +228,34 @@ class OpenVMSCCompiler(CCompiler):
                 opt_file.write(b'\n')
 
             for lib_file in libraries:
+                lib_file_vms = None
                 _, ext = os.path.splitext(lib_file)
                 if ext:
+                    # looks like full path
                     ext = ext.upper()
                     if ext in ('.OLB', '.EXE'):
                         if not '[]' in lib_file:
                             lib_file_vms = vms.decc.to_vms(lib_file, 0, 0)[0]
                         else:
                             lib_file_vms = lib_file
-                        opt_file.write(lib_file_vms.encode())
-                        opt_file.write(b'/LIBRARY\n' if ext == '.OLB' else b'/SHAREABLE\n' )
+                if not lib_file_vms:
+                    # find the library in the library_dirs
+                    def find_lib():
+                        for lib_dir in library_dirs:
+                            for lib_ext in ['','.OLB','.EXE']:
+                                try:
+                                    lib_path = os.path.join(lib_dir, lib_file + lib_ext)
+                                    st = os.stat(lib_path)
+                                    if not stat.S_ISDIR(st.st_mode):
+                                        return vms.decc.to_vms(lib_path, 0, 0)[0]
+                                except:
+                                    pass
+                        return None
+                    lib_file_vms = find_lib()
+                if lib_file_vms:
+                    # write it to the OPT
+                    opt_file.write(lib_file_vms.encode())
+                    opt_file.write(b'/LIBRARY\n' if ext == '.OLB' else b'/SHAREABLE\n' )
 
             opt_file.write(b'GSMATCH=LEQUAL,1,0\nCASE_SENSITIVE=YES\n')
 
