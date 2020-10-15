@@ -58,7 +58,7 @@ class OpenVMSCCompiler(CCompiler):
     shared_lib_extension = ".exe"
     dylib_lib_extension = ".exe"
     xcode_stub_lib_extension = ".tbd"
-    static_lib_format = shared_lib_format = dylib_lib_format = "lib%s%s"
+    static_lib_format = shared_lib_format = dylib_lib_format = "%s%s"
     xcode_stub_lib_format = dylib_lib_format
     exe_extension = ".exe"
 
