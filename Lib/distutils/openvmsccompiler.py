@@ -227,35 +227,40 @@ class OpenVMSCCompiler(CCompiler):
                 opt_file.write(obj_file_vms.encode())
                 opt_file.write(b'\n')
 
+            vms_libraries_set = set()
+
             for lib_file in libraries:
                 lib_file_vms = None
-                _, ext = os.path.splitext(lib_file)
-                if ext:
+                _, lib_file_ext = os.path.splitext(lib_file)
+                if lib_file_ext:
                     # looks like full path
-                    ext = ext.upper()
-                    if ext in ('.OLB', '.EXE'):
+                    lib_file_ext = lib_file_ext.upper()
+                    if lib_file_ext in ('.OLB', '.EXE'):
                         if not '[]' in lib_file:
                             lib_file_vms = vms.decc.to_vms(lib_file, 0, 0)[0]
                         else:
                             lib_file_vms = lib_file
                 if not lib_file_vms:
                     # find the library in the library_dirs
-                    def find_lib():
-                        for lib_dir in library_dirs:
-                            for lib_ext in ['','.OLB','.EXE']:
-                                try:
-                                    lib_path = os.path.join(lib_dir, lib_file + lib_ext)
-                                    st = os.stat(lib_path)
-                                    if not stat.S_ISDIR(st.st_mode):
-                                        return vms.decc.to_vms(lib_path, 0, 0)[0]
-                                except:
-                                    pass
-                        return None
-                    lib_file_vms = find_lib()
-                if lib_file_vms:
+                    for lib_dir in library_dirs:
+                        for lib_ext in ['','.OLB','.EXE']:
+                            try:
+                                lib_path = os.path.join(lib_dir, lib_file + lib_ext)
+                                st = os.stat(lib_path)
+                                if not stat.S_ISDIR(st.st_mode):
+                                    lib_file_ext = lib_ext
+                                    lib_file_vms = vms.decc.to_vms(lib_path, 0, 0)[0]
+                                    break
+                            except:
+                                pass
+                        else:
+                            continue
+                        break
+                if lib_file_vms and lib_file_vms.lower() not in vms_libraries_set:
                     # write it to the OPT
                     opt_file.write(lib_file_vms.encode())
-                    opt_file.write(b'/LIBRARY\n' if ext == '.OLB' else b'/SHAREABLE\n' )
+                    opt_file.write(b'/LIBRARY\n' if lib_file_ext == '.OLB' else b'/SHAREABLE\n' )
+                    vms_libraries_set.add(lib_file_vms.lower())
 
             opt_file.write(b'GSMATCH=LEQUAL,1,0\nCASE_SENSITIVE=YES\n')
 
