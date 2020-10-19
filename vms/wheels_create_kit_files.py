@@ -57,7 +57,7 @@ product VSI I64VMS PYTHWHLS {type}{major}.{minor}-{level}{edit} FULL ;
 --
    execute postinstall (
        "root = f$trnlmn(""pcsi$destination"") - ""]"" + ""wheels.]"" ",
-       "define/system/trans=concealed python_wheels$root 'root'"
+       "define/system/trans=concealed python_wheels$root 'root'",
        "define/system PIP_FIND_LINKS ""/python_wheels$root"" "
     ) ;
 
