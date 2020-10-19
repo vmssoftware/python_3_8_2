@@ -16,6 +16,9 @@ def create_content(type, major, minor, level, edit):
     for root, dirs, files in os.walk(python_wheels_dir):
         inner_dirs = list(filter(lambda x: x != '', spec_pattern.sub(spec_replacer, root[python_wheels_dir_len:]).split('/')))
         kit_dir = '[' + '.'.join(['wheels'] + inner_dirs) + ']'
+        src_dir = '[000000]'
+        if len(inner_dirs):
+            src_dir = '[' + '.'.join(inner_dirs) + ']'
         all_dirs.append('directory "' + kit_dir + '" version limit 1;')
         for file in files:
             file_name, file_ext = os.path.splitext(file)
@@ -25,7 +28,7 @@ def create_content(type, major, minor, level, edit):
             all_files.append('file "' + \
                 kit_dir + file_name + file_ext + \
                 '" source "' + \
-                kit_dir + file_name + file_ext + \
+                src_dir + file_name + file_ext + \
                 '";')
         try:
             dirs.remove('__pycache__')
@@ -50,9 +53,13 @@ product VSI I64VMS PYTHWHLS {type}{major}.{minor}-{level}{edit} FULL ;
     {files}
 
 --
--- Okay, done.  Tell the user what to do next.
+-- Do post-install tasks
 --
-   information POST_INSTALL  phase after with helptext;
+   execute postinstall (
+       "root = f$trnlmn(""pcsi$destination"") - ""]"" + ""wheels.]"" ",
+       "define/system/trans=concealed python_wheels$root 'root'"
+       "define/system PIP_FIND_LINKS ""/python_wheels$root"" "
+    ) ;
 
 end product;
 '''
@@ -77,14 +84,6 @@ end product;
 
 1 'NOTICE
 =prompt (C) Copyright 2020 VMS Software Inc.
-
-1 POST_INSTALL
-=prompt Post-installation tasks are required.
-To define the Python runtime at system boot time, add the
-following lines to SYS$MANAGER:SYSTARTUP_VMS.COM:
-
-    $ file := SYS$STARTUP:python_wheels$define_logicals.com
-    $ if f$search("''file'") .nes. "" then @'file'
 
 '''
     text_content = text_template.format(
