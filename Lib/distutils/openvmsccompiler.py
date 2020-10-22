@@ -121,15 +121,14 @@ class OpenVMSCCompiler(CCompiler):
             if len(macro) == 1:        # undefine this macro
                 pp_undefine.append(macro[0])
             elif len(macro) == 2:
-                if macro[1] is None:    # define with no explicit value
+                if macro[1] in (None, ''):    # define with no explicit value
                     pp_define.append(macro[0])
                 else:
-                    if isinstance(macro[1], str):
-                        if macro[1].startswith('"'):
-                            macro_value = '"""' + macro[1][1:-1] + '"""'
-                            pp_define.append("%s=%s" % (macro[0], macro_value))
-                        else:
-                            pp_define.append("%s=%s" % macro)
+                    if isinstance(macro[1], str) and macro[1].startswith('"'):
+                        macro_value = '"""' + macro[1][1:-1] + '"""'
+                        pp_define.append("%s=%s" % (macro[0], macro_value))
+                    else:
+                        pp_define.append("%s=%s" % macro)
 
         pp_opts = [ \
             '/NAMES=(AS_IS,SHORTENED)',
