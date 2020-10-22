@@ -15,6 +15,7 @@ click
 constantly
 cryptography
 cryptography_vectors
+cython
 decorator
 elementpath
 flasgger
