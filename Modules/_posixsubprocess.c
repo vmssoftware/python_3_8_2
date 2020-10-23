@@ -400,71 +400,24 @@ _close_open_fds_maybe_unsafe(long start_fd, PyObject* py_fds_to_keep)
 #include <ffi.h>
 #include "ctypes/ctypes.h"
 
-#define ACQUIRE_LOCK(lockobj) do { \
-    if (lockobj && !PyThread_acquire_lock(lockobj, 0)) { \
-        Py_BEGIN_ALLOW_THREADS \
-        PyThread_acquire_lock(lockobj, 1); \
-        Py_END_ALLOW_THREADS \
-    } } while (0)
-
-#define RELEASE_LOCK(lockobj) do { \
-    if (lockobj) { \
-        PyThread_release_lock(lockobj); \
-    } } while(0)
-
-static PyThread_type_lock _in_use_lock = NULL;
-
 struct returncode_ast_struct {
-    CDataObject *returncode_ast;            // object
-    int          in_use;                    // is it in use
-    struct returncode_ast_struct *next;     // next node
+    CDataObject *returncode_ast;
+    int          returncode_ast_value;
 };
 
-static struct returncode_ast_struct *_head_in_use = NULL;
-
-// Do not call it in AST
-static void check_in_use() {
-    ACQUIRE_LOCK(_in_use_lock);
-    struct returncode_ast_struct *node = _head_in_use;
-    struct returncode_ast_struct *prev = NULL;
-    while(node) {
-        if (!node->in_use) {
-            struct returncode_ast_struct *next = node->next;
-            Py_XDECREF(node->returncode_ast);
-            PyMem_FREE(node);
-            node = next;
-            if (prev) {
-                prev->next = node;
-            } else {
-                _head_in_use = node;
-            }
-        } else {
-            prev = node;
-            node = node->next;
-        }
-    }
-    RELEASE_LOCK(_in_use_lock);
-}
-
-static struct returncode_ast_struct* post_in_use(CDataObject *returncode_ast) {
-    // free previous nodes
-    check_in_use();
-    // allocate new one
-    struct returncode_ast_struct *node = (struct returncode_ast_struct *)PyMem_Malloc(sizeof(struct returncode_ast_struct));
-    ACQUIRE_LOCK(_in_use_lock);
-    node->next = _head_in_use;
-    node->in_use = 1;
-    node->returncode_ast = returncode_ast;
-    _head_in_use = node;
-    RELEASE_LOCK(_in_use_lock);
-    return node;
-}
 
 static void child_complete(int arg) {
     if (arg) {
-        // arg is a in_use member of appropriate struct
-        int *in_use = (int*)arg;
-        *in_use = 0;
+        // arg is a returncode_ast_struct
+        struct returncode_ast_struct *userdata = (struct returncode_ast_struct*)arg;
+        userdata->returncode_ast->b_value.i = userdata->returncode_ast_value;
+        if (userdata->returncode_ast->ob_base.ob_refcnt > 1) {
+            // do not call DECREF for the last reference
+            Py_XDECREF(userdata->returncode_ast);
+        } else {
+            // TODO: decrease reference later
+        }
+        free(userdata);
     }
     return;
 }
@@ -526,14 +479,12 @@ exec_dcl(char *const argv[], int p2cread, int c2pwrite, PyObject* returncode_ast
 
     if (returncode_ast) {
         // create and fill a structure
-        userdata = post_in_use((CDataObject *)returncode_ast);
-        // AST will write exactly to the returncode_ast.value
-        returncode_ast_ref = &((CDataObject *)returncode_ast)->b_value.i;
+        userdata = (struct returncode_ast_struct *)malloc(sizeof(struct returncode_ast_struct));
+        userdata->returncode_ast = (CDataObject *)returncode_ast;
+        userdata->returncode_ast_value = -1;
+        returncode_ast_ref = &userdata->returncode_ast_value;
         // keep object
         Py_XINCREF(returncode_ast);
-    } else {
-        // at least we have to check sometimes
-        check_in_use();
     }
 
     status = lib$spawn(
@@ -551,7 +502,7 @@ exec_dcl(char *const argv[], int p2cread, int c2pwrite, PyObject* returncode_ast
     if (!$VMS_STATUS_SUCCESS(status)) {
         pid = -1;
         if (returncode_ast) {
-            PyMem_Free(userdata);
+            free(userdata);
             Py_XDECREF(returncode_ast);
         }
     }
@@ -1101,6 +1052,5 @@ static struct PyModuleDef _posixsubprocessmodule = {
 PyMODINIT_FUNC
 PyInit__posixsubprocess(void)
 {
-    _in_use_lock = PyThread_allocate_lock();
     return PyModule_Create(&_posixsubprocessmodule);
 }

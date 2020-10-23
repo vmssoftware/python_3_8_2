@@ -232,7 +232,7 @@ class OpenVMSCCompiler(CCompiler):
                     # looks like full path
                     lib_file_ext = lib_file_ext.upper()
                     if lib_file_ext in ('.OLB', '.EXE'):
-                        if not '[]' in lib_file:
+                        if not ':[]' in lib_file:
                             lib_file_vms = vms.decc.to_vms(lib_file, 0, 0)[0]
                         else:
                             lib_file_vms = lib_file
