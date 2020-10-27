@@ -539,7 +539,7 @@ init_shared_values(Py_buffer *dest, const Py_buffer *src)
     dest->buf = src->buf;
     dest->len = src->len;
     dest->itemsize = src->itemsize;
-    dest->read_only = src->read_only;
+    dest->readonly$ = src->readonly$;
     dest->format = src->format ? src->format : "B";
     dest->internal = src->internal;
 }
@@ -737,7 +737,7 @@ PyMemoryView_FromMemory(char *mem, Py_ssize_t size, int flags)
 {
     _PyManagedBufferObject *mbuf;
     PyObject *mv;
-    int read_only;
+    int readonly$;
 
     assert(mem != NULL);
     assert(flags == PyBUF_READ || flags == PyBUF_WRITE);
@@ -746,8 +746,8 @@ PyMemoryView_FromMemory(char *mem, Py_ssize_t size, int flags)
     if (mbuf == NULL)
         return NULL;
 
-    read_only = (flags == PyBUF_WRITE) ? 0 : 1;
-    (void)PyBuffer_FillInfo(&mbuf->master, NULL, mem, size, read_only,
+    readonly$ = (flags == PyBUF_WRITE) ? 0 : 1;
+    (void)PyBuffer_FillInfo(&mbuf->master, NULL, mem, size, readonly$,
                             PyBUF_FULL_RO);
 
     mv = mbuf_add_view(mbuf, NULL);
@@ -938,7 +938,7 @@ PyMemoryView_GetContiguous(PyObject *obj, int buffertype, char order)
         return NULL;
 
     view = &mv->view;
-    if (buffertype == PyBUF_WRITE && view->read_only) {
+    if (buffertype == PyBUF_WRITE && view->readonly$) {
         PyErr_SetString(PyExc_BufferError,
             "underlying buffer is not writable");
         Py_DECREF(mv);
@@ -1424,7 +1424,7 @@ memory_toreadonly(PyMemoryViewObject *self, PyObject *noargs)
      */
     self = (PyMemoryViewObject *) mbuf_add_view(self->mbuf, &self->view);
     if (self != NULL) {
-        self->view.read_only = 1;
+        self->view.readonly$ = 1;
     };
     return (PyObject *) self;
 }
@@ -1446,7 +1446,7 @@ memory_getbuf(PyMemoryViewObject *self, Py_buffer *view, int flags)
     *view = *base;
     view->obj = NULL;
 
-    if (REQ_WRITABLE(flags) && base->read_only) {
+    if (REQ_WRITABLE(flags) && base->readonly$) {
         PyErr_SetString(PyExc_BufferError,
             "memoryview: underlying buffer is not writable");
         return -1;
@@ -2508,7 +2508,7 @@ memory_ass_sub(PyMemoryViewObject *self, PyObject *key, PyObject *value)
     if (fmt == NULL)
         return -1;
 
-    if (view->read_only) {
+    if (view->readonly$) {
         PyErr_SetString(PyExc_TypeError, "cannot modify read-only memory");
         return -1;
     }
@@ -2917,7 +2917,7 @@ memory_hash(PyMemoryViewObject *self)
 
         CHECK_RELEASED_INT(self);
 
-        if (!view->read_only) {
+        if (!view->readonly$) {
             PyErr_SetString(PyExc_ValueError,
                 "cannot hash writable memoryview object");
             return -1;
@@ -3043,7 +3043,7 @@ static PyObject *
 memory_readonly_get(PyMemoryViewObject *self, void *Py_UNUSED(ignored))
 {
     CHECK_RELEASED(self);
-    return PyBool_FromLong(self->view.read_only);
+    return PyBool_FromLong(self->view.readonly$);
 }
 
 static PyObject *

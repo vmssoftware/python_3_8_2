@@ -619,9 +619,9 @@ typedef struct {
     /* If non-zero, overallocate the buffer (default: 0). */
     unsigned char overallocate;
 
-    /* If read_only is 1, buffer is a shared string (cannot be modified)
+    /* If readonly$ is 1, buffer is a shared string (cannot be modified)
        and size is set to 0. */
-    unsigned char read_only;
+    unsigned char readonly$;
 } _PyUnicodeWriter ;
 
 /* Initialize a Unicode writer.

@@ -217,13 +217,15 @@ class OpenVMSCCompiler(CCompiler):
             # ld_args = (objects + self.objects +
             #            lib_opts + [link_output_qualifier, output_filename])
             opt_file = tempfile.NamedTemporaryFile(suffix='.OPT', delete=False)
+            opt_lines = []
 
             for obj_file in objects:
                 obj_file_vms = vms.decc.to_vms(obj_file, 0, 0)[0]
-                opt_file.write(obj_file_vms.encode())
-                opt_file.write(b'\n')
+                opt_lines.append(obj_file_vms)
 
             vms_libraries_set = set()
+
+            verbose = False # True # '_multiarray_umath' in output_filename
 
             for lib_file in libraries:
                 lib_file_vms = None
@@ -232,10 +234,10 @@ class OpenVMSCCompiler(CCompiler):
                     # looks like full path
                     lib_file_ext = lib_file_ext.upper()
                     if lib_file_ext in ('.OLB', '.EXE'):
-                        if not ':[]' in lib_file:
-                            lib_file_vms = vms.decc.to_vms(lib_file, 0, 0)[0]
-                        else:
+                        if re.search(r'[:\[\]]', lib_file):
                             lib_file_vms = lib_file
+                        else:
+                            lib_file_vms = vms.decc.to_vms(lib_file, 0, 0)[0]
                 if not lib_file_vms:
                     # find the library in the library_dirs
                     for lib_dir in library_dirs:
@@ -254,11 +256,12 @@ class OpenVMSCCompiler(CCompiler):
                         break
                 if lib_file_vms and lib_file_vms.lower() not in vms_libraries_set:
                     # write it to the OPT
-                    opt_file.write(lib_file_vms.encode())
-                    opt_file.write(b'/LIBRARY\n' if lib_file_ext == '.OLB' else b'/SHAREABLE\n' )
+                    opt_line = lib_file_vms + ('/LIBRARY' if lib_file_ext == '.OLB' else '/SHAREABLE')
+                    opt_lines.append(opt_line)
                     vms_libraries_set.add(lib_file_vms.lower())
 
-            opt_file.write(b'GSMATCH=LEQUAL,1,0\nCASE_SENSITIVE=YES\n')
+            opt_lines.append('GSMATCH=LEQUAL,1,0')
+            opt_lines.append('CASE_SENSITIVE=YES')
 
             proc_names = dict()
             try:
@@ -280,10 +283,18 @@ class OpenVMSCCompiler(CCompiler):
                     return name[:31]
 
             if export_symbols and len(export_symbols):
-                opt_file.write(('SYMBOL_VECTOR=(' + \
-                    '\n'.join(list(shorten_name(x) + '=PROCEDURE' for x in export_symbols)) + \
-                    ')\n').encode())
+                opt_lines.append('SYMBOL_VECTOR=( -')
+                for export_symbol in export_symbols[:-1]:
+                    opt_lines.append(shorten_name(export_symbol) + '=PROCEDURE, -')
+                for export_symbol in export_symbols[-1:]:
+                    opt_lines.append(shorten_name(export_symbol) + '=PROCEDURE )')
 
+            if verbose:
+                print("--- OPT START\n")
+                print('\n'.join(opt_lines))
+                print("--- OPT END\n")
+
+            opt_file.write(('\n'.join(opt_lines)).encode())
             opt_file.close()
             opt_name_vms = vms.decc.to_vms(opt_file.name, 0, 0)[0]
 

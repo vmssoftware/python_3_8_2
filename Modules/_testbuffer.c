@@ -149,7 +149,7 @@ ndbuf_new(Py_ssize_t nitems, Py_ssize_t itemsize, Py_ssize_t offset, int flags)
     base->buf = ndbuf->data;
     base->len = len;
     base->itemsize = 1;
-    base->read_only = 0;
+    base->readonly$ = 0;
     base->format = NULL;
     base->ndim = 1;
     base->shape = NULL;
@@ -255,7 +255,7 @@ ndarray_init_staticbuf(PyObject *exporter, NDArrayObject *nd, int flags)
     nd->head->offset = -1;
     nd->head->data = NULL;
 
-    nd->head->flags = base->read_only ? 0 : ND_WRITABLE;
+    nd->head->flags = base->readonly$ ? 0 : ND_WRITABLE;
     nd->head->exports = 0;
 
     return 0;
@@ -765,7 +765,7 @@ out:
   +-----------------+-----------+-------------+----------------+
   | base.itemsize   |     1     |     OK      |       OK       |
   +-----------------+-----------+-------------+----------------+
-  | base.read_only  |     0     |     OK      |       OK       |
+  | base.readonly$  |     0     |     OK      |       OK       |
   +-----------------+-----------+-------------+----------------+
   | base.format     |    NULL   |     OK      |       OK       |
   +-----------------+-----------+-------------+----------------+
@@ -835,7 +835,7 @@ init_simple(ndbuf_t *ndbuf, PyObject *items, PyObject *format,
     if (ret < 0)
         return -1;
 
-    base->read_only = !(ndbuf->flags & ND_WRITABLE);
+    base->readonly$ = !(ndbuf->flags & ND_WRITABLE);
     base->itemsize = itemsize;
     base->format = get_format(format);
     if (base->format == NULL)
@@ -1452,7 +1452,7 @@ ndarray_getbuf(NDArrayObject *self, Py_buffer *view, int flags)
         return -1;
     }
 
-    if (REQ_WRITABLE(flags) && base->read_only) {
+    if (REQ_WRITABLE(flags) && base->readonly$) {
         PyErr_SetString(PyExc_BufferError,
             "ndarray is not writable");
         return -1;
@@ -1871,7 +1871,7 @@ ndarray_ass_subscript(NDArrayObject *self, PyObject *key, PyObject *value)
     Py_ssize_t index;
     int ret = -1;
 
-    if (dest->read_only) {
+    if (dest->readonly$) {
         PyErr_SetString(PyExc_TypeError, "ndarray is not writable");
         return -1;
     }
@@ -2036,7 +2036,7 @@ static PyObject *
 ndarray_get_readonly(NDArrayObject *self, void *closure)
 {
     Py_buffer *base = &self->head->base;
-    return PyBool_FromLong(base->read_only);
+    return PyBool_FromLong(base->readonly$);
 }
 
 static PyObject *
@@ -2609,7 +2609,7 @@ ndarray_hash(PyObject *self)
     PyObject *bytes;
     Py_hash_t hash;
 
-    if (!view->read_only) {
+    if (!view->readonly$) {
          PyErr_SetString(PyExc_ValueError,
              "cannot hash writable ndarray object");
          return -1;

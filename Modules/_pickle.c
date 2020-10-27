@@ -2548,7 +2548,7 @@ save_picklebuffer(PicklerObject *self, PyObject *obj)
     }
     if (in_band) {
         /* Write data in-band */
-        if (view->read_only) {
+        if (view->readonly$) {
             return _save_bytes_data(self, obj, (const char*) view->buf,
                                     view->len);
         }
@@ -2563,7 +2563,7 @@ save_picklebuffer(PicklerObject *self, PyObject *obj)
         if (_Pickler_Write(self, &next_buffer_op, 1) < 0) {
             return -1;
         }
-        if (view->read_only) {
+        if (view->readonly$) {
             const char readonly_buffer_op = READONLY_BUFFER;
             if (_Pickler_Write(self, &readonly_buffer_op, 1) < 0) {
                 return -1;
@@ -5613,9 +5613,9 @@ load_readonly_buffer(UnpicklerObject *self)
     if (view == NULL) {
         return -1;
     }
-    if (!PyMemoryView_GET_BUFFER(view)->read_only) {
+    if (!PyMemoryView_GET_BUFFER(view)->readonly$) {
         /* Original object is writable */
-        PyMemoryView_GET_BUFFER(view)->read_only = 1;
+        PyMemoryView_GET_BUFFER(view)->readonly$ = 1;
         self->stack->data[len - 1] = view;
         Py_DECREF(obj);
     }
