@@ -400,24 +400,16 @@ _close_open_fds_maybe_unsafe(long start_fd, PyObject* py_fds_to_keep)
 #include <ffi.h>
 #include "ctypes/ctypes.h"
 
-struct returncode_ast_struct {
-    CDataObject *returncode_ast;
-    int          returncode_ast_value;
-};
-
-
 static void child_complete(int arg) {
     if (arg) {
         // arg is a returncode_ast_struct
-        struct returncode_ast_struct *userdata = (struct returncode_ast_struct*)arg;
-        userdata->returncode_ast->b_value.i = userdata->returncode_ast_value;
-        if (userdata->returncode_ast->ob_base.ob_refcnt > 1) {
+        CDataObject *returncode_ast = (CDataObject *)arg;
+        if (returncode_ast->ob_base.ob_refcnt > 1) {
             // do not call DECREF for the last reference
-            Py_XDECREF(userdata->returncode_ast);
+            Py_XDECREF(returncode_ast);
         } else {
             // TODO: decrease reference later
         }
-        free(userdata);
     }
     return;
 }
@@ -475,16 +467,11 @@ exec_dcl(char *const argv[], int p2cread, int c2pwrite, PyObject* returncode_ast
     execute.dsc$a_pointer = (char *)execute_str;
 
     int *returncode_ast_ref = NULL;
-    struct returncode_ast_struct *userdata = NULL;
 
     if (returncode_ast) {
-        // create and fill a structure
-        userdata = (struct returncode_ast_struct *)malloc(sizeof(struct returncode_ast_struct));
-        userdata->returncode_ast = (CDataObject *)returncode_ast;
-        userdata->returncode_ast_value = -1;
-        returncode_ast_ref = &userdata->returncode_ast_value;
         // keep object
         Py_XINCREF(returncode_ast);
+        returncode_ast_ref = &((CDataObject *)returncode_ast)->b_value.i;
     }
 
     status = lib$spawn(
@@ -497,12 +484,11 @@ exec_dcl(char *const argv[], int p2cread, int c2pwrite, PyObject* returncode_ast
         returncode_ast_ref,
         &efn,
         &child_complete,
-        userdata);
+        returncode_ast);
 
     if (!$VMS_STATUS_SUCCESS(status)) {
         pid = -1;
         if (returncode_ast) {
-            free(userdata);
             Py_XDECREF(returncode_ast);
         }
     }
