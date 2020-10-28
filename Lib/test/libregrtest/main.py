@@ -27,19 +27,20 @@ if sys.platform == 'OpenVMS':
     import vms.syidef
     import vms.lib
 
-    def format_mem(mem):
-        """ mem in bytes
-        """
-        abb = ['b', 'kb', 'Mb', 'Gb', 'Tb']
-        p = 0
-        unit = 1024
-        while mem > unit << 10:
-            unit = unit << 10
-            p = p + 1
-        if p < len(abb):
-            return "{1:,.{0}f}{2}".format(2, mem / unit, abb[p])
-        else:
-            return "{0:,d}".format(mem)
+def format_mem(mem):
+    """ mem in bytes
+    """
+    abb = ['b', 'kb', 'Mb', 'Gb', 'Tb']
+    p = 0
+    unit = 1024
+    while mem >= unit:
+        unit = unit * 1024
+        p = p + 1
+    unit = unit / 1024
+    if p < len(abb):
+        return "{0}{1}".format(int(mem/unit), abb[p])
+    else:
+        return "{0:,d}b".format(mem)
 
     vms_page_size = 512     # turns out page size is always 512 bytes
 
