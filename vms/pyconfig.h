@@ -1510,7 +1510,7 @@
 #define SIZEOF_TIME_T 4
 
 /* The size of `uintptr_t', as computed by sizeof. */
-#define SIZEOF_UINTPTR_T 4
+#define SIZEOF_UINTPTR_T 8
 
 /* The size of `void *', as computed by sizeof. */
 #define SIZEOF_VOID_P 4

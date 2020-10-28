@@ -3323,6 +3323,7 @@ class TermsizeTests(unittest.TestCase):
         self.assertGreaterEqual(size.columns, 0)
         self.assertGreaterEqual(size.lines, 0)
 
+    @unittest.skipIf(sys.platform == 'OpenVMS', 'OpenVMS has hardcoded terminal size')
     def test_stty_match(self):
         """Check if stty returns the same results
 
