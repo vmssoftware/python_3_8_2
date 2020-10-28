@@ -18,7 +18,10 @@ class BaseTestCase(unittest.TestCase):
             os.unlink('test.dat')
         except:
             pass
-        os.system('CREATE/FDL=test.fdl test.dat')
+        if os.access('test.fdl'):
+            os.system('CREATE/FDL=test.fdl test.dat')
+        else:
+            os.system('CREATE/FDL=python$root:[lib.python3^.8.test]test.fdl test.dat')
 
         self.records = [
             (b'AA5AA', 5, b'1234567890A'),
