@@ -27,25 +27,23 @@ if sys.platform == 'OpenVMS':
     import vms.syidef
     import vms.lib
 
-def format_mem(mem):
-    """ mem in bytes
-    """
-    abb = ['b', 'kb', 'Mb', 'Gb', 'Tb']
-    p = 0
-    unit = 1024
-    while mem >= unit:
-        unit = unit * 1024
-        p = p + 1
-    unit = unit / 1024
-    if p < len(abb):
-        return "{0}{1}".format(int(mem/unit), abb[p])
-    else:
-        return "{0:,d}b".format(mem)
+    def format_mem(mem):
+        """ mem in bytes
+        """
+        abb = ['b', 'kb', 'Mb', 'Gb', 'Tb']
+        p = 0
+        unit = 1024
+        while mem >= unit:
+            unit = unit * 1024
+            p = p + 1
+        unit = unit / 1024
+        if p < len(abb):
+            return "{0}{1}".format(int(mem/unit), abb[p])
+        else:
+            return "{0:,d}b".format(mem)
 
-    vms_page_size = 512     # turns out page size is always 512 bytes
-
+    # turns out page size is always 512 bytes
     def get_mem():
-        # global vms_page_size
         try:
             # if vms_page_size == None:
             #     sts, pagesize, node = vms.lib.getsyi(vms.syidef.SYI__PAGE_SIZE, None)
@@ -57,7 +55,7 @@ def format_mem(mem):
                 return 0
         except:
             return 0
-        return vms_page_size * int(pagecount)
+        return 512 * int(pagecount)
 
 
 # bpo-38203: Maximum delay in seconds to exit Python (call Py_Finalize()).
