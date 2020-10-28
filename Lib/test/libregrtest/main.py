@@ -28,7 +28,9 @@ if sys.platform == 'OpenVMS':
     import vms.lib
 
     def format_mem(mem):
-        abb = ['k', 'M', 'G', 'T']
+        """ mem in bytes
+        """
+        abb = ['b', 'kb', 'Mb', 'Gb', 'Tb']
         p = 0
         unit = 1024
         while mem > unit << 10:
@@ -39,16 +41,16 @@ if sys.platform == 'OpenVMS':
         else:
             return "{0:,d}".format(mem)
 
-    vms_page_size = None
+    vms_page_size = 512     # turns out page size is always 512 bytes
 
     def get_mem():
-        global vms_page_size
+        # global vms_page_size
         try:
-            if vms_page_size == None:
-                sts, pagesize, node = vms.lib.getsyi(vms.syidef.SYI__PAGE_SIZE, None)
-                if sts != 1:
-                    return 0
-                vms_page_size = int(pagesize)
+            # if vms_page_size == None:
+            #     sts, pagesize, node = vms.lib.getsyi(vms.syidef.SYI__PAGE_SIZE, None)
+            #     if sts != 1:
+            #         return 0
+            #     vms_page_size = int(pagesize)
             sts, pagecount = vms.lib.getjpi(vms.jpidef.JPI__PPGCNT, 0, None)
             if sts != 1:
                 return 0
