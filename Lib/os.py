@@ -763,8 +763,8 @@ environ = _createenviron()
 del _createenviron
 
 if sys.platform == 'OpenVMS':
-    import re
     def getenv_bymask(name):
+        import re
         items = dict()
 
         out_stream = popen('SHOW LOGICAL {name}'.format(name = name))
