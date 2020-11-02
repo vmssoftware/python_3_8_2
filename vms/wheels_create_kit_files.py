@@ -55,6 +55,7 @@ product VSI I64VMS PYTHWHLS {type}{major}.{minor}-{level}{edit} FULL ;
 --
 -- Start-up and shutdown scripts
 --
+   file "[sys$startup]python_wheels$define_root.com" source "[000000]python_wheels$define_root.com";
    file "[sys$startup]python_wheels$startup.com" source "[000000]python_wheels$startup.com";
 
 --

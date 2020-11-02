@@ -71,6 +71,7 @@ product VSI I64VMS PYTHON {type}{major}.{minor}-{level}{edit} FULL ;
 --
 -- Start-up and shutdown scripts
 --
+   file "[sys$startup]python$define_root.com" source "[python]python$define_root.com";
    file "[sys$startup]python$startup.com" source "[python]python$startup.com";
    file "[sys$startup]python$shutdown.com" source "[python]python$shutdown.com";
 
