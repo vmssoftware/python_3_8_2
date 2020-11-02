@@ -53,13 +53,20 @@ product VSI I64VMS PYTHWHLS {type}{major}.{minor}-{level}{edit} FULL ;
     {files}
 
 --
+-- Start-up and shutdown scripts
+--
+   file "[sys$startup]python_wheels$startup.com" source "[000000]python_wheels$startup.com";
+
+--
 -- Do post-install tasks
 --
-   execute postinstall (
-       "root = f$trnlmn(""pcsi$destination"") - ""]"" + ""wheels.]"" ",
-       "define/system/trans=concealed python_wheels$root 'root'",
-       "define/system PIP_FIND_LINKS ""/python_wheels$root"" "
-    ) ;
+--   execute postinstall (
+--       "root = f$trnlmn(""pcsi$destination"") - ""]"" + ""wheels.]"" ",
+--       "define/system/trans=concealed python_wheels$root 'root'",
+--       "define/system PIP_FIND_LINKS ""/python_wheels$root"" "
+--    ) ;
+
+    execute postinstall "@pcsi$source:[wheels]python_wheels$define_root.com" interactive uses "[000000]python_wheels$define_root.com" ;
 
 end product;
 '''
@@ -84,6 +91,14 @@ end product;
 
 1 'NOTICE
 =prompt (C) Copyright 2020 VMS Software Inc.
+
+1 POST_INSTALL
+=prompt Post-installation tasks are required.
+To define the Wheels for Python runtime at system boot time, add the
+following lines to SYS$MANAGER:SYSTARTUP_VMS.COM:
+
+    $ file := SYS$STARTUP:PYTHON_WHEELS$STARTUP.COM
+    $ if f$search("''file'") .nes. "" then @'file'
 
 '''
     text_content = text_template.format(

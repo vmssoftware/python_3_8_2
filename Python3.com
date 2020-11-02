@@ -39,7 +39,6 @@ $ backup 'vms_pat'python$define_root.com python$root:[000000]
 $ backup 'vms_pat'python$pcsi_preconfigure.com python$root:[000000]
 $ backup 'vms_pat'python$startup.com python$root:[000000]
 $ backup 'vms_pat'python$shutdown.com python$root:[000000]
-$ !backup 'vms_pat'*.pcsi* python$root:[000000]
 $
 $ backup 'dyn_pat'*.* python$root:[lib.python3^.8.lib-dynload...]*.*
 $ ! next file must be present
