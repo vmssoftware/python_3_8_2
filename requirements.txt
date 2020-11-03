@@ -42,6 +42,7 @@ marshmallow
 mistune
 mock
 more_itertools
+numpy
 outcome
 packaging
 path

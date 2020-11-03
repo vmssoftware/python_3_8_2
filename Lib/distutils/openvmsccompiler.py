@@ -41,10 +41,17 @@ class OpenVMSCCompiler(CCompiler):
     # are pretty generic; they will probably have to be set by an outsider
     # (eg. using information discovered by the sysconfig about building
     # Python extensions).
-    executables = {'compiler_c'   : ["CC"],
-                   'compiler_cxx' : ["CXX"],
-                   'linker'       : ["LINK"],
+    executables = {
                    'archiver'     : ["LIBRARY"],
+                   'compiler'     : ["CC"],
+                   'compiler_c'   : ["CC"],
+                   'compiler_cxx' : ["CXX"],
+                   'compiler_so'  : ["CC"],
+                   'linker'       : ["LINK"],
+                   'linker_exe'   : ["LINK"],
+                   'linker_so'    : ["LINK"],
+                   'preprocessor' : None,
+                   'ranlib'       : None,
                   }
 
     # Needed for the filename generation methods provided by the base
