@@ -14,6 +14,10 @@
 #include <stdio.h>
 #include <wchar.h>
 
+#ifndef PRId64
+#include "vms/format_macros.h"
+#endif
+
 /*********************************************************
  * Embedded interpreter tests that need a custom exe
  *

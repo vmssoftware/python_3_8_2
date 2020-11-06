@@ -876,7 +876,10 @@
 #undef HAVE_RL_RESIZE_TERMINAL
 
 /* Define to 1 if you have the `round' function. */
+#undef HAVE_ROUND
+#if __CRTL_VER > 80400000
 #define HAVE_ROUND 1
+#endif
 
 /* Define to 1 if you have the `rtpSpawn' function. */
 #undef HAVE_RTPSPAWN

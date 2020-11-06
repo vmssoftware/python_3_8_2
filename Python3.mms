@@ -225,9 +225,9 @@ LIBDYNLOAD_VMS = -
 [.$(OUT_DIR).$(DYNLOAD_DIR)]_sys.exe -
 [.$(OUT_DIR).$(DYNLOAD_DIR)]_uafdef.exe -
 [.$(OUT_DIR).$(DYNLOAD_DIR)]_uaidef.exe -
-[.$(OUT_DIR).$(DYNLOAD_DIR)]_dtr.exe -
+[.$(OUT_DIR).$(DYNLOAD_DIR)]_rdb.exe -
 [.$(OUT_DIR).$(DYNLOAD_DIR)]_rec.exe -
-[.$(OUT_DIR).$(DYNLOAD_DIR)]_rdb.exe
+[.$(OUT_DIR).$(DYNLOAD_DIR)]_dtr.exe
 
 LIBDYNLOAD = -
 $(LIBDYNLOAD_VMS) -
@@ -2130,15 +2130,22 @@ SHA3_HEADERS = -
     @ pipe create/dir $(DIR $(MMS$TARGET)) | copy SYS$INPUT nl:
     $(LINK)$(LINKFLAGS)/SHARE=python$build_out:[$(DYNLOAD_DIR)]$(NOTDIR $(MMS$TARGET_NAME)).EXE $(MMS$SOURCE_LIST),[.opt]$(NOTDIR $(MMS$TARGET_NAME)).opt/OPT
 
-[.modules.vms.accdef]accdef_wrap.c : [.modules.vms.accdef]accdef.i
-    SWIG -python modules/vms/accdef/accdef.i
-    purge [.modules.vms.accdef]accdef_wrap.c
+! [.modules.vms.accdef]accdef_wrap.c : [.modules.vms.accdef]accdef.i
+!     SWIG -python modules/vms/accdef/accdef.i
+!     purge [.modules.vms.accdef]accdef_wrap.c
 
-[.$(OBJ_DIR).modules.vms.accdef]accdef_wrap.obs : [.modules.vms.accdef]accdef_wrap.c
+! [.$(OBJ_DIR).modules.vms.accdef]accdef_wrap.obs : [.modules.vms.accdef]accdef_wrap.c
 
-[.$(OUT_DIR).$(DYNLOAD_DIR)]_accdef.exe : [.$(OBJ_DIR).modules.vms.accdef]accdef_wrap.obs
+! [.$(OUT_DIR).$(DYNLOAD_DIR)]_accdef.exe : [.$(OBJ_DIR).modules.vms.accdef]accdef_wrap.obs
+!     @ pipe create/dir $(DIR $(MMS$TARGET)) | copy SYS$INPUT nl:
+!     $(LINK)$(LINKFLAGS)/SHARE=python$build_out:[$(DYNLOAD_DIR)]$(NOTDIR $(MMS$TARGET_NAME)).EXE $(MMS$SOURCE_LIST),[.opt]$(NOTDIR $(MMS$TARGET_NAME)).opt/OPT
+
+[.$(OBJ_DIR).modules.vms.accdef]accdef.obs : [.modules.vms.accdef]accdef.c
+
+[.$(OUT_DIR).$(DYNLOAD_DIR)]_accdef.exe : [.$(OBJ_DIR).modules.vms.accdef]accdef.obs
     @ pipe create/dir $(DIR $(MMS$TARGET)) | copy SYS$INPUT nl:
     $(LINK)$(LINKFLAGS)/SHARE=python$build_out:[$(DYNLOAD_DIR)]$(NOTDIR $(MMS$TARGET_NAME)).EXE $(MMS$SOURCE_LIST),[.opt]$(NOTDIR $(MMS$TARGET_NAME)).opt/OPT
+
 
 [.modules.vms.acldef]acldef_wrap.c : [.modules.vms.acldef]acldef.i
     SWIG -python modules/vms/acldef/acldef.i
@@ -2217,6 +2224,7 @@ SHA3_HEADERS = -
     @ pipe create/dir $(DIR $(MMS$TARGET)) | copy SYS$INPUT nl:
     $(LINK)$(LINKFLAGS)/SHARE=python$build_out:[$(DYNLOAD_DIR)]$(NOTDIR $(MMS$TARGET_NAME)).EXE $(MMS$SOURCE_LIST),[.opt]$(NOTDIR $(MMS$TARGET_NAME)).opt/OPT
 
+!! ************ DTR ***********
 [.modules.vms.dtr]dtr_wrap.c : [.modules.vms.dtr]dtr.i
     SWIG -python modules/vms/dtr/dtr.i
     purge [.modules.vms.dtr]dtr_wrap.c
@@ -2256,6 +2264,8 @@ SHA3_HEADERS = -
 [.$(OBJ_DIR).modules.vms.dtr]rec.obs
     @ pipe create/dir $(DIR $(MMS$TARGET)) | copy SYS$INPUT nl:
     $(LINK)$(LINKFLAGS)/SHARE=python$build_out:[$(DYNLOAD_DIR)]$(NOTDIR $(MMS$TARGET_NAME)).EXE $(MMS$SOURCE_LIST),[.opt]$(NOTDIR $(MMS$TARGET_NAME)).opt/OPT
+
+!! ^^^^^^^^^^^ DTR ^^^^^^^^^^^
 
 ! RDB need sql$mod installed
 [.modules.rdb]rdb_wrap.c : [.modules.rdb]rdb.i, [.modules.rdb]db.h

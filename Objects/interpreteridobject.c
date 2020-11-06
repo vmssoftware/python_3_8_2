@@ -4,6 +4,9 @@
 #include "internal/pycore_pystate.h"
 #include "interpreteridobject.h"
 
+#ifndef PRId64
+#include "vms/format_macros.h"
+#endif
 
 typedef struct interpid {
     PyObject_HEAD
