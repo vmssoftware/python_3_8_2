@@ -69,7 +69,7 @@ copysign(double x, double y)
 
 #ifndef HAVE_ROUND
 double
-round(double x)
+round_imp(double x)
 {
     double absx, y;
     absx = fabs(x);
@@ -77,5 +77,11 @@ round(double x)
     if (absx - y >= 0.5)
         y += 1.0;
     return copysign(y, x);
+}
+#else
+double
+round_imp(double x)
+{
+    return round(x);
 }
 #endif /* HAVE_ROUND */

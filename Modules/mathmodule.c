@@ -107,7 +107,7 @@ m_sinpi(double x)
     /* this function should only ever be called for finite arguments */
     assert(Py_IS_FINITE(x));
     y = fmod(fabs(x), 2.0);
-    n = (int)round(2.0*y);
+    n = (int)round_imp(2.0*y);
     assert(0 <= n && n <= 4);
     switch (n) {
     case 0:

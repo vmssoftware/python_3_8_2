@@ -106,10 +106,10 @@ _PyLong_FromTime_t(time_t t)
 static double
 _PyTime_RoundHalfEven(double x)
 {
-    double rounded = round(x);
+    double rounded = round_imp(x);
     if (fabs(x-rounded) == 0.5) {
         /* halfway case: round to even */
-        rounded = 2.0*round(x/2.0);
+        rounded = 2.0*round_imp(x/2.0);
     }
     return rounded;
 }

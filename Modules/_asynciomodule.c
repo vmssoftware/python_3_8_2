@@ -1,6 +1,9 @@
 #include "Python.h"
 #include "structmember.h"
 
+#ifndef PRId64
+#include "vms/format_macros.h"
+#endif
 
 /*[clinic input]
 module _asyncio

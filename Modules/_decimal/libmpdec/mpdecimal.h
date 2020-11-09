@@ -53,6 +53,12 @@ extern "C" {
 #endif
 #include <inttypes.h>
 
+#ifdef __VMS
+#ifndef PRId64
+#include "vms/format_macros.h"
+#endif
+#endif
+
 #ifdef _MSC_VER
   #include "vccompat.h"
   #ifndef UNUSED
@@ -177,13 +183,8 @@ typedef int64_t mpd_ssize_t;
 #define MPD_MAXIMPORT 105263157894736842L /* ceil((2*MPD_MAX_PREC)/MPD_RDIGITS) */
 
 /* conversion specifiers */
-#ifdef __VMS
-#define PRI_mpd_uint_t "llu"
-#define PRI_mpd_ssize_t "lld"
-#else
 #define PRI_mpd_uint_t PRIu64
 #define PRI_mpd_ssize_t PRIi64
-#endif
 /* END CONFIG_64 */
 
 
@@ -226,13 +227,8 @@ typedef int32_t mpd_ssize_t;
 #define MPD_MAXIMPORT 94444445L      /* ceil((2*MPD_MAX_PREC)/MPD_RDIGITS) */
 
 /* conversion specifiers */
-#ifdef __VMS
-#define PRI_mpd_uint_t "lu"
-#define PRI_mpd_ssize_t "ld"
-#else
 #define PRI_mpd_uint_t PRIu32
 #define PRI_mpd_ssize_t PRIi32
-#endif
 /* END CONFIG_32 */
 
 #else

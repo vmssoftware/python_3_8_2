@@ -18,7 +18,7 @@ class BaseTestCase(unittest.TestCase):
             os.unlink('test.dat')
         except:
             pass
-        if os.access('test.fdl'):
+        if os.access('test.fdl', os.R_OK):
             os.system('CREATE/FDL=test.fdl test.dat')
         else:
             os.system('CREATE/FDL=python$root:[lib.python3^.8.test]test.fdl test.dat')

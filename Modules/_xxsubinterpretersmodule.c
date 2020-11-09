@@ -6,6 +6,9 @@
 #include "frameobject.h"
 #include "interpreteridobject.h"
 
+#ifndef PRId64
+#include "vms/format_macros.h"
+#endif
 
 static char *
 _copy_raw_string(PyObject *strobj)

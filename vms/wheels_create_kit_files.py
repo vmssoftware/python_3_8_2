@@ -124,7 +124,7 @@ if __name__ == "__main__":
     major = '0'
     minor = '0'
     level = '1'
-    edit = 'd' + datetime.date.today().strftime('%Y%m%d')
+    edit = ''   # 'd' + datetime.date.today().strftime('%Y%m%d')
 
     for opt, optarg in opts:
         if opt in ['--type']:

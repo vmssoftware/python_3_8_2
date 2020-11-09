@@ -986,10 +986,10 @@ double_round(double x, int ndigits) {
         y = x / pow1;
     }
 
-    z = round(y);
+    z = round_imp(y);
     if (fabs(y-z) == 0.5)
         /* halfway between two integers; use round-half-even */
-        z = 2.0*round(y/2.0);
+        z = 2.0*round_imp(y/2.0);
 
     if (ndigits >= 0)
         z = (z / pow2) / pow1;
@@ -1032,10 +1032,10 @@ float___round___impl(PyObject *self, PyObject *o_ndigits)
     if (o_ndigits == Py_None) {
         /* single-argument round or with None ndigits:
          * round to nearest integer */
-        rounded = round(x);
+        rounded = round_imp(x);
         if (fabs(x-rounded) == 0.5)
             /* halfway case: round to even */
-            rounded = 2.0*round(x/2.0);
+            rounded = 2.0*round_imp(x/2.0);
         return PyLong_FromDouble(rounded);
     }
 

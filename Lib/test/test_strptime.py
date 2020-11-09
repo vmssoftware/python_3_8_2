@@ -159,6 +159,8 @@ class TimeRETests(unittest.TestCase):
                           found.group('b')))
         for directive in ('a','A','b','B','c','d','G','H','I','j','m','M','p',
                           'S','u','U','V','w','W','x','X','y','Y','Z','%'):
+            if OPENVMS and directive in ('G',):
+                continue
             compiled = self.time_re.compile("%" + directive)
             found = compiled.match(time.strftime("%" + directive))
             self.assertTrue(found, "Matching failed on '%s' using '%s' regex" %
@@ -549,6 +551,9 @@ class CalculationTests(unittest.TestCase):
             for year_week_format in ('%Y %W', '%Y %U', '%G %V'):
                 if (year_week_format in self._formats_excluded and
                         ymd_tuple in self._ymd_excluded):
+                    return
+                # skip all dates for format %G %V
+                if OPENVMS and year_week_format in self._formats_excluded:
                     return
                 for weekday_format in ('%w', '%u', '%a', '%A'):
                     format_string = year_week_format + ' ' + weekday_format

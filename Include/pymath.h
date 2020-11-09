@@ -18,16 +18,7 @@ functions and constants
 extern double copysign(double, double);
 #endif
 
-#ifndef HAVE_ROUND
-#ifdef __VMS
-#pragma message save
-#pragma message disable(NOTINCRTL)
-#endif
-extern double round(double);
-#ifdef __VMS
-#pragma message restore
-#endif
-#endif
+extern double round_imp(double);
 
 #ifndef HAVE_HYPOT
 extern double hypot(double, double);
