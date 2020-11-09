@@ -140,8 +140,8 @@ class OpenVMSCCompiler(CCompiler):
         pp_opts = [ \
             '/NAMES=(AS_IS,SHORTENED)',
             '/WARNINGS=WARNINGS=ALL',
-            '/WARNINGS=ERRORS=IMPLICITFUNC',
-            '/L_DOUBLE_SIZE=64',    # float128(nan) == inf
+            # '/WARNINGS=ERRORS=IMPLICITFUNC',
+            # '/L_DOUBLE_SIZE=64',    # float128(nan) == inf
             ]
         if len(pp_undefine):
             pp_opts.append("/UNDEFINE=(" + ",".join(pp_undefine) + ")")
