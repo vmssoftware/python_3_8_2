@@ -8,6 +8,7 @@ def spec_replacer(match):
     return '^' + match.group(0)
 
 def create_content(type, major, minor, level, edit):
+    re_is_compiled = re.compile(r'([^-]*)-([^-]*)-([^-]*)-([^-]*)-openvms(.*?).whl', flags=re.IGNORECASE)
     python_wheels_dir = '/python_wheels$root'
     python_wheels_dir_len = len(python_wheels_dir)
     all_dirs = []
@@ -25,8 +26,16 @@ def create_content(type, major, minor, level, edit):
             if file_ext == '':
                 file_ext = '.'
             file_name = spec_pattern.sub(spec_replacer, file_name)
+            kit_file_name = file_name
+            # test if module is compiled
+            matched = re_is_compiled.match(file)
+            if matched:
+                kit_file_name = spec_pattern.sub(spec_replacer,
+                    matched.group(1) + '-' +    # name
+                    matched.group(2) +          # version
+                    '-py2.py3-none-any')        # built for
             all_files.append('file "' + \
-                kit_dir + file_name + file_ext + \
+                kit_dir + kit_file_name + file_ext + \
                 '" source "' + \
                 src_dir + file_name + file_ext + \
                 '";')
@@ -55,19 +64,45 @@ product VSI I64VMS PYTHWHLS {type}{major}.{minor}-{level}{edit} FULL ;
 --
 -- Start-up and shutdown scripts
 --
-   file "[sys$startup]python_wheels$define_root.com" source "[000000]python_wheels$define_root.com";
-   file "[sys$startup]python_wheels$startup.com" source "[000000]python_wheels$startup.com";
+--    file "[sys$startup]python_wheels$define_root.com" source "[000000]python_wheels$define_root.com";
+--    file "[sys$startup]python_wheels$startup.com" source "[000000]python_wheels$startup.com";
 
 --
 -- Do post-install tasks
 --
---   execute postinstall (
---       "root = f$trnlmn(""pcsi$destination"") - ""]"" + ""wheels.]"" ",
---       "define/system/trans=concealed python_wheels$root 'root'",
---       "define/system PIP_FIND_LINKS ""/python_wheels$root"" "
---    ) ;
 
-    execute postinstall "@pcsi$source:[wheels]python_wheels$define_root.com" interactive uses "[000000]python_wheels$define_root.com" ;
+    execute postinstall (
+        "root = f$trnlmn(""pcsi$destination"") - ""]"" + ""wheels.]""",
+        "define/system/trans=concealed python_wheels$root 'root'",
+        "define/system PIP_FIND_LINKS ""/python_wheels$root""",
+        "open/write fd sys$startup:wheels$startup.com",
+        "write fd ""$!Define logical names for Python wheels packages...""",
+        "write fd ""$define/system/trans=concealed python_wheels$root ''root'""",
+        "write fd ""$define/system PIP_FIND_LINKS """"/python_wheels$root""""",
+        "write fd ""$exit""",
+        "close fd"
+     );
+
+--    execute postinstall (
+--        "root = f$trnlmn(""pcsi$destination"") - ""]"" + ""wheels.]""",
+--        "define/system/trans=concealed python_wheels$root 'root'",
+--        "define/system PIP_FIND_LINKS ""/python_wheels$root""",
+--        "write sys$output ""% Add next commands to the system startup file:""",
+--        "write sys$output ""%     $define/system/trans=concealed python_wheels$root ''root'""",
+--        "write sys$output ""%     $define/system PIP_FIND_LINKS """"/python_wheels$root"""""
+--     ) interactive ;
+
+--    execute
+--        postinstall
+--            "@pcsi$source:[000000]python_wheels$define_root.com"
+--            interactive
+--            uses [000000]python_wheels$define_root.com
+--    ;
+
+--
+-- Okay, done.  Tell the user what to do next.
+--
+   information POST_INSTALL  phase after with helptext;
 
 end product;
 '''
@@ -98,7 +133,7 @@ end product;
 To define the Wheels for Python runtime at system boot time, add the
 following lines to SYS$MANAGER:SYSTARTUP_VMS.COM:
 
-    $ file := SYS$STARTUP:PYTHON_WHEELS$STARTUP.COM
+    $ file := sys$startup:wheels$startup.com
     $ if f$search("''file'") .nes. "" then @'file'
 
 '''
