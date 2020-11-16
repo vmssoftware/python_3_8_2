@@ -34,3 +34,4 @@
 
 #define SIGBUS     10
 
+#define O_BINARY 0100

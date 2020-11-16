@@ -1305,7 +1305,15 @@ _Py_open_impl(const char *pathname, int flags, int gil_held)
 
         do {
             Py_BEGIN_ALLOW_THREADS
+#if defined(__VMS)
+            if (flags & O_BINARY) {
+                fd = open(pathname, flags & ~O_BINARY, 0777, "ctx=bin");
+            } else {
+                fd = open(pathname, flags);
+            }
+#else
             fd = open(pathname, flags);
+#endif
             Py_END_ALLOW_THREADS
         } while (fd < 0
                  && errno == EINTR && !(async_err = PyErr_CheckSignals()));
