@@ -138,7 +138,7 @@ class ImportTests(unittest.TestCase):
                 exec(f"from {name} import *", globals)
             self.assertNotIn(b"invalid_type", globals)
 
-    @unittest.skipIf(sys.platform == 'OpenVMS', 'OpenVMS requires PYTHONCASEOK, import is case-insensitive')
+    # @unittest.skipIf(sys.platform == 'OpenVMS', 'OpenVMS requires PYTHONCASEOK, import is case-insensitive')
     def test_case_sensitivity(self):
         # Brief digression to test that import is case-sensitive:  if we got
         # this far, we know for sure that "random" exists.
