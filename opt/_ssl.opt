@@ -1,0 +1,7 @@
+sys$library:ssl111$libssl_shr32.exe/share
+sys$library:ssl111$libcrypto_shr32.exe/share
+sys$library:pthread$rtl.exe/share
+python$build_out:[000000]python$shr.exe/share
+GSMATCH=LEQUAL,1,0
+CASE_SENSITIVE=YES
+SYMBOL_VECTOR=(PyInit__ssl=PROCEDURE)

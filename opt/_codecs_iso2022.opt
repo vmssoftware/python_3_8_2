@@ -1,0 +1,4 @@
+sys$library:pthread$rtl.exe/share
+python$build_out:[000000]python$shr.exe/share
+CASE_SENSITIVE=YES
+SYMBOL_VECTOR=(PyInit__codecs_iso2022=PROCEDURE)

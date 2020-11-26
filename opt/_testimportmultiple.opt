@@ -1,0 +1,9 @@
+sys$library:pthread$rtl.exe/share
+python$build_out:[000000]python$shr.exe/share
+GSMATCH=LEQUAL,1,0
+CASE_SENSITIVE=YES
+SYMBOL_VECTOR=( -
+PyInit__testimportmultiple=PROCEDURE, -
+PyInit__testimportmultiple_foo=PROCEDURE, -
+PyInit__testimportmultiple_bar=PROCEDURE -
+)
