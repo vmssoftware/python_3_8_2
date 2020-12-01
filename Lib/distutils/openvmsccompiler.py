@@ -273,13 +273,22 @@ class OpenVMSCCompiler(CCompiler):
 
             proc_names = dict()
             try:
-                repository = open('CXX_REPOSITORY/CXX$DEMANGLER_DB')
-                for line in repository:
-                    full_name = line[31:-1]
-                    short_name = line[:31]
+                import _rms
+                from vms.fabdef import FAB_M_GET, FAB_M_SHRGET
+                from vms.rmsdef import RMS__EOF
+                repository = _rms.file('[.CXX_REPOSITORY]CXX$DEMANGLER_DB', fac=FAB_M_GET, shr=FAB_M_SHRGET)
+                while(1):
+                    s, r = repository.fetch()
+                    if r == None or s == RMS__EOF:
+                        break
+                    r = r.decode()
+                    full_name = r[31:]
+                    short_name = r[:31]
                     proc_names[full_name] = short_name
                 repository.close()
-            except:
+            except Exception as ex:
+                if verbose:
+                    print(ex)
                 pass
 
             def shorten_name(name):
