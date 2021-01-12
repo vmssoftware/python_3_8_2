@@ -30,10 +30,28 @@ def create_content(type, major, minor, level, edit):
             # test if module is compiled
             matched = re_is_compiled.match(file)
             if matched:
-                kit_file_name = spec_pattern.sub(spec_replacer,
-                    matched.group(1) + '-' +    # name
-                    matched.group(2) +          # version
-                    '-py2.py3-none-any')        # built for
+                lib_name = matched.group(1)
+                lib_version = matched.group(2)
+                lib_version_splitted = lib_version.split('.')
+                lib_version = []
+                for v_str in lib_version_splitted:
+                    v_num_found = re.search(r'^\d+', v_str)
+                    if v_num_found:
+                        lib_version.append(v_num_found[0])
+                    else:
+                        break
+                if len(lib_version):
+                    lib_version = '.'.join(lib_version)
+                else:
+                    lib_version = '0.0.0'
+                lib_new_full_name = '-'.join([
+                    lib_name,
+                    lib_version,
+                    'py2.py3',
+                    'none',
+                    'any',
+                ])
+                kit_file_name = spec_pattern.sub(spec_replacer, lib_new_full_name)
             all_files.append('file "' + \
                 kit_dir + kit_file_name + file_ext + \
                 '" source "' + \
