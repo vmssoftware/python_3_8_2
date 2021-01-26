@@ -1061,8 +1061,11 @@ class StreamHandler(Handler):
         """
         self.acquire()
         try:
-            if self.stream and hasattr(self.stream, "flush"):
-                self.stream.flush()
+            if self.stream:
+                if hasattr(self.stream, "flush"):
+                    self.stream.flush()
+                if hasattr(self.stream, "fileno"):
+                    os.fsync(self.stream.fileno())
         finally:
             self.release()
 
