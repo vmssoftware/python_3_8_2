@@ -33,45 +33,45 @@ class BaseTestCase(unittest.TestCase):
     def test_date_time(self):
         """ tests date_time """
         status, date_str = LIB.date_time()
-        self.assertEqual(1, status)
+        self.assertEqual(SS.SS__NORMAL, status)
         self.assertNotIn(date_str, ('', None))
 
     def test_ef(self):
         """ tests ef """
         status, ef = LIB.get_ef()
-        self.assertEqual(1, status)
+        self.assertEqual(SS.SS__NORMAL, status)
         status = LIB.free_ef(ef)
-        self.assertEqual(1, status)
+        self.assertEqual(SS.SS__NORMAL, status)
 
     def test_common(self):
         """ tests common """
         common_value = "-=Python=-"
         status = LIB.put_common(common_value)
-        self.assertEqual(1, status)
+        self.assertEqual(SS.SS__NORMAL, status)
         status, got_common_value = LIB.get_common()
-        self.assertEqual(1, status)
+        self.assertEqual(SS.SS__NORMAL, status)
         self.assertEqual(got_common_value, common_value)
 
         common_value = "-=Python=-" * 32
         status = LIB.put_common(common_value)
         self.assertEqual(1409041, status)   # truncated
         status, got_common_value = LIB.get_common()
-        self.assertEqual(1, status)
+        self.assertEqual(SS.SS__NORMAL, status)
         self.assertEqual(got_common_value, common_value[:252])
 
     def test_get_hostname(self):
         """ tests get_hostname """
         status, host_name = LIB.get_hostname(0)
-        self.assertEqual(1, status)
+        self.assertEqual(SS.SS__NORMAL, status)
         self.assertNotIn(host_name, ('', None))
         status, host_name = LIB.get_hostname(1)
-        self.assertEqual(1, status)
+        self.assertEqual(SS.SS__NORMAL, status)
         self.assertNotIn(host_name, ('', None))
 
     def test_getjpi(self):
         """ tests getjpi """
         status, pagecount_str = LIB.getjpi(JPI.JPI__PPGCNT, 0, None)
-        self.assertEqual(1, status)
+        self.assertEqual(SS.SS__NORMAL, status)
         self.assertIsInstance(pagecount_str, str)
         pagecount_int = int(pagecount_str)
         self.assertEqual(str(pagecount_int), pagecount_str)
@@ -80,7 +80,7 @@ class BaseTestCase(unittest.TestCase):
     def test_getsyi(self):
         """ tests getsyi """
         status, pagesize_str, _ = LIB.getsyi(SYI.SYI__PAGE_SIZE, None)
-        self.assertEqual(1, status)
+        self.assertEqual(SS.SS__NORMAL, status)
         self.assertIsInstance(pagesize_str, str)
         pagesize_int = int(pagesize_str)
         self.assertEqual(str(pagesize_int), pagesize_str)
@@ -89,19 +89,19 @@ class BaseTestCase(unittest.TestCase):
     def test_spawn(self):
         """ tests spawn """
         status, pid = LIB.spawn('show time', None, None, 0, None)
-        self.assertEqual(1, status)
+        self.assertEqual(SS.SS__NORMAL, status)
 
     def test_symbol(self):
         """ tests symbol """
         symbol_name = 'TEST_PYTHON_SYMBOL'
         symbol_value = 'TEST_PYTHON_SYMBOL_VALUE'
         status = LIB.set_symbol(symbol_name, symbol_value)
-        self.assertEqual(1, status)
+        self.assertEqual(SS.SS__NORMAL, status)
         status, value = LIB.get_symbol(symbol_name)
-        self.assertEqual(1, status)
+        self.assertEqual(SS.SS__NORMAL, status)
         self.assertEqual(symbol_value, value)
         status = LIB.delete_symbol(symbol_name)
-        self.assertEqual(1, status)
+        self.assertEqual(SS.SS__NORMAL, status)
         status = LIB.delete_symbol(symbol_name)
         self.assertEqual(LIB.LIB_NOSUCHSYM, status)
 
