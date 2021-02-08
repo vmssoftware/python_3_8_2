@@ -291,3 +291,66 @@ unsigned int _create_dir(char *spec, unsigned int *uic, unsigned short pe, unsig
     return (lib$create_dir(&spec_dsc, uic, &pe, &pv, NULL, NULL, NULL));
 }
 
+unsigned int _set_symbol(char *sym, char *val)
+{
+    struct dsc$descriptor_s sym_dsc, val_dsc;
+
+    assert(sym);
+    assert(val);
+
+    sym_dsc.dsc$w_length = strlen(sym);
+    sym_dsc.dsc$b_class = DSC$K_CLASS_S;
+    sym_dsc.dsc$b_dtype = DSC$K_DTYPE_T;
+    sym_dsc.dsc$a_pointer = sym;
+
+    val_dsc.dsc$w_length = strlen(val);
+    val_dsc.dsc$b_class = DSC$K_CLASS_S;
+    val_dsc.dsc$b_dtype = DSC$K_DTYPE_T;
+    val_dsc.dsc$a_pointer = val;
+
+    return (lib$set_symbol(&sym_dsc, &val_dsc, NULL));
+}
+
+unsigned int _get_symbol(char *sym, char **result)
+{
+    struct dsc$descriptor_s sym_dsc, val_result;
+    unsigned short result_len;
+
+    assert(sym);
+
+    sym_dsc.dsc$w_length = strlen(sym);
+    sym_dsc.dsc$b_class = DSC$K_CLASS_S;
+    sym_dsc.dsc$b_dtype = DSC$K_DTYPE_T;
+    sym_dsc.dsc$a_pointer = sym;
+
+    val_result.dsc$w_length = 1024;
+    val_result.dsc$b_class = DSC$K_CLASS_S;
+    val_result.dsc$b_dtype = DSC$K_DTYPE_T;
+    val_result.dsc$a_pointer = malloc(1024+1);
+
+    result_len = 0;
+
+    int status = lib$get_symbol(&sym_dsc, &val_result, &result_len, NULL);
+    if (OKAY(status)) {
+        val_result.dsc$a_pointer[result_len] = '\0';
+    } else {
+        val_result.dsc$a_pointer[0] = '\0';
+    }
+
+    *result = val_result.dsc$a_pointer;
+    return status;
+}
+
+unsigned int _delete_symbol(char *sym)
+{
+    struct dsc$descriptor_s sym_dsc;
+
+    assert(sym);
+
+    sym_dsc.dsc$w_length = strlen(sym);
+    sym_dsc.dsc$b_class = DSC$K_CLASS_S;
+    sym_dsc.dsc$b_dtype = DSC$K_DTYPE_T;
+    sym_dsc.dsc$a_pointer = sym;
+
+    return lib$delete_symbol(&sym_dsc, NULL);
+}

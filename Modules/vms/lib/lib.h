@@ -16,6 +16,9 @@ extern unsigned int _do_command(char *);
 extern unsigned int _put_common(char *);
 extern unsigned int _get_common(char **);
 extern unsigned int _create_dir(char *, unsigned int *, unsigned short, unsigned short);
+extern unsigned int _set_symbol(char *, char *);
+extern unsigned int _get_symbol(char *, char **);
+extern unsigned int _delete_symbol(char *);
 
 #ifdef __cplusplus
         }

@@ -91,5 +91,19 @@ class BaseTestCase(unittest.TestCase):
         status, pid = LIB.spawn('show time', None, None, 0, None)
         self.assertEqual(1, status)
 
+    def test_symbol(self):
+        """ tests symbol """
+        symbol_name = 'TEST_PYTHON_SYMBOL'
+        symbol_value = 'TEST_PYTHON_SYMBOL_VALUE'
+        status = LIB.set_symbol(symbol_name, symbol_value)
+        self.assertEqual(1, status)
+        status, value = LIB.get_symbol(symbol_name)
+        self.assertEqual(1, status)
+        self.assertEqual(symbol_value, value)
+        status = LIB.delete_symbol(symbol_name)
+        self.assertEqual(1, status)
+        status = LIB.delete_symbol(symbol_name)
+        self.assertEqual(LIB.LIB_NOSUCHSYM, status)
+
 if __name__ == "__main__":
     unittest.main(verbosity=2)
