@@ -186,7 +186,7 @@ static inline int _PyMem_IsPtrFreed(void *ptr)
     return (value == 0
             || value == 0xCDCDCDCDCDCDCDCD
             || value == 0xDDDDDDDDDDDDDDDD
-            || value == 0xFDFDFDFDFDFDFDFD;
+            || value == 0xFDFDFDFDFDFDFDFD);
 #elif SIZEOF_VOID_P == 4
 #ifdef __VMS
     return (value == 0
