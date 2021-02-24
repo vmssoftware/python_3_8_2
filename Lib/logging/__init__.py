@@ -1064,7 +1064,7 @@ class StreamHandler(Handler):
             if self.stream:
                 if hasattr(self.stream, "flush"):
                     self.stream.flush()
-                if hasattr(self.stream, "fileno"):
+                if sys.platform == 'OpenVMS' and hasattr(self.stream, "fileno"):
                     os.fsync(self.stream.fileno())
         finally:
             self.release()

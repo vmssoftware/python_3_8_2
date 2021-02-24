@@ -152,7 +152,14 @@ PY_CFLAGS_DTR = $(PY_CFLAGS_Q)/DEFINE=($(PY_CFLAGS_DEF),__PYTHON)/INCLUDE_DIRECT
     @ pipe create/dir $(DIR $(MMS$TARGET)) | copy SYS$INPUT nl:
     $(LINK)$(LINKFLAGS)/SHARE=python$build_out:[$(DYNLOAD_DIR)]$(NOTDIR $(MMS$TARGET_NAME)).EXE $(MMS$SOURCE_LIST),[.opt]$(NOTDIR $(MMS$TARGET_NAME)).opt/OPT
 
+.IFDEF MMSIA64
+LIBDYNLOAD_VMS_IA = -
+[.$(OUT_DIR).$(DYNLOAD_DIR)]_dtr.exe -
+[.$(OUT_DIR).$(DYNLOAD_DIR)]_rdb.exe
+.ENDIF
+
 LIBDYNLOAD_VMS = -
+$(LIBDYNLOAD_VMS_IA) -
 [.$(OUT_DIR).$(DYNLOAD_DIR)]_accdef.exe -
 [.$(OUT_DIR).$(DYNLOAD_DIR)]_acldef.exe -
 [.$(OUT_DIR).$(DYNLOAD_DIR)]_acrdef.exe -
@@ -225,16 +232,19 @@ LIBDYNLOAD_VMS = -
 [.$(OUT_DIR).$(DYNLOAD_DIR)]_sys.exe -
 [.$(OUT_DIR).$(DYNLOAD_DIR)]_uafdef.exe -
 [.$(OUT_DIR).$(DYNLOAD_DIR)]_uaidef.exe -
-[.$(OUT_DIR).$(DYNLOAD_DIR)]_rdb.exe -
-[.$(OUT_DIR).$(DYNLOAD_DIR)]_rec.exe -
-[.$(OUT_DIR).$(DYNLOAD_DIR)]_dtr.exe
+[.$(OUT_DIR).$(DYNLOAD_DIR)]_rec.exe
+
+.IFDEF MMSIA64
+LIBDYNLOAD_IA = -
+[.$(OUT_DIR).$(DYNLOAD_DIR)]_bz2.exe
+.ENDIF
 
 LIBDYNLOAD = -
 $(LIBDYNLOAD_VMS) -
+$(LIBDYNLOAD_IA) -
 [.$(OUT_DIR).$(DYNLOAD_DIR)]_asyncio.exe -
 [.$(OUT_DIR).$(DYNLOAD_DIR)]_bisect.exe -
 [.$(OUT_DIR).$(DYNLOAD_DIR)]_blake2.exe -
-[.$(OUT_DIR).$(DYNLOAD_DIR)]_bz2.exe -
 [.$(OUT_DIR).$(DYNLOAD_DIR)]_codecs_cn.exe -
 [.$(OUT_DIR).$(DYNLOAD_DIR)]_codecs_hk.exe -
 [.$(OUT_DIR).$(DYNLOAD_DIR)]_codecs_iso2022.exe -
