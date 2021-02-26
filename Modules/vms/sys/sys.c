@@ -11,6 +11,7 @@
 #include <gen64def.h>
 #include <assert.h>
 #include <iodef.h>
+#include <opcdef.h>
 
 #include "sys.h"
 #include "lcl.h"
