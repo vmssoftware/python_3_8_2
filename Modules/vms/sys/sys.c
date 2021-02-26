@@ -807,3 +807,31 @@ unsigned int _writevblk(unsigned short int chan, void *wbuffer, long long *wlen,
     *iostatus = iosb.iosb$w_status;
     return status;
 }
+
+#undef MSGLEN
+#define MSGLEN 128
+
+unsigned int _sndopr(char *str) {
+    struct dsc$descriptor_s         msg_dsc;
+    OPCDEF                          msg;
+    int                             len;
+
+    assert(str);
+
+    msg.opc$b_ms_type   = OPC$_RQ_RQST;
+    msg.opc$b_ms_target = OPC$M_NM_CENTRL;
+    msg.opc$l_ms_rqstid = 0;
+
+    if ((len = strlen(str)) > MSGLEN) {
+        len = MSGLEN;
+    }
+
+    memcpy((char *) &msg.opc$l_ms_text, str, len);
+
+    msg_dsc.dsc$w_length = len + 8;
+    msg_dsc.dsc$b_dtype = DSC$K_DTYPE_T;
+    msg_dsc.dsc$b_class = DSC$K_CLASS_S;
+    msg_dsc.dsc$a_pointer = (char *) &msg;
+
+    return sys$sndopr(&msg_dsc, 0);
+}

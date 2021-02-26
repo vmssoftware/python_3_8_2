@@ -109,6 +109,7 @@
 %rename(trnlnm) _trnlnm;
 %rename(uicstr) _uicstr;
 %rename(writevblk) _writevblk;
+%rename(sndopr) _sndopr;
 
 extern unsigned int _add_holder(unsigned int, unsigned long long, unsigned int);
 extern unsigned int _add_ident(char *, unsigned int, unsigned int, unsigned int *OUTPUT);
@@ -146,4 +147,5 @@ extern unsigned int _show_intrusion(char *, char **OUTPUT, unsigned long long *O
 extern unsigned int _trnlnm(unsigned int, char *, char *, unsigned char, void *);
 extern unsigned int _uicstr(long int, char **OUTPUT, int);
 extern unsigned int _writevblk(unsigned short int chan, void *wbuffer, long long *wlen, unsigned short *iostatus, long long p3, unsigned int func_mod);
+extern unsigned int _sndopr(char *);
 

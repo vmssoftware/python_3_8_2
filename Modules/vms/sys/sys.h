@@ -41,7 +41,7 @@ extern unsigned int _show_intrusion(char *, char **, unsigned long long *, unsig
 extern unsigned int _trnlnm(unsigned int, char *, char *, unsigned char, void *);
 extern unsigned int _uicstr(long int, char **, int);
 extern unsigned int _writevblk(unsigned short int chan, void *wbuffer, long long *wlen, unsigned short *iostatus, long long p3, unsigned int func_mod);
-
+extern unsigned int _sndopr(char *);
 #ifdef __cplusplus
         }
 #endif

@@ -232,7 +232,9 @@ $(LIBDYNLOAD_VMS_IA) -
 [.$(OUT_DIR).$(DYNLOAD_DIR)]_sys.exe -
 [.$(OUT_DIR).$(DYNLOAD_DIR)]_uafdef.exe -
 [.$(OUT_DIR).$(DYNLOAD_DIR)]_uaidef.exe -
-[.$(OUT_DIR).$(DYNLOAD_DIR)]_rec.exe
+[.$(OUT_DIR).$(DYNLOAD_DIR)]_rec.exe -
+[.$(OUT_DIR).$(DYNLOAD_DIR)]_secsrvdef.exe -
+[.$(OUT_DIR).$(DYNLOAD_DIR)]_secsrvmsg.exe
 
 .IFDEF MMSIA64
 LIBDYNLOAD_IA = -
@@ -2180,6 +2182,28 @@ SHA3_HEADERS = -
 [.modules.vms.armdef]armdef_wrap.c : [.modules.vms.armdef]armdef.i
     SWIG -python modules/vms/armdef/armdef.i
     purge [.modules.vms.armdef]armdef_wrap.c
+
+# *****************************************************************
+[.modules.vms.secsrvdef]secsrvdef_wrap.c : [.modules.vms.secsrvdef]secsrvdef.i
+    SWIG -python modules/vms/secsrvdef/secsrvdef.i
+    purge [.modules.vms.secsrvdef]secsrvdef_wrap.c
+
+[.$(OBJ_DIR).modules.vms.secsrvdef]secsrvdef_wrap.obs : [.modules.vms.secsrvdef]secsrvdef_wrap.c
+
+[.$(OUT_DIR).$(DYNLOAD_DIR)]_secsrvdef.exe : [.$(OBJ_DIR).modules.vms.secsrvdef]secsrvdef_wrap.obs
+    @ pipe create/dir $(DIR $(MMS$TARGET)) | copy SYS$INPUT nl:
+    $(LINK)$(LINKFLAGS)/SHARE=python$build_out:[$(DYNLOAD_DIR)]$(NOTDIR $(MMS$TARGET_NAME)).EXE $(MMS$SOURCE_LIST),[.opt]$(NOTDIR $(MMS$TARGET_NAME)).opt/OPT
+# *****************************************************************
+[.modules.vms.secsrvmsg]secsrvmsg_wrap.c : [.modules.vms.secsrvmsg]secsrvmsg.i
+    SWIG -python modules/vms/secsrvmsg/secsrvmsg.i
+    purge [.modules.vms.secsrvmsg]secsrvmsg_wrap.c
+
+[.$(OBJ_DIR).modules.vms.secsrvmsg]secsrvmsg_wrap.obs : [.modules.vms.secsrvmsg]secsrvmsg_wrap.c
+
+[.$(OUT_DIR).$(DYNLOAD_DIR)]_secsrvmsg.exe : [.$(OBJ_DIR).modules.vms.secsrvmsg]secsrvmsg_wrap.obs
+    @ pipe create/dir $(DIR $(MMS$TARGET)) | copy SYS$INPUT nl:
+    $(LINK)$(LINKFLAGS)/SHARE=python$build_out:[$(DYNLOAD_DIR)]$(NOTDIR $(MMS$TARGET_NAME)).EXE $(MMS$SOURCE_LIST),[.opt]$(NOTDIR $(MMS$TARGET_NAME)).opt/OPT
+# *****************************************************************
 
 [.$(OBJ_DIR).modules.vms.armdef]armdef_wrap.obs : [.modules.vms.armdef]armdef_wrap.c
 
