@@ -252,7 +252,7 @@ PyAPI_FUNC(void) PyBuffer_FillContiguousStrides(int ndims,
 
    Returns 0 on success and -1 (with raising an error) on error. */
 PyAPI_FUNC(int) PyBuffer_FillInfo(Py_buffer *view, PyObject *o, void *buf,
-                                  Py_ssize_t len, int readonly$,
+                                  Py_ssize_t len, int readonly,
                                   int flags);
 
 /* Releases a Py_buffer obtained from getbuffer ParseTuple's "s*". */

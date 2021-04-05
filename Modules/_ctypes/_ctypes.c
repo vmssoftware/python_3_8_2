@@ -611,7 +611,7 @@ CDataType_from_buffer(PyObject *type, PyObject *args)
 
     buffer = PyMemoryView_GET_BUFFER(mv);
 
-    if (buffer->readonly$) {
+    if (buffer->readonly) {
         PyErr_SetString(PyExc_TypeError,
             "underlying buffer is not writable");
         Py_DECREF(mv);
@@ -2810,7 +2810,7 @@ static int PyCData_NewGetBuffer(PyObject *myself, Py_buffer *view, int flags)
     view->obj = myself;
     Py_INCREF(myself);
     view->len = self->b_size;
-    view->readonly$ = 0;
+    view->readonly = 0;
     /* use default format character if not set */
     view->format = dict->format ? dict->format : "B";
     view->ndim = dict->ndim;
