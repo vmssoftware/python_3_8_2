@@ -171,11 +171,13 @@ class OpenVMSCCompiler(CCompiler):
         if lang == "c++":
             compiler = self.compiler_cxx
             patched_pp_opts = []
+            patched_def = '/DEFINE=(__USE_STD_IOSTREAM)'
             for opt in pp_opts:
                 if opt.startswith('/DEFINE=('):
-                    patched_pp_opts.append(opt[:-1] + ',__USE_STD_IOSTREAM)')
+                    patched_def = patched_def[:-1] + ',' + opt[9:-1] + ')'
                 else:
                     patched_pp_opts.append(opt)
+            patched_pp_opts.append(patched_def)
             pp_opts = patched_pp_opts
         else:
             compiler = self.compiler_c
