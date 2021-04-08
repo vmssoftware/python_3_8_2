@@ -3,10 +3,6 @@
    Under Win32, select only exists for sockets, and sockets may
    have any value except INVALID_SOCKET.
 */
-#ifdef __VMS
-#define FD_SETSIZE 4096
-#include "vms/vms_select.h"
-#endif
 
 #if defined(HAVE_POLL_H) && !defined(_GNU_SOURCE)
 #define _GNU_SOURCE
@@ -60,6 +56,14 @@ extern void bzero(void *, int);
 #  include <winsock.h>
 #else
 #  define SOCKET int
+#endif
+
+#ifdef __VMS
+#ifdef FD_SETSIZE
+#undef FD_SETSIZE
+#endif
+#define FD_SETSIZE 4096
+#include "vms/vms_select.h"
 #endif
 
 /*[clinic input]
