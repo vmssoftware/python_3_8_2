@@ -319,6 +319,12 @@ class Maildir(Mailbox):
                 os.link(tmp_file.name, dest)
             except (AttributeError, PermissionError):
                 os.rename(tmp_file.name, dest)
+            except OSError as e:
+                # OpenVMS might return 'not implemented'
+                if sys.platform == 'OpenVMS' and e.errno == errno.ENOSYS:
+                    os.rename(tmp_file.name, dest)
+                else:
+                    raise e
             else:
                 os.remove(tmp_file.name)
         except OSError as e:
@@ -1216,6 +1222,13 @@ class MH(Mailbox):
                 except (AttributeError, PermissionError):
                     os.rename(os.path.join(self._path, str(key)),
                               os.path.join(self._path, str(prev + 1)))
+                except OSError as e:
+                    # OpenVMS might return 'not implemented'
+                    if sys.platform == 'OpenVMS' and e.errno == errno.ENOSYS:
+                        os.rename(os.path.join(self._path, str(key)),
+                                os.path.join(self._path, str(prev + 1)))
+                    else:
+                        raise e
                 else:
                     os.unlink(os.path.join(self._path, str(key)))
             prev += 1
@@ -2093,6 +2106,13 @@ def _lock_file(f, dotlock=True):
                 except (AttributeError, PermissionError):
                     os.rename(pre_lock.name, f.name + '.lock')
                     dotlock_done = True
+                except OSError as e:
+                    # OpenVMS might return 'not implemented'
+                    if sys.platform == 'OpenVMS' and e.errno == errno.ENOSYS:
+                        os.rename(pre_lock.name, f.name + '.lock')
+                        dotlock_done = True
+                    else:
+                        raise e
                 else:
                     os.unlink(pre_lock.name)
             except FileExistsError:

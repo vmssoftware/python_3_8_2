@@ -11,6 +11,7 @@ from test import support
 from test.support.script_helper import assert_python_ok
 from test.support import FakePath
 
+import errno
 
 def create_file(filename, data=b'foo'):
     with open(filename, 'xb', 0) as fp:
@@ -250,6 +251,12 @@ class GenericTest:
             self._test_samefile_on_link_func(os.link)
         except PermissionError as e:
             self.skipTest('os.link(): %s' % e)
+        except OSError as e:
+            # OpenVMS might return 'not implemented'
+            if sys.platform == 'OpenVMS' and e.errno == errno.ENOSYS:
+                self.skipTest('os.link(): %s' % e)
+            else:
+                raise e
 
     def test_samestat(self):
         test_fn1 = support.TESTFN
@@ -292,6 +299,12 @@ class GenericTest:
             self._test_samestat_on_link_func(os.link)
         except PermissionError as e:
             self.skipTest('os.link(): %s' % e)
+        except OSError as e:
+            # OpenVMS might return 'not implemented'
+            if sys.platform == 'OpenVMS' and e.errno == errno.ENOSYS:
+                self.skipTest('os.link(): %s' % e)
+            else:
+                raise e
 
     def test_sameopenfile(self):
         filename = support.TESTFN

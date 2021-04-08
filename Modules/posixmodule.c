@@ -229,6 +229,12 @@ corresponding Unix manual entries for more information on calls.");
 #endif  /* _MSC_VER */
 #endif  /* ! __WATCOMC__ || __QNX__ */
 
+#ifdef __VMS
+     /* OpenVMS */
+#    include "vms/vms_select.h"
+#    include "vms/vms_spawn_helper.h"
+#    include <time.h>
+#endif
 
 /*[clinic input]
 # one of the few times we lie about this name!
@@ -7987,6 +7993,37 @@ os_waitpid_impl(PyObject *module, pid_t pid, int options)
     WAIT_TYPE status;
     WAIT_STATUS_INT(status) = 0;
 
+#ifdef __VMS
+    unsigned int finished = 0;
+    if (pid > 0 && (0 == vms_spawn_status(pid, &status, &finished, 0))) {
+        // the child is spawned by lib$spawn
+        if (finished) {
+            if (status == -1) {
+                return NULL;
+            }
+            // status is set, return (pid, status)
+            return Py_BuildValue("Ni", PyLong_FromPid(pid), WAIT_STATUS_INT(status));
+        }
+        if (options & WNOHANG) {
+            // status is not set, return (0,0)
+            return Py_BuildValue("Ni", PyLong_FromPid(0), 0);
+        }
+        while (finished == 0) {
+            struct timespec delay, remain;
+            delay.tv_sec = 0;
+            delay.tv_nsec = 50000;   // 50 millseconds
+            Py_BEGIN_ALLOW_THREADS
+            nanosleep(&delay, &remain);
+            Py_END_ALLOW_THREADS
+            vms_spawn_status(pid, &status, &finished, 0);
+        }
+        if (status == -1) {
+            return NULL;
+        }
+        return Py_BuildValue("Ni", PyLong_FromPid(pid), WAIT_STATUS_INT(status));
+    }
+#endif
+
     do {
         Py_BEGIN_ALLOW_THREADS
         res = waitpid(pid, &status, options);
@@ -9028,8 +9065,6 @@ os_read_impl(PyObject *module, int fd, Py_ssize_t length)
 }
 
 #ifdef __VMS
-unsigned long read_pipe_bytes(int fd, char *buf, int size, int* pid_ptr);
-int decc$feature_get(const char*, int);
 
 static PyObject *
 os_read_pipe_impl(PyObject *module, int fd)
@@ -9038,7 +9073,7 @@ os_read_pipe_impl(PyObject *module, int fd)
     PyObject *buffer;
     Py_ssize_t length;
 
-    length = decc$feature_get("DECC$PIPE_BUFFER_SIZE", 1);
+    length = 65535;
 
     buffer = PyBytes_FromStringAndSize((char *)NULL, length);
     if (buffer == NULL)
@@ -9046,7 +9081,7 @@ os_read_pipe_impl(PyObject *module, int fd)
 
     int pid = -1;
     Py_BEGIN_ALLOW_THREADS
-    n = read_pipe_bytes(fd, PyBytes_AS_STRING(buffer), length, &pid);
+    n = read_mbx(fd, PyBytes_AS_STRING(buffer), length, &pid);
     Py_END_ALLOW_THREADS
     if (n == -1) {
         Py_DECREF(buffer);

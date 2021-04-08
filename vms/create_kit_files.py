@@ -33,7 +33,7 @@ def create_content(type, major, minor, level, edit):
             pass
 
     kit_template = '''--
--- (C) Copyright 2020 VMS Software Inc.
+-- (C) Copyright 2021 VMS Software Inc.
 --
 product VSI I64VMS PYTHON {type}{major}.{minor}-{level}{edit} FULL ;
 
@@ -118,7 +118,7 @@ end product;
 =prompt VSI Software Inc.
 
 1 'NOTICE
-=prompt (C) Copyright 2020 VMS Software Inc.
+=prompt (C) Copyright 2021 VMS Software Inc.
 
 1 NO_MIN_VMS
 =prompt Minimum OpenVMS software version not found on this system, abort instalation
@@ -162,7 +162,7 @@ if __name__ == "__main__":
 
     opts, args = getopt.getopt(sys.argv[1:], '', ['type=', 'major=', 'minor=', 'level=', 'edit='])
 
-    type = 'C'
+    type = 'D'
     major = '3'
     minor = '8'
     level = '2'

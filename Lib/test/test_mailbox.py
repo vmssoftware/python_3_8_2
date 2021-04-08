@@ -13,7 +13,7 @@ import unittest
 import textwrap
 import mailbox
 import glob
-
+import errno
 
 class TestBase:
 
@@ -2173,6 +2173,13 @@ class MaildirTestCase(unittest.TestCase):
         except (AttributeError, PermissionError):
             with open(newname, "w") as fp:
                 fp.write(DUMMY_MESSAGE)
+        except OSError as e:
+            # OpenVMS might return 'not implemented'
+            if sys.platform == 'OpenVMS' and e.errno == errno.ENOSYS:
+                with open(newname, "w") as fp:
+                    fp.write(DUMMY_MESSAGE)
+            else:
+                raise e
         self._msgfiles.append(newname)
         return tmpname
 

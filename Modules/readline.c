@@ -11,6 +11,10 @@
 #include <errno.h>
 #include <sys/time.h>
 
+#ifdef __VMS
+#include "vms/vms_select.h"
+#endif
+
 #if defined(HAVE_SETLOCALE)
 /* GNU readline() mistakenly sets the LC_CTYPE locale.
  * This is evil.  Only the user or the app's main() should do this!
@@ -1201,10 +1205,8 @@ readline_until_enter_or_signal(const char *prompt, int *signal)
 #endif
             FD_SET(fileno(rl_instream), &selectset);
             /* select resets selectset if no input was available */
-#define __VMS_USE_SELECT_HACK
-#if defined(__VMS) && defined(__VMS_USE_SELECT_HACK)
-            int g_vms_select (int nfds, fd_set *readfds, fd_set *writefds, fd_set *exceptfds, struct timeval *timeout);
-            has_input = g_vms_select(fileno(rl_instream) + 1, &selectset,
+#if defined(__VMS)
+            has_input = vms_select(fileno(rl_instream) + 1, &selectset,
                                NULL, NULL, timeoutp);
 #else
             has_input = select(fileno(rl_instream) + 1, &selectset,

@@ -19,6 +19,7 @@ extern unsigned int _create_dir(char *, unsigned int *, unsigned short, unsigned
 extern unsigned int _set_symbol(char *, char *);
 extern unsigned int _get_symbol(char *, char **);
 extern unsigned int _delete_symbol(char *);
+extern unsigned int _shorten_name(char *long_name, char **short_name);
 
 #ifdef __cplusplus
         }

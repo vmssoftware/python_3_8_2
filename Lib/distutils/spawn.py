@@ -52,27 +52,23 @@ def _spawn_openvms(cmd, search_path=1, verbose=0, dry_run=0):
     if dry_run:
         return
     try:
-        proc = subprocess.Popen(cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+        proc = subprocess.Popen(cmd)
     except OSError:
-        proc = subprocess.Popen(cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE, shell=True)
-    data, error = proc.communicate()
+        try:
+            proc = subprocess.Popen(cmd, shell=True)
+        except OSError as exc:
+            # this seems to happen when the command isn't found
+            if not DEBUG:
+                cmd = cmd[0]
+            raise DistutilsExecError(
+                  "command %r failed: %s" % (cmd, exc.args[-1]))
     rc = proc.wait()
-    if data:
-        data = data.decode()
-    else:
-        data = ''
-    if error:
-        error = error.decode()
-    else:
-        error = ''
-    if verbose:
-        log.info(data)
-        log.info(error)
-    if rc:
-        if error == '':
-            error = data
+    if rc != 0:
+        # and this reflects the command running but failing
+        if not DEBUG:
+            cmd = cmd[0]
         raise DistutilsExecError(
-                "command %r failed: %r" % (cmd, error))
+                "command %r failed with exit status %d" % (cmd, rc))
 
 def _nt_quote_args(args):
     """Quote command-line arguments for DOS/Windows conventions.

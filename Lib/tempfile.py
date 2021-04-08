@@ -56,6 +56,10 @@ _bin_openflags = _text_openflags
 if hasattr(_os, 'O_BINARY'):
     _bin_openflags |= _os.O_BINARY
 
+if _sys.platform == 'OpenVMS':
+    # no textmode for tempfile
+    _text_openflags = _bin_openflags
+
 if hasattr(_os, 'TMP_MAX'):
     TMP_MAX = _os.TMP_MAX
 else:

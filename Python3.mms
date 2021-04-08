@@ -41,10 +41,10 @@ PLATFORM = OpenVMS
 SOABI = cpython-38-ia64-openvms
 
 !PY_CFLAGS_Q = $(OPT_Q)/NAMES=(AS_IS,SHORTENED)/WARNINGS=DISABLE=(NONSTANDCAST,NOTINCRTL,MIXFUNCVOID,QUESTCOMPARE,QUESTCOMPARE1)
-PY_CFLAGS_Q = $(OPT_Q)/NAMES=(AS_IS,SHORTENED)/WARNINGS=WARNINGS=ALL
+PY_CFLAGS_Q = $(OPT_Q)/NAMES=(AS_IS,SHORTENED)/WARNINGS=WARNINGS=ALL/ACCEPT=NOVAXC_KEYWORDS
 !PY_CXXFLAGS_Q = $(OPT_Q)/NAMES=(AS_IS,SHORTENED)/WARNINGS=DISABLE=(TRAILCOMMA,REFSTAT,NOCTOBUTCONREFM,CONPTRLOSBIT)
 
-PY_CFLAGS_DEF = $(OPT_DEF),_USE_STD_STAT,__STDC_FORMAT_MACROS
+PY_CFLAGS_DEF = $(OPT_DEF),_USE_STD_STAT,__STDC_FORMAT_MACROS,_LARGEFILE
 PY_CFLAGS_INC = [],[.Include],[.Include.internal],oss$root:[include],[.vms]
 PY_CFLAGS = $(PY_CFLAGS_Q)/DEFINE=($(PY_CFLAGS_DEF))/INCLUDE_DIRECTORY=($(PY_CFLAGS_INC))
 
@@ -653,7 +653,8 @@ MODOBJS = -
 
 LIBRARY_OBJS_OMIT_FROZEN = -
 [.$(OBJ_DIR).Modules]getbuildinfo.obj -
-[.$(OBJ_DIR).vms]vms_poll_select_hack.obj -
+[.$(OBJ_DIR).vms]vms_select.obj -
+[.$(OBJ_DIR).vms]vms_spawn_helper.obj -
 $(PARSER_OBJS) -
 $(OBJECT_OBJS) -
 $(PYTHON_OBJS) -
@@ -782,7 +783,8 @@ DTRACE_DEPS = -
 [.$(OBJ_DIR).Python]traceback.obj : [.Python]traceback.c $(PYTHON_HEADERS)
 [.$(OBJ_DIR).vms]vms_crtl_init.obj : [.vms]vms_crtl_init.c
 [.$(OBJ_DIR).vms]stdioreadline.obj : [.vms]stdioreadline.c
-[.$(OBJ_DIR).vms]vms_poll_select_hack.obj : [.vms]vms_poll_select_hack.c
+[.$(OBJ_DIR).vms]vms_select.obj : [.vms]vms_select.c [.vms]vms_spawn_helper.h
+[.$(OBJ_DIR).vms]vms_spawn_helper.obj : [.vms]vms_spawn_helper.c [.vms]vms_spawn_helper.h
 
 [.$(OBJ_DIR).Objects]interpreteridobject.obj : [.Objects]interpreteridobject.c $(PYTHON_HEADERS)
   @ pipe create/dir $(DIR $(MMS$TARGET)) | copy SYS$INPUT nl:
@@ -1120,7 +1122,7 @@ DTRACE_DEPS = -
 [.$(OUT_DIR).$(DYNLOAD_DIR)]_csv.exe : [.$(OBJ_DIR).Modules]_csv.obm
 
 ! _posixsubprocess _posixsubprocess
-[.$(OBJ_DIR).Modules]_posixsubprocess.obm : [.Modules]_posixsubprocess.c $(PYTHON_HEADERS)
+[.$(OBJ_DIR).Modules]_posixsubprocess.obm : [.Modules]_posixsubprocess.c [.vms]vms_spawn_helper.h $(PYTHON_HEADERS)
 [.$(OUT_DIR).$(DYNLOAD_DIR)]_posixsubprocess.exe : [.$(OBJ_DIR).Modules]_posixsubprocess.obm
 
 ! _testcapi _testcapimodule

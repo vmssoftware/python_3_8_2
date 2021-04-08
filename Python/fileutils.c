@@ -13,6 +13,10 @@
 extern int winerror_to_errno(int);
 #endif
 
+#ifdef __VMS
+#include "vms/vms_select.h"
+#endif
+
 #ifdef HAVE_LANGINFO_H
 #include <langinfo.h>
 #endif
@@ -1566,27 +1570,18 @@ _Py_read(int fd, void *buf, size_t count)
         Py_BEGIN_ALLOW_THREADS
         errno = 0;
 #ifdef __VMS
-        int decc$feature_get(const char*, int);
-        unsigned long read_pipe_bytes(int fd, char *buf, int size, int *pid_ptr);
         if (pid) {
-            int mailBoxSize = decc$feature_get("DECC$PIPE_BUFFER_SIZE", 1);
-            if (count > mailBoxSize) {
-                count = mailBoxSize;
-            }
             int writer_pid = 0;
-            n = read_pipe_bytes(fd, buf, count, &writer_pid);
+            n = read_mbx(fd, buf, count, &writer_pid);
             while (n == 0 && pid != writer_pid) {
-                n = read_pipe_bytes(fd, buf, count, &writer_pid);
+                n = read_mbx(fd, buf, count, &writer_pid);
             }
-        } else {
-            n = read(fd, buf, count);
-        }
-#else
+        } else
+#endif
 #ifdef MS_WINDOWS
         n = read(fd, buf, (int)count);
 #else
         n = read(fd, buf, count);
-#endif
 #endif
         /* save/restore errno because PyErr_CheckSignals()
          * and PyErr_SetFromErrno() can modify it */

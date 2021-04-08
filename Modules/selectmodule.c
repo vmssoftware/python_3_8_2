@@ -5,6 +5,7 @@
 */
 #ifdef __VMS
 #define FD_SETSIZE 4096
+#include "vms/vms_select.h"
 #endif
 
 #if defined(HAVE_POLL_H) && !defined(_GNU_SOURCE)
@@ -332,10 +333,8 @@ select_select_impl(PyObject *module, PyObject *rlist, PyObject *wlist,
     do {
         Py_BEGIN_ALLOW_THREADS
         errno = 0;
-#define __VMS_USE_SELECT_HACK
-#if defined(__VMS) && defined(__VMS_USE_SELECT_HACK)
-        int g_vms_select (int nfds, fd_set *readfds, fd_set *writefds, fd_set *exceptfds, struct timeval *timeout);
-        n = g_vms_select(max, &ifdset, &ofdset, &efdset, tvp);
+#if defined(__VMS)
+        n = vms_select(max, &ifdset, &ofdset, &efdset, tvp);
 #else
         n = select(max, &ifdset, &ofdset, &efdset, tvp);
 #endif

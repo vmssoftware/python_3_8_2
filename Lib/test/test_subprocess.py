@@ -1069,7 +1069,8 @@ class ProcessTestCase(BaseTestCase):
                     handles.append(os.open(tmpfile, os.O_WRONLY|os.O_CREAT))
                 except OSError as e:
                     if e.errno != errno.EMFILE:
-                        raise
+                        if sys.platform != 'OpenVMS' or e.errno != errno.EIO:
+                            raise
                     break
             else:
                 self.skipTest("failed to reach the file descriptor limit "
@@ -1587,7 +1588,7 @@ class RunFuncTestCase(BaseTestCase):
     # as it depends on the timing with wide enough margins for normal situations
     # but does assert that it happened "soon enough" to believe the right thing
     # happened.
-    @unittest.skipIf(mswindows, "requires posix like 'sleep' shell command")
+    @unittest.skipIf(mswindows or sys.platform == 'OpenVMS', "requires posix like 'sleep' shell command")
     def test_run_with_shell_timeout_and_capture_output(self):
         """Output capturing after a timeout mustn't hang forever on open filehandles."""
         before_secs = time.monotonic()

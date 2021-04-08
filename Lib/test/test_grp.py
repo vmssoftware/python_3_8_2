@@ -2,6 +2,7 @@
 
 import unittest
 from test import support
+import sys
 
 grp = support.import_module('grp')
 
@@ -34,7 +35,12 @@ class GroupDatabaseTestCase(unittest.TestCase):
             self.skipTest('huge group file, extended test skipped')
 
         for e in entries:
-            e2 = grp.getgrgid(e.gr_gid)
+            try:
+                e2 = grp.getgrgid(e.gr_gid)
+            except Exception as ex:
+                if sys.platform != 'OpenVMS':
+                    raise ex
+                continue
             self.check_value(e2)
             self.assertEqual(e2.gr_gid, e.gr_gid)
             name = e.gr_name

@@ -29,7 +29,7 @@ import subprocess
 
 if sys.platform == 'OpenVMS':
     import vms.decc
-
+    import vms.lib
 
 class OpenVMSCCompiler(CCompiler):
 
@@ -137,12 +137,7 @@ class OpenVMSCCompiler(CCompiler):
                     else:
                         pp_define.append("%s=%s" % macro)
 
-        pp_opts = [ \
-            '/NAMES=(AS_IS,SHORTENED)',
-            '/WARNINGS=WARNINGS=ALL',
-            # '/WARNINGS=ERRORS=IMPLICITFUNC',
-            # '/L_DOUBLE_SIZE=64',    # float128(nan) == inf
-            ]
+        pp_opts = []
         if len(pp_undefine):
             pp_opts.append("/UNDEFINE=(" + ",".join(pp_undefine) + ")")
         if len(pp_define):
@@ -160,11 +155,11 @@ class OpenVMSCCompiler(CCompiler):
     def _get_cc_args(self, pp_opts, debug, before):
         """ Generate C compiler qualifiers
         """
-        cc_args = []
+        cc_args = ["/NAMES=(AS_IS,SHORTENED)"]
         if debug:
-            cc_args.append("/DEBUG/NOOPTIMIZE")
+            cc_args += ["/DEBUG/NOOPTIMIZE", "/WARNINGS=WARNINGS=ALL"]
         else:
-            cc_args.append("/NODEBUG/OPTIMIZE")
+            cc_args += ["/NODEBUG/OPTIMIZE", "/WARNINGS=DISABLE=ALL"]
 
         if before:
             cc_args[:0] = before
@@ -175,8 +170,17 @@ class OpenVMSCCompiler(CCompiler):
         lang = self.detect_language(src)
         if lang == "c++":
             compiler = self.compiler_cxx
+            patched_pp_opts = []
+            for opt in pp_opts:
+                if opt.startswith('/DEFINE=('):
+                    patched_pp_opts.append(opt[:-1] + ',__USE_STD_IOSTREAM)')
+                else:
+                    patched_pp_opts.append(opt)
+            pp_opts = patched_pp_opts
         else:
             compiler = self.compiler_c
+            cc_args = cc_args[:]
+            cc_args.append('/ACCEPT=NOVAXC_KEYWORDS')
 
         try:
             src_vms = vms.decc.to_vms(src, 0, 0)[0]
@@ -271,31 +275,12 @@ class OpenVMSCCompiler(CCompiler):
             opt_lines.append('GSMATCH=LEQUAL,1,0')
             opt_lines.append('CASE_SENSITIVE=YES')
 
-            proc_names = dict()
-            try:
-                import _rms
-                from vms.fabdef import FAB_M_GET, FAB_M_SHRGET
-                from vms.rmsdef import RMS__EOF
-                repository = _rms.file('[.CXX_REPOSITORY]CXX$DEMANGLER_DB', fac=FAB_M_GET, shr=FAB_M_SHRGET)
-                while(1):
-                    s, r = repository.fetch()
-                    if r == None or s == RMS__EOF:
-                        break
-                    r = r.decode()
-                    full_name = r[31:]
-                    short_name = r[:31]
-                    proc_names[full_name] = short_name
-                repository.close()
-            except Exception as ex:
-                if verbose:
-                    print(ex)
-                pass
-
             def shorten_name(name):
                 if len(name) <= 31:
                     return name
                 try:
-                    return proc_names[name]
+                    status, short_name = vms.lib.shorten_name(name)
+                    return short_name
                 except:
                     return name[:31]
 

@@ -637,6 +637,11 @@ class UtimeTests(unittest.TestCase):
             atime_ns = 5 * 10**9
             mtime_ns = 8 * 10**9
 
+        if (sys.platform == 'OpenVMS'):
+            # OpenVMS might fail on small values without an error
+            atime_ns = 5 * 10**9 * 10**5
+            mtime_ns = 8 * 10**9 * 10**5
+
         set_time(filename, (atime_ns, mtime_ns))
         st = os.stat(filename)
 
@@ -1968,6 +1973,12 @@ class LinkTests(unittest.TestCase):
             os.link(file1, file2)
         except PermissionError as e:
             self.skipTest('os.link(): %s' % e)
+        except OSError as e:
+            # OpenVMS might return 'not implemented'
+            if sys.platform == 'OpenVMS' and e.errno == errno.ENOSYS:
+                self.skipTest('os.link(): %s' % e)
+            else:
+                raise e
         with open(file1, "r") as f1, open(file2, "r") as f2:
             self.assertTrue(os.path.sameopenfile(f1.fileno(), f2.fileno()))
 
@@ -3730,6 +3741,12 @@ class TestScandir(unittest.TestCase):
                 os.link(filename, os.path.join(self.path, "link_file.txt"))
             except PermissionError as e:
                 self.skipTest('os.link(): %s' % e)
+            except OSError as e:
+                # OpenVMS might return 'not implemented'
+                if sys.platform == 'OpenVMS' and e.errno == errno.ENOSYS:
+                    self.skipTest('os.link(): %s' % e)
+                else:
+                    raise e
         if symlink:
             os.symlink(dirname, os.path.join(self.path, "symlink_dir"),
                        target_is_directory=True)

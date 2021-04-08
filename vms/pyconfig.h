@@ -1551,23 +1551,23 @@
 
 /* Enable extensions on AIX 3, Interix.  */
 #ifndef _ALL_SOURCE
-# define _ALL_SOURCE 1
+# undef _ALL_SOURCE
 #endif
 /* Enable GNU extensions on systems that have them.  */
 #ifndef _GNU_SOURCE
-# define _GNU_SOURCE 1
+# undef _GNU_SOURCE
 #endif
 /* Enable threading extensions on Solaris.  */
 #ifndef _POSIX_PTHREAD_SEMANTICS
-# define _POSIX_PTHREAD_SEMANTICS 1
+# undef _POSIX_PTHREAD_SEMANTICS
 #endif
 /* Enable extensions on HP NonStop.  */
 #ifndef _TANDEM_SOURCE
-# define _TANDEM_SOURCE 1
+# undef _TANDEM_SOURCE
 #endif
 /* Enable general extensions on Solaris.  */
 #ifndef __EXTENSIONS__
-# define __EXTENSIONS__ 1
+# undef __EXTENSIONS__
 #endif
 
 
@@ -1620,16 +1620,16 @@
 #undef _BSD_SOURCE
 
 /* Define on Irix to enable u_int */
-#define _BSD_TYPES 1
+#undef _BSD_TYPES
 
 /* Define on Darwin to activate all library features */
-#define _DARWIN_C_SOURCE 1
+#undef _DARWIN_C_SOURCE
 
 /* This must be set to 64 on some systems to enable large file support. */
 #define _FILE_OFFSET_BITS 64
 
 /* Define on Linux to activate all library features */
-#define _GNU_SOURCE 1
+#undef _GNU_SOURCE
 
 /* Define to include mbstate_t for mbrtowc */
 #undef _INCLUDE__STDC_A1_SOURCE
@@ -1638,23 +1638,23 @@
 #define _LARGEFILE_SOURCE 1
 
 /* This must be defined on AIX systems to enable large file support. */
-#undef _LARGE_FILES
+#define _LARGE_FILES 1
 
 /* Define to 1 if on MINIX. */
 #undef _MINIX
 
 /* Define on NetBSD to activate all library features */
-#define _NETBSD_SOURCE 1
+#undef _NETBSD_SOURCE
 
 /* Define to 2 if the system does not provide POSIX.1 features except with
    this defined. */
 #undef _POSIX_1_SOURCE
 
 /* Define to activate features from IEEE Stds 1003.1-2008 */
-#define _POSIX_C_SOURCE 200809L
+#undef _POSIX_C_SOURCE
 
 /* Define to 1 if you need to in order for `stat' and other things to work. */
-#define _POSIX_SOURCE 1
+#undef _POSIX_SOURCE
 
 /* Define if you have POSIX threads, and your system does not define that. */
 #define _POSIX_THREADS
@@ -1666,13 +1666,13 @@
 #undef _REENTRANT
 
 /* Define to the level of X/Open that your system supports */
-#define _XOPEN_SOURCE 700
+#undef _XOPEN_SOURCE
 
 /* Define to activate Unix95-and-earlier features */
-#define _XOPEN_SOURCE_EXTENDED 1
+#undef _XOPEN_SOURCE_EXTENDED
 
 /* Define on FreeBSD to activate all library features */
-#define __BSD_VISIBLE 1
+#undef __BSD_VISIBLE
 
 /* Define to 1 if type `char' is unsigned and you are not using gcc.  */
 #ifndef __CHAR_UNSIGNED__
@@ -1758,8 +1758,6 @@
 #endif
 
 #define va_copy(dest,src)       ((dest) = (src))
-
-#define WCSTOK(a,b,c) wcstok((a),(b))
 
 #if !defined __SOCKET_TYPEDEFS
 #   define __SOCKET_TYPEDEFS 1

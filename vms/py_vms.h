@@ -35,6 +35,3 @@
 #define SIGBUS     10
 
 #define O_BINARY 0100
-
-#define readonly readonly$
-#define _align _align$

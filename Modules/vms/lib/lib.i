@@ -37,6 +37,7 @@
 %rename(set_symbol) _set_symbol;
 %rename(get_symbol) _get_symbol;
 %rename(delete_symbol) _delete_symbol;
+%rename(shorten_name) _shorten_name;
 
 extern unsigned int _date_time(char **OUTPUT);
 extern unsigned int _free_ef(unsigned int);
@@ -52,6 +53,7 @@ extern unsigned int _create_dir(char *, unsigned int *owner_uic, unsigned short,
 extern unsigned int _set_symbol(char *, char *);
 extern unsigned int _get_symbol(char *, char **OUTPUT);
 extern unsigned int _delete_symbol(char *);
+extern unsigned int _shorten_name(char *long_name, char **OUTPUT);
 
 #define LIB_FACILITY 21
 #define LIB_NORMAL 1409025

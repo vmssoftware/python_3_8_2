@@ -57,7 +57,7 @@ class StrftimeTest(unittest.TestCase):
         try:
             import java
             java.util.Locale.setDefault(java.util.Locale.US)
-        except ImportError:
+        except: # do default action on any exception ('OpenVMS')
             from locale import setlocale, LC_TIME
             saved_locale = setlocale(LC_TIME)
             setlocale(LC_TIME, 'C')

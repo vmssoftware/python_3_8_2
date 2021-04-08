@@ -18,6 +18,22 @@ class BaseTestCase(unittest.TestCase):
     def tearDown(self):
         pass
 
+    def test_shorten(self):
+        """ tests shorten names """
+        test_cases = [  \
+            ('PyCStructUnionType_upda31o08pc$','PyCStructUnionType_update_stgdict'),
+            ('PyCompile_OpcodeStackEf25ml1ih$','PyCompile_OpcodeStackEffectWithJump'),
+            ('PyErr_SetFromErrnoWithF13nsp2p$','PyErr_SetFromErrnoWithFilenameObjects'),
+            ('PyUnicodeEncodeError_Ge2549dvm$','PyUnicodeEncodeError_GetEncoding'),
+            ('123456789012345678901234567890','123456789012345678901234567890'),
+            ('1234567890123456789012345678901','1234567890123456789012345678901'),
+            ('123456789012345678901230no6ov1$','12345678901234567890123456789012'),
+        ]
+        for exp_short_name, long_name in test_cases:
+            status, short_name = LIB.shorten_name(long_name)
+            self.assertEqual(short_name, exp_short_name)
+
+
     def test_create_dir(self):
         """ tests creating directory """
         dirname = 'kill_this_temporary_directory'

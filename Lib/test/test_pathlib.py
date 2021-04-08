@@ -1691,6 +1691,12 @@ class _BasePathTest(object):
             p.link_to(q)
         except PermissionError as e:
             self.skipTest('os.link(): %s' % e)
+        except OSError as e:
+            # OpenVMS might return 'not implemented'
+            if sys.platform == 'OpenVMS' and e.errno == errno.ENOSYS:
+                self.skipTest('os.link(): %s' % e)
+            else:
+                raise e
         self.assertEqual(q.stat().st_size, size)
         self.assertEqual(os.path.samefile(p, q), True)
         self.assertTrue(p.stat)
