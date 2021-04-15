@@ -1,4 +1,4 @@
-# Requires repository and on VILE
+# Requires repository and build on VILE
 --no-index
 --no-deps
 Brotli==1.0.9
