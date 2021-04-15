@@ -588,7 +588,7 @@
    and long long is at least as big as an off_t. You may need to add some
    flags for configuration and compilation to enable this mode. (For Solaris
    and Linux, the necessary defines are already defined.) */
-#undef HAVE_LARGEFILE_SUPPORT
+#define HAVE_LARGEFILE_SUPPORT
 
 /* Define to 1 if you have the 'lchflags' function. */
 #undef HAVE_LCHFLAGS
@@ -1492,13 +1492,13 @@
 #define SIZEOF_LONG_LONG 8
 
 /* The size of `off_t', as computed by sizeof. */
-#define SIZEOF_OFF_T 4
+#define SIZEOF_OFF_T 8
 
 /* The size of `pid_t', as computed by sizeof. */
 #define SIZEOF_PID_T 4
 
 /* The size of `pthread_key_t', as computed by sizeof. */
-#undef SIZEOF_PTHREAD_KEY_T
+#define SIZEOF_PTHREAD_KEY_T 4
 
 /* The size of `pthread_t', as computed by sizeof. */
 #define SIZEOF_PTHREAD_T 8
