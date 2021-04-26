@@ -12664,8 +12664,8 @@ get_terminal_size(PyObject *self, PyObject *args)
         return NULL;
 
 #ifdef __VMS		/* Hardcoded for now */
-    lines = 80;
-    columns = 24;
+    columns = 80;
+    lines = 24;
 #else
 #ifdef TERMSIZE_USE_IOCTL
     {

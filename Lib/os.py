@@ -786,7 +786,9 @@ def getenv(key, default=None):
         v = environ.get(key, None)
         if v == None:
             import _decc
-            v = _decc.getenv(key, default)
+            v = _decc.getenv(key, None) # in case of default is not a string
+            if v == None:
+                v = default
         return v
     else:
         return environ.get(key, default)
