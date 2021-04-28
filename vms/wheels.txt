@@ -8,9 +8,9 @@ httpbin==0.7.0
 pillow==8.2.0
 pytest==6.2.3
 reportlab==3.5.66
-
-numpy
-pandas
+numpy==1.20.2
+psycopg2==2.8.6
+pandas==1.2.4
 
 botocore
 hypothesis

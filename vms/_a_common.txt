@@ -3,6 +3,7 @@
 Flask==1.1.2
 Jinja2==2.11.3
 Werkzeug==1.0.1
+apipkg==1.5
 attrs==20.3.0
 botocore==1.20.50
 certifi==2020.12.5
@@ -11,6 +12,7 @@ colorama==0.4.3
 cryptography_vectors==3.4.7
 decorator==5.0.6
 docutils==0.15.2
+execnet==1.8.0
 hypothesis==6.9.1
 iniconfig==1.1.1
 iso8601==0.1.14
@@ -25,6 +27,8 @@ py==1.10.0
 pyasn1==0.4.8
 pycparser==2.20
 pyparsing==2.4.7
+pytest-forked==1.3.0
+pytest-xdist==2.2.1
 pytest_subtests==0.4.0
 python_dateutil==2.8.1
 pytz==2021.1
@@ -32,6 +36,7 @@ raven==6.10.0
 rsa==4.7.2
 s3transfer==0.3.6
 semantic_version==2.8.5
+# setuptools<49.2.0
 setuptools==56.0.0
 setuptools_rust==0.12.1
 setuptools_scm==6.0.1
@@ -39,4 +44,5 @@ six==1.15.0
 sortedcontainers==2.3.0
 toml==0.10.2
 urllib3==1.26.4
+# wheel<=0.35.1
 wheel==0.36.2

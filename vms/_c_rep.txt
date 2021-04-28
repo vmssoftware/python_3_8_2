@@ -11,3 +11,6 @@ cython==0.29.22
 httpbin==0.7.0
 pytest==6.2.3
 reportlab==3.5.66
+numpy==1.20.2
+psycopg2==2.8.6
+pandas==1.2.4
