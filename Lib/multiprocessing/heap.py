@@ -83,7 +83,8 @@ else:
                 self.fd, name = tempfile.mkstemp(
                      prefix='pym-%d-'%os.getpid(),
                      dir=self._choose_dir(size))
-                os.unlink(name)
+                if os.sys.platform != 'OpenVMS':
+                    os.unlink(name)
                 util.Finalize(self, os.close, (self.fd,))
                 os.ftruncate(self.fd, size)
             self.buffer = mmap.mmap(self.fd, self.size)

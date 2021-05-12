@@ -30,6 +30,7 @@
 #include <unistd.h>
 #include "descrip.h"
 #include "lib$routines.h"
+#include "vms_sleep.h"
 #endif
 
 #include "Python.h"
@@ -8009,11 +8010,8 @@ os_waitpid_impl(PyObject *module, pid_t pid, int options)
             return Py_BuildValue("Ni", PyLong_FromPid(0), 0);
         }
         while (finished == 0) {
-            struct timespec delay, remain;
-            delay.tv_sec = 0;
-            delay.tv_nsec = 50000;   // 50 millseconds
             Py_BEGIN_ALLOW_THREADS
-            nanosleep(&delay, &remain);
+            vms_sleep(100);
             Py_END_ALLOW_THREADS
             vms_spawn_status(pid, &status, &finished, 0);
         }
@@ -9794,7 +9792,7 @@ os_pipe_impl(PyObject *module)
     {
 #endif
         Py_BEGIN_ALLOW_THREADS
-#define __VMS_USE_SOCKETPAIR_AS_PIPE
+// #define __VMS_USE_SOCKETPAIR_AS_PIPE
 #if defined(__VMS) && defined(__VMS_USE_SOCKETPAIR_AS_PIPE)
         /* >>> BRC 26-Jul-2018 */
         res = socketpair(AF_UNIX, SOCK_STREAM, 0, fds);

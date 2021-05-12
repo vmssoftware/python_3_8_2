@@ -52,6 +52,7 @@ rfc3987
 s3cmd
 semver
 service_identity
+setuptools
 simplejson
 sniffio
 strict_rfc3339
@@ -65,3 +66,4 @@ wcwidth
 wsit
 xmlschema
 zc.lockfile
+wheel

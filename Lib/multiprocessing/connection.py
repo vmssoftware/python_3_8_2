@@ -55,6 +55,9 @@ if sys.platform == 'win32':
     default_family = 'AF_PIPE'
     families += ['AF_PIPE']
 
+if sys.platform == 'OpenVMS':
+    default_family = 'AF_INET'
+    families = ['AF_INET']
 
 def _init_timeout(timeout=CONNECTION_TIMEOUT):
     return time.monotonic() + timeout

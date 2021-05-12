@@ -18,11 +18,12 @@ CONFIG = DEBUG
 
 .IF $(CONFIG) .EQ DEBUG
 ! debug
-OPT_Q = /DEBUG/NOOPTIMIZE/LIST=$(MMS$TARGET_NAME)
+OPT_Q = /DEBUG/NOOPTIMIZE/LIST=$(MMS$TARGET_NAME)/SHOW=ALL
 OPT_DEF = _DEBUG
 OUT_DIR = $(OUTDIR).$(CONFIG)
 OBJ_DIR = $(OUT_DIR).OBJ
 LINKFLAGS = /DEBUG/MAP=[.$(OUT_DIR)]$(NOTDIR $(MMS$TARGET_NAME))
+!LINKFLAGS = /NODEBUG/MAP=[.$(OUT_DIR)]$(NOTDIR $(MMS$TARGET_NAME))/TRACE/DSF
 PYTHON$SHR_OPT = PYTHON$SHR_DBG
 .ELSE
 ! release
@@ -653,6 +654,7 @@ MODOBJS = -
 
 LIBRARY_OBJS_OMIT_FROZEN = -
 [.$(OBJ_DIR).Modules]getbuildinfo.obj -
+[.$(OBJ_DIR).vms]vms_sleep.obj -
 [.$(OBJ_DIR).vms]vms_select.obj -
 [.$(OBJ_DIR).vms]vms_spawn_helper.obj -
 $(PARSER_OBJS) -
@@ -783,6 +785,7 @@ DTRACE_DEPS = -
 [.$(OBJ_DIR).Python]traceback.obj : [.Python]traceback.c $(PYTHON_HEADERS)
 [.$(OBJ_DIR).vms]vms_crtl_init.obj : [.vms]vms_crtl_init.c
 [.$(OBJ_DIR).vms]stdioreadline.obj : [.vms]stdioreadline.c
+[.$(OBJ_DIR).vms]vms_sleep.obj : [.vms]vms_sleep.c [.vms]vms_sleep.h
 [.$(OBJ_DIR).vms]vms_select.obj : [.vms]vms_select.c [.vms]vms_spawn_helper.h
 [.$(OBJ_DIR).vms]vms_spawn_helper.obj : [.vms]vms_spawn_helper.c [.vms]vms_spawn_helper.h
 
@@ -1333,11 +1336,15 @@ EXPAT_HEADERS = -
     @ pipe create/dir $(DIR $(MMS$TARGET)) | copy SYS$INPUT nl:
     $(CC) $(PY_CFLAGS_MULT) /OBJECT=$(MMS$TARGET) $(MMS$SOURCE)
 
-[.$(OBJ_DIR).Modules._multiprocessing]semaphore.obm : [.Modules._multiprocessing]semaphore.c [.Modules._multiprocessing]multiprocessing.h $(PYTHON_HEADERS)
+[.$(OBJ_DIR).Modules._multiprocessing]semaphore.obm : [.Modules._multiprocessing]semaphore.c [.Modules._multiprocessing]multiprocessing.h [.vms]sem_mbx.h $(PYTHON_HEADERS)
     @ pipe create/dir $(DIR $(MMS$TARGET)) | copy SYS$INPUT nl:
     $(CC) $(PY_CFLAGS_MULT) /OBJECT=$(MMS$TARGET) $(MMS$SOURCE)
 
-[.$(OUT_DIR).$(DYNLOAD_DIR)]_multiprocessing.exe : [.$(OBJ_DIR).Modules._multiprocessing]multiprocessing.obm,[.$(OBJ_DIR).Modules._multiprocessing]semaphore.obm
+[.$(OBJ_DIR).vms]sem_mbx.obm : [.vms]sem_mbx.c [.vms]sem_mbx.h
+    @ pipe create/dir $(DIR $(MMS$TARGET)) | copy SYS$INPUT nl:
+    $(CC) $(PY_CFLAGS_MULT) /OBJECT=$(MMS$TARGET) $(MMS$SOURCE)
+
+[.$(OUT_DIR).$(DYNLOAD_DIR)]_multiprocessing.exe : [.$(OBJ_DIR).Modules._multiprocessing]multiprocessing.obm,[.$(OBJ_DIR).Modules._multiprocessing]semaphore.obm,[.$(OBJ_DIR).vms]sem_mbx.obm
     @ pipe create/dir $(DIR $(MMS$TARGET)) | copy SYS$INPUT nl:
     $(LINK)$(LINKFLAGS)/SHARE=python$build_out:[$(DYNLOAD_DIR)]$(NOTDIR $(MMS$TARGET_NAME)).EXE $(MMS$SOURCE_LIST),[.opt]$(NOTDIR $(MMS$TARGET_NAME)).opt/OPT
 

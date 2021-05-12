@@ -162,12 +162,11 @@ class ProcessPoolForkMixin(ExecutorMixin):
             self.skipTest("require unix system")
         return super().get_context()
 
-@unittest.skipIf(sys.platform == 'OpenVMS', 'Does not work in OpenVMS')
 class ProcessPoolSpawnMixin(ExecutorMixin):
     executor_type = futures.ProcessPoolExecutor
     ctx = "spawn"
 
-
+@unittest.skipIf(sys.platform == 'OpenVMS', 'Does not work in OpenVMS')
 class ProcessPoolForkserverMixin(ExecutorMixin):
     executor_type = futures.ProcessPoolExecutor
     ctx = "forkserver"

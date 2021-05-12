@@ -512,7 +512,134 @@ inline int _Py_atomic_load_32bit_impl(volatile int* value, int order) {
     _Py_atomic_load_32bit((ATOMIC_VAL), (ORDER)) \
   )
 #endif
-#else  /* !gcc x86  !_msc_ver */
+#elif defined(__VMS)
+
+#include <builtins.h>
+
+typedef enum _Py_memory_order {
+    _Py_memory_order_relaxed,
+    _Py_memory_order_acquire,
+    _Py_memory_order_release,
+    _Py_memory_order_acq_rel,
+    _Py_memory_order_seq_cst
+} _Py_memory_order;
+
+typedef struct _Py_atomic_address {
+    volatile uintptr_t _value;
+} _Py_atomic_address;
+
+typedef struct _Py_atomic_int {
+    volatile int _value;
+} _Py_atomic_int;
+
+#define _Py_atomic_store_64bit(ATOMIC_VAL, NEW_VAL, ORDER) \
+    switch (ORDER) { \
+    case _Py_memory_order_acquire: \
+      __ATOMIC_EXCH_QUAD((__int64 volatile*)&((ATOMIC_VAL)->_value), (__int64)NEW_VAL); \
+      break; \
+    case _Py_memory_order_release: \
+      __ATOMIC_EXCH_QUAD((__int64 volatile*)&((ATOMIC_VAL)->_value), (__int64)NEW_VAL); \
+      break; \
+    default: \
+      __ATOMIC_EXCH_QUAD((__int64 volatile*)&((ATOMIC_VAL)->_value), (__int64)NEW_VAL); \
+      break; \
+  }
+
+#define _Py_atomic_store_32bit(ATOMIC_VAL, NEW_VAL, ORDER) \
+    switch (ORDER) { \
+    case _Py_memory_order_acquire: \
+      __ATOMIC_EXCH_LONG((__int64 volatile*)&((ATOMIC_VAL)->_value), (__int64)NEW_VAL); \
+      break; \
+    case _Py_memory_order_release: \
+      __ATOMIC_EXCH_LONG((__int64 volatile*)&((ATOMIC_VAL)->_value), (__int64)NEW_VAL); \
+      break; \
+    default: \
+      __ATOMIC_EXCH_LONG((__int64 volatile*)&((ATOMIC_VAL)->_value), (__int64)NEW_VAL); \
+      break; \
+  }
+
+#define __CMP_SWAP_STATUS_OK_   1
+
+inline intptr_t _Py_atomic_load_64bit_impl(volatile uintptr_t* value, int order) {
+    uintptr_t old;
+    switch (order) {
+    case _Py_memory_order_acquire:
+    {
+      do {
+        old = *value;
+      } while(__CMP_SWAP_QUAD_ACQ((volatile void*)value, (__int64)old, (__int64)old) != __CMP_SWAP_STATUS_OK_);
+      break;
+    }
+    case _Py_memory_order_release:
+    {
+      do {
+        old = *value;
+      } while(__CMP_SWAP_QUAD_REL((volatile void*)value, (__int64)old, (__int64)old) != __CMP_SWAP_STATUS_OK_);
+      break;
+    }
+    case _Py_memory_order_relaxed:
+      old = *value;
+      break;
+    default:
+    {
+      do {
+        old = *value;
+      } while(__CMP_SWAP_QUAD((volatile void*)value, (__int64)old, (__int64)old) != __CMP_SWAP_STATUS_OK_);
+      break;
+    }
+    }
+    return old;
+}
+
+#define _Py_atomic_load_64bit(ATOMIC_VAL, ORDER) \
+    _Py_atomic_load_64bit_impl((volatile uintptr_t*)&((ATOMIC_VAL)->_value), (ORDER))
+
+inline int _Py_atomic_load_32bit_impl(volatile int* value, int order) {
+    int old;
+    switch (order) {
+    case _Py_memory_order_acquire:
+    {
+      do {
+        old = *value;
+      } while(__CMP_SWAP_LONG_ACQ((volatile void*)value, old, old) != __CMP_SWAP_STATUS_OK_);
+      break;
+    }
+    case _Py_memory_order_release:
+    {
+      do {
+        old = *value;
+      } while(__CMP_SWAP_LONG_REL((volatile void*)value, old, old) != __CMP_SWAP_STATUS_OK_);
+      break;
+    }
+    case _Py_memory_order_relaxed:
+      old = *value;
+      break;
+    default:
+    {
+      do {
+        old = *value;
+      } while(__CMP_SWAP_LONG((volatile void*)value, old, old) != __CMP_SWAP_STATUS_OK_);
+      break;
+    }
+    }
+    return old;
+}
+
+#define _Py_atomic_load_32bit(ATOMIC_VAL, ORDER) \
+    _Py_atomic_load_32bit_impl((volatile int*)&((ATOMIC_VAL)->_value), (ORDER))
+
+#define _Py_atomic_store_explicit(ATOMIC_VAL, NEW_VAL, ORDER) \
+  if (sizeof((ATOMIC_VAL)->_value) == 8) { \
+    _Py_atomic_store_64bit((ATOMIC_VAL), (NEW_VAL), (ORDER)) } else { \
+    _Py_atomic_store_32bit((ATOMIC_VAL), (NEW_VAL), (ORDER)) }
+
+#define _Py_atomic_load_explicit(ATOMIC_VAL, ORDER) \
+  ( \
+    sizeof((ATOMIC_VAL)->_value) == 8 ? \
+    _Py_atomic_load_64bit((ATOMIC_VAL), (ORDER)) : \
+    _Py_atomic_load_32bit((ATOMIC_VAL), (ORDER)) \
+  )
+#else  /* !gcc x86  !_msc_ver ! __VMS*/
 typedef enum _Py_memory_order {
     _Py_memory_order_relaxed,
     _Py_memory_order_acquire,

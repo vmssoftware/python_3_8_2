@@ -21,6 +21,8 @@
 #include <unixio.h>
 #include <unixlib.h>
 #include <time.h>
+
+#include "vms_sleep.h"
 /*
 #include "python_root:[include]Python.h"
 #include "python_root:[include]floatobject.h"
@@ -473,7 +475,7 @@ int g_vms_poll(struct pollfd fd_array[], nfds_t nfds, int timeout) {
         if (si == 0) {
           /* sleep for shorter of 100 Ms or timeout and retry */
           if (sleeptime > 0)
-            usleep(sleeptime * 1000);
+            vms_sleep(sleeptime);
         } else {
           int j;
 
@@ -960,7 +962,7 @@ int g_vms_select(int nfds, fd_set *readfds, fd_set *writefds, fd_set *exceptfds,
         if (si == 0) {
           /* sleep for shorter of 100 Ms or timeout and retry */
           if (sleeptime > 0)
-            usleep(sleeptime);
+            vms_sleep(sleeptime / 1000);
         } else {
             struct timeval sleep_timeout;
             sleep_timeout.tv_sec = 0;

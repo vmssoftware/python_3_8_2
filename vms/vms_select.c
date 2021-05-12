@@ -26,6 +26,7 @@
 
 #include "vms/vms_spawn_helper.h"
 #include "vms/vms_select.h"
+#include "vms/vms_sleep.h"
 
 int vms_channel_lookup(int fd, unsigned short *channel) {
     int status;
@@ -377,7 +378,7 @@ int vms_select(int nfds, fd_set *readfds, fd_set *writefds, fd_set *exceptfds,
                 if (si == 0) {
                     /* sleep for shorter of 100 Ms or timeout and retry */
                     if (sleeptime > 0) {
-                        usleep(sleeptime);
+                        vms_sleep(sleeptime / 1000);
                     }
                 } else {
                     /* let select consume the time*/

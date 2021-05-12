@@ -1939,7 +1939,10 @@ _Py_set_blocking(int fd, int blocking)
 #if defined(HAVE_SYS_IOCTL_H) && defined(FIONBIO) || defined(__VMS)
     int arg = !blocking;
     if (ioctl(fd, FIONBIO, &arg) < 0)
+    #ifndef __VMS
         goto error;
+    #endif
+        ;
 #else
     int flags, res;
 

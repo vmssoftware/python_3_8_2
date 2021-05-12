@@ -51,7 +51,7 @@ class Queue(object):
 
         self._after_fork()
 
-        if sys.platform != 'win32':
+        if sys.platform != 'win32' and sys.platform != 'OpenVMS':
             register_after_fork(self, Queue._after_fork)
 
     def __getstate__(self):

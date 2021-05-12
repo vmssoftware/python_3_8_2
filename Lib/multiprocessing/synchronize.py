@@ -67,7 +67,7 @@ class SemLock(object):
         util.debug('created semlock with handle %s' % sl.handle)
         self._make_methods()
 
-        if sys.platform != 'win32':
+        if sys.platform != 'win32' and sys.platform != 'OpenVMS':
             def _after_fork(obj):
                 obj._semlock._after_fork()
             util.register_after_fork(self, _after_fork)
