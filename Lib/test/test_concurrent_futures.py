@@ -166,7 +166,6 @@ class ProcessPoolSpawnMixin(ExecutorMixin):
     executor_type = futures.ProcessPoolExecutor
     ctx = "spawn"
 
-@unittest.skipIf(sys.platform == 'OpenVMS', 'Does not work in OpenVMS')
 class ProcessPoolForkserverMixin(ExecutorMixin):
     executor_type = futures.ProcessPoolExecutor
     ctx = "forkserver"
@@ -453,7 +452,7 @@ class WaitTests:
 
     def test_first_completed(self):
         future1 = self.executor.submit(mul, 21, 2)
-        future2 = self.executor.submit(time.sleep, 1.5)
+        future2 = self.executor.submit(time.sleep, 1.5 if sys.platform != 'OpenVMS' else 5)
 
         done, not_done = futures.wait(
                 [CANCELLED_FUTURE, future1, future2],
@@ -463,7 +462,7 @@ class WaitTests:
         self.assertEqual(set([CANCELLED_FUTURE, future2]), not_done)
 
     def test_first_completed_some_already_completed(self):
-        future1 = self.executor.submit(time.sleep, 1.5)
+        future1 = self.executor.submit(time.sleep, 1.5 if sys.platform != 'OpenVMS' else 5)
 
         finished, pending = futures.wait(
                  [CANCELLED_AND_NOTIFIED_FUTURE, SUCCESSFUL_FUTURE, future1],
@@ -476,8 +475,8 @@ class WaitTests:
 
     def test_first_exception(self):
         future1 = self.executor.submit(mul, 2, 21)
-        future2 = self.executor.submit(sleep_and_raise, 1.5)
-        future3 = self.executor.submit(time.sleep, 3)
+        future2 = self.executor.submit(sleep_and_raise, 1.5 if sys.platform != 'OpenVMS' else 5)
+        future3 = self.executor.submit(time.sleep, 3 if sys.platform != 'OpenVMS' else 10)
 
         finished, pending = futures.wait(
                 [future1, future2, future3],
