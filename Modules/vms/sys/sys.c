@@ -776,7 +776,7 @@ unsigned int _show_intrusion(char *criteria, char **intruder,
 unsigned int _readvblk(unsigned short int chan, void *rbuffer, long long *rlen, unsigned short *iostatus, long long p3, unsigned int func_mod) {
     struct _iosb iosb;
     int status = SYS$QIOW(
-        0,                          /* efn - event flag */
+        EFN$C_ENF,                  /* efn - event flag */
         chan,                       /* chan - channel number */
         IO$_READVBLK | func_mod,    /* func - function modifier */
         &iosb,                      /* iosb - I/O status block */
@@ -794,7 +794,7 @@ unsigned int _readvblk(unsigned short int chan, void *rbuffer, long long *rlen, 
 unsigned int _writevblk(unsigned short int chan, void *wbuffer, long long *wlen, unsigned short *iostatus, long long p3, unsigned int func_mod) {
     struct _iosb iosb;
     int status = SYS$QIOW(
-        0,                          /* efn - event flag */
+        EFN$C_ENF,                  /* efn - event flag */
         chan,                       /* chan - channel number */
         IO$_WRITEVBLK | func_mod,   /* func - function modifier */
         &iosb,                      /* iosb - I/O status block */

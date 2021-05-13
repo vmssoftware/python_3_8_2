@@ -419,7 +419,7 @@ int g_vms_poll(struct pollfd fd_array[], nfds_t nfds, int timeout) {
               item_list.ret_len = (void *)&mbx_len;
               item_list.end = 0;
 
-              SYS$GETDVIW(0, pipe_array[pi].channel, 0, &item_list, 0, 0, 0, 0);
+              SYS$GETDVIW(EFN$C_ENF, pipe_array[pi].channel, 0, &item_list, 0, 0, 0, 0);
               if ((mbx_char & DC$_MAILBOX) != 0) {
                 pi++;
               } else {
@@ -865,7 +865,7 @@ int g_vms_select(int nfds, fd_set *readfds, fd_set *writefds, fd_set *exceptfds,
             item_list.ret_len = (void *)&mbx_len;
             item_list.end = 0;
 
-            SYS$GETDVIW(0, pipe_array[pi].channel, 0, &item_list, 0, 0, 0, 0);
+            SYS$GETDVIW(EFN$C_ENF, pipe_array[pi].channel, 0, &item_list, 0, 0, 0, 0);
             if ((mbx_char & DC$_MAILBOX) != 0) {
               pi++;
             } else {

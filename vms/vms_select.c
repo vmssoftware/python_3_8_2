@@ -301,7 +301,7 @@ int vms_select(int nfds, fd_set *readfds, fd_set *writefds, fd_set *exceptfds,
                         item_list[0].ile3$ps_retlen_addr = (void *)&mbx_len;
                         memset(item_list + 1, 0, sizeof(item_list[1]));
 
-                        status = SYS$GETDVIW(0, pipe_array[pi].channel, 0, &item_list, 0, 0, 0, 0);
+                        status = SYS$GETDVIW(EFN$C_ENF, pipe_array[pi].channel, 0, &item_list, 0, 0, 0, 0);
                         if ($VMS_STATUS_SUCCESS(status)) {
                             if ((mbx_char & DC$_MAILBOX) != 0) {
                                 pi++;
@@ -489,7 +489,7 @@ static unsigned short _get_mbx_size(unsigned short channel) {
     item_list[1].ile3$ps_bufaddr = &mbx_char;
     item_list[1].ile3$ps_retlen_addr = &mbx_char_len;
     memset(item_list + 2, 0, sizeof(ILE3));
-    int status = SYS$GETDVIW(0, channel, 0, &item_list, 0, 0, 0, 0);
+    int status = SYS$GETDVIW(EFN$C_ENF, channel, 0, &item_list, 0, 0, 0, 0);
     if ($VMS_STATUS_SUCCESS(status) && (mbx_char & DC$_MAILBOX)) {
         return mbx_buffer_size;
     }

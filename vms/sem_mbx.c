@@ -16,6 +16,7 @@
 #include <unixio.h>
 
 #include <descrip.h>
+#include <efndef.h>
 #include <iodef.h>
 #include <iosbdef.h>
 #include <lib$routines.h>
@@ -37,7 +38,7 @@ sem_t_mbx *sem_open_mbx (const char *name, int oflag, ...) {
     struct _iosb iosb;
     char buffer[8] = {0};
     int fd = -1;
-    int efn = 0;
+    int efn = EFN$C_ENF;
 
     if (oflag != 0) {
         va_start(vargs, oflag);
@@ -91,9 +92,9 @@ sem_t_mbx *sem_open_mbx (const char *name, int oflag, ...) {
                     sizeof(buffer),             /* p2 - size of buffer */
                     0,                          /* starting vblock */
                     0,0,0);                     /* p4-p6*/
-                if (efn) {
+                if (efn != EFN$C_ENF) {
                     LIB$FREE_EF(&efn);
-                    efn = 0;
+                    efn = EFN$C_ENF;
                 }
                 if (SS$_NORMAL == status) {
                     sem = malloc(sizeof(sem_t_mbx));
@@ -141,7 +142,7 @@ int sem_wait_mbx (sem_t_mbx *sem) {
     struct _iosb iosb;
     char buffer[8] = {0};
     unsigned long *pvalue = (unsigned long *)buffer;
-    int efn = 0;
+    int efn = EFN$C_ENF;
 
     // read current value with waiting
 #ifdef _USE_EFN_
@@ -158,9 +159,9 @@ int sem_wait_mbx (sem_t_mbx *sem) {
         sizeof(buffer),             /* p2 - size of buffer */
         0,                          /* starting vblock */
         0,0,0);                     /* p4-p6*/
-    if (efn) {
+    if (efn != EFN$C_ENF) {
         LIB$FREE_EF(&efn);
-        efn = 0;
+        efn = EFN$C_ENF;
     }
 
     if (SS$_NORMAL != status) {
@@ -194,9 +195,9 @@ int sem_wait_mbx (sem_t_mbx *sem) {
             sizeof(buffer),             /* p2 - size of buffer */
             0,                          /* starting vblock */
             0,0,0);                     /* p4-p6*/
-        if (efn) {
+        if (efn != EFN$C_ENF) {
             LIB$FREE_EF(&efn);
-            efn = 0;
+            efn = EFN$C_ENF;
         }
 
         if (SS$_NORMAL != status) {
@@ -215,7 +216,7 @@ int sem_trywait_mbx (sem_t_mbx *sem) {
     struct _iosb iosb;
     char buffer[8] = {0};
     unsigned long *pvalue = (unsigned long *)buffer;
-    int efn = 0;
+    int efn = EFN$C_ENF;
 
     // try to read current value without waiting
 #ifdef _USE_EFN_
@@ -232,9 +233,9 @@ int sem_trywait_mbx (sem_t_mbx *sem) {
         sizeof(buffer),             /* p2 - size of buffer */
         0,                          /* starting vblock */
         0,0,0);                     /* p4-p6*/
-    if (efn) {
+    if (efn != EFN$C_ENF) {
         LIB$FREE_EF(&efn);
-        efn = 0;
+        efn = EFN$C_ENF;
     }
 
     if (SS$_NORMAL != status) {
@@ -269,9 +270,9 @@ int sem_trywait_mbx (sem_t_mbx *sem) {
                 sizeof(buffer),             /* p2 - size of buffer */
                 0,                          /* starting vblock */
                 0,0,0);                     /* p4-p6*/
-            if (efn) {
+            if (efn != EFN$C_ENF) {
                 LIB$FREE_EF(&efn);
-                efn = 0;
+                efn = EFN$C_ENF;
             }
 
             if (SS$_NORMAL != status) {
@@ -295,7 +296,7 @@ int sem_post_mbx (sem_t_mbx *sem) {
     struct _iosb iosb;
     char buffer[8] = {0};
     unsigned long *pvalue = (unsigned long *)buffer;
-    int efn = 0;
+    int efn = EFN$C_ENF;
 
     // try to read current value without waiting
 #ifdef _USE_EFN_
@@ -312,9 +313,9 @@ int sem_post_mbx (sem_t_mbx *sem) {
         sizeof(buffer),             /* p2 - size of buffer */
         0,                          /* starting vblock */
         0,0,0);                     /* p4-p6*/
-    if (efn) {
+    if (efn != EFN$C_ENF) {
         LIB$FREE_EF(&efn);
-        efn = 0;
+        efn = EFN$C_ENF;
     }
 
     if (SS$_NORMAL != status) {
@@ -350,9 +351,9 @@ int sem_post_mbx (sem_t_mbx *sem) {
         sizeof(buffer),             /* p2 - size of buffer */
         0,                          /* starting vblock */
         0,0,0);                     /* p4-p6*/
-    if (efn) {
+    if (efn != EFN$C_ENF) {
         LIB$FREE_EF(&efn);
-        efn = 0;
+        efn = EFN$C_ENF;
     }
 
     if (SS$_NORMAL != status) {
@@ -371,7 +372,7 @@ int sem_getvalue_mbx (sem_t_mbx *sem, int *sval) {
     struct _iosb iosb;
     char buffer[8] = {0};
     unsigned long *pvalue = (unsigned long *)buffer;
-    int efn = 0;
+    int efn = EFN$C_ENF;
 
     if (!sval) {
         errno = EVMSERR;
@@ -394,9 +395,9 @@ int sem_getvalue_mbx (sem_t_mbx *sem, int *sval) {
         0,                          /* starting vblock */
         0,0,0);                     /* p4-p6*/
 
-    if (efn) {
+    if (efn != EFN$C_ENF) {
         LIB$FREE_EF(&efn);
-        efn = 0;
+        efn = EFN$C_ENF;
     }
 
     if (SS$_NORMAL != status) {
@@ -425,9 +426,9 @@ int sem_getvalue_mbx (sem_t_mbx *sem, int *sval) {
             0,                          /* starting vblock */
             0,0,0);                     /* p4-p6*/
 
-        if (efn) {
+        if (efn != EFN$C_ENF) {
             LIB$FREE_EF(&efn);
-            efn = 0;
+            efn = EFN$C_ENF;
         }
 
         if (SS$_NORMAL != status) {
