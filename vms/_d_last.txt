@@ -1,6 +1,9 @@
 # Requires Cython and build on VILE
 # --no-deps
 PyYAML==5.4.1
+pyrsistent
+simplejson
+# as is
 Automat
 CherryPy
 Pygments
@@ -41,7 +44,6 @@ pika
 portend
 prance
 pyasn1_modules
-pyrsistent
 pytest_flask
 pytest_httpbin
 pytest_httpserver
@@ -53,7 +55,6 @@ s3cmd
 semver
 service_identity
 setuptools
-simplejson
 sniffio
 strict_rfc3339
 suds_py3

@@ -10,7 +10,7 @@
 int vms_sleep(int millisecs) {
     int status;
     struct _generic_64 timerOffset;
-    timerOffset.gen64$q_quadword = -(millisecs * 10L);
+    timerOffset.gen64$q_quadword = -(millisecs * 10000L);
 
     unsigned int timerEfn;
     status = LIB$GET_EF(&timerEfn);
