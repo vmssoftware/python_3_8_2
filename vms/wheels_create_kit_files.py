@@ -176,7 +176,7 @@ if __name__ == "__main__":
     type = 'A'
     major = '0'
     minor = '1'
-    level = '1'
+    level = '2'
     edit = ''   # 'd' + datetime.date.today().strftime('%Y%m%d')
 
     for opt, optarg in opts:
