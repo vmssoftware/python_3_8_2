@@ -19,11 +19,11 @@ CONFIG = DEBUG
 .IF $(CONFIG) .EQ DEBUG
 ! debug
 OPT_Q = /DEBUG/NOOPTIMIZE/LIST=$(MMS$TARGET_NAME)/SHOW=ALL
-OPT_DEF = _DEBUG
+OPT_DEF = _DEBUG !,_SEND_FDS_MBX_
 OUT_DIR = $(OUTDIR).$(CONFIG)
 OBJ_DIR = $(OUT_DIR).OBJ
-LINKFLAGS = /DEBUG/MAP=[.$(OUT_DIR)]$(NOTDIR $(MMS$TARGET_NAME))
-!LINKFLAGS = /NODEBUG/MAP=[.$(OUT_DIR)]$(NOTDIR $(MMS$TARGET_NAME))/TRACE/DSF
+! LINKFLAGS = /DEBUG/MAP=[.$(OUT_DIR)]$(NOTDIR $(MMS$TARGET_NAME))
+LINKFLAGS = /NODEBUG/MAP=[.$(OUT_DIR)]$(NOTDIR $(MMS$TARGET_NAME))/TRACE/DSF=[.$(OUT_DIR)]$(NOTDIR $(MMS$TARGET_NAME)).DSF
 PYTHON$SHR_OPT = PYTHON$SHR_DBG
 .ELSE
 ! release
@@ -158,6 +158,8 @@ LIBDYNLOAD_VMS_IA = -
 [.$(OUT_DIR).$(DYNLOAD_DIR)]_dtr.exe -
 [.$(OUT_DIR).$(DYNLOAD_DIR)]_rdb.exe
 .ENDIF
+
+LIBDYNLOAD_VMS_IA =
 
 LIBDYNLOAD_VMS = -
 $(LIBDYNLOAD_VMS_IA) -
@@ -657,6 +659,9 @@ LIBRARY_OBJS_OMIT_FROZEN = -
 [.$(OBJ_DIR).vms]vms_sleep.obj -
 [.$(OBJ_DIR).vms]vms_select.obj -
 [.$(OBJ_DIR).vms]vms_spawn_helper.obj -
+[.$(OBJ_DIR).vms]vms_child_communicate.obj -
+[.$(OBJ_DIR).vms]vms_mbx_util.obj -
+[.$(OBJ_DIR).vms]vms_fd_inherit.obj -
 $(PARSER_OBJS) -
 $(OBJECT_OBJS) -
 $(PYTHON_OBJS) -
@@ -786,8 +791,11 @@ DTRACE_DEPS = -
 [.$(OBJ_DIR).vms]vms_crtl_init.obj : [.vms]vms_crtl_init.c
 [.$(OBJ_DIR).vms]stdioreadline.obj : [.vms]stdioreadline.c
 [.$(OBJ_DIR).vms]vms_sleep.obj : [.vms]vms_sleep.c [.vms]vms_sleep.h
-[.$(OBJ_DIR).vms]vms_select.obj : [.vms]vms_select.c [.vms]vms_spawn_helper.h
+[.$(OBJ_DIR).vms]vms_select.obj : [.vms]vms_select.c [.vms]vms_select.h [.vms]vms_spawn_helper.h [.vms]vms_sleep.h
 [.$(OBJ_DIR).vms]vms_spawn_helper.obj : [.vms]vms_spawn_helper.c [.vms]vms_spawn_helper.h
+[.$(OBJ_DIR).vms]vms_child_communicate.obj : [.vms]vms_child_communicate.c [.vms]vms_child_communicate.h [.vms]vms_select.h [.vms]vms_mbx_util.h $(PYTHON_HEADERS)
+[.$(OBJ_DIR).vms]vms_mbx_util.obj : [.vms]vms_mbx_util.c [.vms]vms_mbx_util.h 
+[.$(OBJ_DIR).vms]vms_fd_inherit.obj : [.vms]vms_fd_inherit.c [.vms]vms_fd_inherit.h [.vms]vms_mbx_util.h 
 
 [.$(OBJ_DIR).Objects]interpreteridobject.obj : [.Objects]interpreteridobject.c $(PYTHON_HEADERS)
   @ pipe create/dir $(DIR $(MMS$TARGET)) | copy SYS$INPUT nl:

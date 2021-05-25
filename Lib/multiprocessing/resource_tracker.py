@@ -57,6 +57,11 @@ class ResourceTracker(object):
                 return
 
             # closing the "alive" file descriptor stops main()
+            if os.sys.platform == 'OpenVMS':
+                # write EOF to mbx
+                import _decc
+                _decc.decc_write_eof_to_mbx(self._fd)
+                del _decc
             os.close(self._fd)
             self._fd = None
 

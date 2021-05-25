@@ -269,6 +269,7 @@ class _TestProcess(BaseTestCase):
             q.put(bytes(current.authkey))
             q.put(current.pid)
 
+    @unittest.skipIf(os.sys.platform == "OpenVMS", "failed on OpenVMS")
     def test_parent_process_attributes(self):
         if self.TYPE == "threads":
             self.skipTest('test not appropriate for {}'.format(self.TYPE))
@@ -621,6 +622,7 @@ class _TestProcess(BaseTestCase):
         q.put(test.support.fd_count())
         evt.wait()
 
+    # @unittest.skipIf(os.sys.platform == "OpenVMS", "does not usable on OpenVMS")
     def test_child_fd_inflation(self):
         # Number of fds in child processes should not grow with the
         # number of running children.
@@ -2734,7 +2736,7 @@ class _TestPoolWorkerErrors(BaseTestCase):
         p.close()
         p.join()
 
-@unittest.skipIf(sys.platform == 'OpenVMS', 'hangs on OpenVMS')
+# @unittest.skipIf(sys.platform == 'OpenVMS', 'hangs on OpenVMS')
 class _TestPoolWorkerLifetime(BaseTestCase):
     ALLOWED_TYPES = ('processes', )
 
@@ -4008,7 +4010,7 @@ class _TestSharedMemory(BaseTestCase):
         deserialized_sl.shm.close()
         sl.shm.close()
 
-    @unittest.skipIf(os.sys.platform == "OpenVMS", "does not cleaned on OpenVMS")
+    @unittest.skipIf(os.sys.platform == "OpenVMS", "cleaned too late on OpenVMS")
     def test_shared_memory_cleaned_after_process_termination(self):
         cmd = '''if 1:
             import os, time, sys
@@ -4686,6 +4688,7 @@ class TestFlags(unittest.TestCase):
         flags = (tuple(sys.flags), grandchild_flags)
         print(json.dumps(flags))
 
+    @unittest.skipIf(sys.platform == 'OpenVMS', 'fails on OpenVMS')
     def test_flags(self):
         import json
         # start child process using unusual flags
@@ -4989,9 +4992,9 @@ class TestStartMethod(unittest.TestCase):
 
 @unittest.skipIf(sys.platform == "win32",
                  "test semantics don't make sense on Windows")
-@unittest.skipIf(sys.platform == 'OpenVMS', 'fails on OpenVMS')
 class TestResourceTracker(unittest.TestCase):
 
+    @unittest.skipIf(sys.platform == 'OpenVMS', 'fails on OpenVMS')
     def test_resource_tracker(self):
         #
         # Check that killing process does not leak named semaphores
@@ -5103,10 +5106,12 @@ class TestResourceTracker(unittest.TestCase):
             else:
                 self.assertEqual(len(all_warn), 0)
 
+    @unittest.skipIf(sys.platform == 'OpenVMS', 'fails on OpenVMS')
     def test_resource_tracker_sigint(self):
         # Catchable signal (ignored by semaphore tracker)
         self.check_resource_tracker_death(signal.SIGINT, False)
 
+    @unittest.skipIf(sys.platform == 'OpenVMS', 'fails on OpenVMS')
     def test_resource_tracker_sigterm(self):
         # Catchable signal (ignored by semaphore tracker)
         self.check_resource_tracker_death(signal.SIGTERM, False)

@@ -7996,7 +7996,7 @@ os_waitpid_impl(PyObject *module, pid_t pid, int options)
 
 #ifdef __VMS
     unsigned int finished = 0;
-    if (pid > 0 && (0 == vms_spawn_status(pid, &status, &finished, 0))) {
+    if (pid > 0 && (-1 != vms_spawn_status(pid, &status, &finished, NULL, 0))) {
         // the child is spawned by lib$spawn
         if (finished) {
             if (status == -1) {
@@ -8011,9 +8011,9 @@ os_waitpid_impl(PyObject *module, pid_t pid, int options)
         }
         while (finished == 0) {
             Py_BEGIN_ALLOW_THREADS
-            vms_sleep(100);
+            vms_sleep(100); // 100 microseconds
             Py_END_ALLOW_THREADS
-            vms_spawn_status(pid, &status, &finished, 0);
+            vms_spawn_status(pid, &status, &finished, NULL, 0);
         }
         if (status == -1) {
             return NULL;
@@ -8741,6 +8741,10 @@ os_open_impl(PyObject *module, path_t *path, int flags, int mode, int dir_fd)
     }
 #endif
 
+#if defined(__VMS)
+    #include "vms/vms_spawn_helper.h"
+    vms_spawn_clear_fd(fd);
+#endif
     return fd;
 }
 
@@ -9061,66 +9065,6 @@ os_read_impl(PyObject *module, int fd, Py_ssize_t length)
 
     return buffer;
 }
-
-#ifdef __VMS
-
-static PyObject *
-os_read_pipe_impl(PyObject *module, int fd)
-{
-    Py_ssize_t n;
-    PyObject *buffer;
-    Py_ssize_t length;
-
-    length = 65535;
-
-    buffer = PyBytes_FromStringAndSize((char *)NULL, length);
-    if (buffer == NULL)
-        return NULL;
-
-    int pid = -1;
-    Py_BEGIN_ALLOW_THREADS
-    n = read_mbx(fd, PyBytes_AS_STRING(buffer), length, &pid);
-    Py_END_ALLOW_THREADS
-    if (n == -1) {
-        Py_DECREF(buffer);
-        return NULL;
-    }
-
-    if (n != length)
-        _PyBytes_Resize(&buffer, n);
-
-    return Py_BuildValue("(Ni)", buffer, pid);
-
-}
-
-#define OS_READ_PIPE_METHODDEF    \
-    {"read_pipe", (PyCFunction)(void(*)(void))os_read_pipe, METH_FASTCALL, os_read__doc__},
-
-static PyObject *
-os_read_pipe(PyObject *module, PyObject *const *args, Py_ssize_t nargs)
-{
-    PyObject *return_value = NULL;
-    int fd;
-    Py_ssize_t length;
-
-    if (!_PyArg_CheckPositional("read_pipe", nargs, 1, 1)) {
-        goto exit;
-    }
-    if (PyFloat_Check(args[0])) {
-        PyErr_SetString(PyExc_TypeError,
-                        "integer argument expected, got float" );
-        goto exit;
-    }
-    fd = _PyLong_AsInt(args[0]);
-    if (fd == -1 && PyErr_Occurred()) {
-        goto exit;
-    }
-    return_value = os_read_pipe_impl(module, fd);
-
-exit:
-    return return_value;
-}
-#endif
 
 #if (defined(HAVE_SENDFILE) && (defined(__FreeBSD__) || defined(__DragonFly__) \
                                 || defined(__APPLE__))) \
@@ -9683,17 +9627,6 @@ os_pipe_socket(PyObject *module, PyObject *Py_UNUSED(ignored))
     if (res != 0)
         return PyErr_SetFromErrno(PyExc_OSError);
 
-    // if (_Py_set_inheritable(fds[0], 0, NULL) < 0) {
-    //     close(fds[0]);
-    //     close(fds[1]);
-    //     return NULL;
-    // }
-    // if (_Py_set_inheritable(fds[1], 0, NULL) < 0) {
-    //     close(fds[0]);
-    //     close(fds[1]);
-    //     return NULL;
-    // }
-
     return Py_BuildValue("(ii)", fds[0], fds[1]);
 }
 
@@ -9792,13 +9725,7 @@ os_pipe_impl(PyObject *module)
     {
 #endif
         Py_BEGIN_ALLOW_THREADS
-// #define __VMS_USE_SOCKETPAIR_AS_PIPE
-#if defined(__VMS) && defined(__VMS_USE_SOCKETPAIR_AS_PIPE)
-        /* >>> BRC 26-Jul-2018 */
-        res = socketpair(AF_UNIX, SOCK_STREAM, 0, fds);
-#else
         res = pipe(fds);
-#endif
         Py_END_ALLOW_THREADS
         if (res == 0) {
             if (_Py_set_inheritable(fds[0], 0, NULL) < 0) {
@@ -14203,9 +14130,6 @@ static PyMethodDef posix_methods[] = {
     OS_LOCKF_METHODDEF
     OS_LSEEK_METHODDEF
     OS_READ_METHODDEF
-#ifdef __VMS
-    OS_READ_PIPE_METHODDEF
-#endif
     OS_READV_METHODDEF
     OS_PREAD_METHODDEF
     OS_PREADV_METHODDEF
@@ -14222,7 +14146,6 @@ static PyMethodDef posix_methods[] = {
     OS_PIPE_METHODDEF
 #ifdef __VMS
     {"pipe_socket", (PyCFunction)os_pipe_socket, METH_NOARGS, os_pipe_socket__doc__},
-    {"pipe_mbx", (PyCFunction)os_pipe_mbx, METH_NOARGS, os_pipe_mbx__doc__},
 #endif
     OS_PIPE2_METHODDEF
     OS_MKFIFO_METHODDEF

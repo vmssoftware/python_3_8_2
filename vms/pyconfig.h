@@ -228,7 +228,7 @@
 
 /* Define to 1 if you have the declaration of `RTLD_LAZY', and to 0 if you
    don't. */
-#undef HAVE_DECL_RTLD_LAZY
+#define HAVE_DECL_RTLD_LAZY 1
 
 /* Define to 1 if you have the declaration of `RTLD_LOCAL', and to 0 if you
    don't. */
@@ -248,7 +248,7 @@
 
 /* Define to 1 if you have the declaration of `RTLD_NOW', and to 0 if you
    don't. */
-#undef HAVE_DECL_RTLD_NOW
+#define HAVE_DECL_RTLD_NOW 1
 
 /* Define to 1 if you have the declaration of `tzname', and to 0 if you don't.
    */
@@ -1778,13 +1778,6 @@
 # else
 #  define NSIG 64               /* Use a reasonable default value */
 # endif
-#endif
-
-#if __CRTL_VER >= 80500000
-#define HAVE_DECL_RTLD_LAZY 1
-#define HAVE_DECL_RTLD_LOCAL 1
-#define HAVE_DECL_RTLD_GLOBAL 1
-#define HAVE_DECL_RTLD_NOW 1
 #endif
 
 #endif

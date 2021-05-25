@@ -1982,6 +1982,13 @@ vms_select=PROCEDURE,-
 vms_spawn_status=PROCEDURE,-
 vms_spawn_finish=PROCEDURE,-
 vms_spawn_alloc=PROCEDURE,-
-round_imp=PROCEDURE,-
-read_mbx=PROCEDURE-
+vms_spawn_check_fd=PROCEDURE,-
+vms_spawn_clear_fd=PROCEDURE,-
+cre_pid_mbx=PROCEDURE,-
+del_pid_mbx=PROCEDURE,-
+send_fds_to_keep=PROCEDURE,-
+simple_check_mbx=PROCEDURE,-
+close_fds_except_read_from_mbx=PROCEDURE,-
+safe_fd_inherit=PROCEDURE,-
+round_imp=PROCEDURE-
 )

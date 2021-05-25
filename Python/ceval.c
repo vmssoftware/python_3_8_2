@@ -1266,6 +1266,12 @@ main_loop:
     fast_next_opcode:
         f->f_lasti = INSTR_OFFSET();
 
+    #ifdef __VMS
+    #ifdef _DEBUG
+        f->f_lineno = PyFrame_GetLineNumber(f);
+    #endif
+    #endif
+
         if (PyDTrace_LINE_ENABLED())
             maybe_dtrace_line(f, &instr_lb, &instr_ub, &instr_prev);
 

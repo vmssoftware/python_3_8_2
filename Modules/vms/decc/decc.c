@@ -1,15 +1,21 @@
 #define __NEW_STARLET 1
-#include <stdio.h>
-#include <string.h>
-#include <lib$routines.h>
-#include <starlet.h>
-#include <descrip.h>
-#include <ssdef.h>
-#include <stdlib.h>
-#include <unistd.h>
-#include <time.h>
+
 #include <assert.h>
+#include <descrip.h>
 #include <dlfcn.h>
+#include <efndef.h>
+#include <iodef.h>
+#include <iosbdef.h>
+#include <lib$routines.h>
+#include <ssdef.h>
+#include <starlet.h>
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+#include <stsdef.h>
+#include <time.h>
+#include <unistd.h>
+#include <unixio.h>
 
 #include "decc.h"
 
@@ -214,5 +220,45 @@ int _get_symbol(char *name, char** value) {
     int status = lib$get_symbol(&symbol_name, &symbol_value, &result_len);
     buffer[result_len] = 0;
     *value = strdup(buffer);
+    return status;
+}
+
+static int _vms_channel_lookup(int fd, unsigned short *channel) {
+    int status;
+    char devicename[256];
+    char *retname;
+    struct dsc$descriptor_s dev_desc;
+    int call_stat;
+    unsigned short chan;
+
+    status = -1;
+
+    /* get the name */
+    /*--------------*/
+    retname = getname(fd, devicename, 1);
+    if (retname != NULL) {
+        /* Assign the channel */
+        /*--------------------*/
+        dev_desc.dsc$a_pointer = devicename;
+        dev_desc.dsc$w_length = strlen(devicename);
+        dev_desc.dsc$b_dtype = DSC$K_DTYPE_T;
+        dev_desc.dsc$b_class = DSC$K_CLASS_S;
+        call_stat = sys$assign(&dev_desc, &chan, 0, 0, 0);
+        if ($VMS_STATUS_SUCCESS(call_stat)) {
+            *channel = chan;
+            status = 0;
+        }
+    }
+    return status;
+}
+
+int _decc_write_eof_to_mbx(int fd) {
+    IOSB iosb = {0};
+    unsigned short channel = 0;
+    int status = -1;
+    if (_vms_channel_lookup(fd, &channel) == 0) {
+        status = sys$qiow(EFN$C_ENF, channel, IO$_WRITEOF | IO$M_NOW, &iosb, 0, 0, 0, 0, 0, 0, 0, 0);
+        sys$dassgn(channel);
+    }
     return status;
 }

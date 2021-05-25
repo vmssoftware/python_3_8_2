@@ -57,10 +57,6 @@ class _io.FileIO "fileio *" "&PyFileIO_Type"
 typedef struct {
     PyObject_HEAD
     int fd;
-#ifdef __VMS
-    int is_a_pipe;
-    int pid;
-#endif
     unsigned int created : 1;
     unsigned int readable : 1;
     unsigned int writable : 1;
@@ -183,8 +179,6 @@ fileio_new(PyTypeObject *type, PyObject *args, PyObject *kwds)
     self = (fileio *) type->tp_alloc(type, 0);
     if (self != NULL) {
         self->fd = -1;
-        self->is_a_pipe = 0;
-        self->pid = 0;
         self->created = 0;
         self->readable = 0;
         self->writable = 0;
@@ -372,10 +366,6 @@ _io_FileIO___init___impl(fileio *self, PyObject *nameobj, const char *mode,
     if (fd >= 0) {
         self->fd = fd;
         self->closefd = closefd;
-#ifdef __VMS
-        int isapipe (int file_desc);
-        self->is_a_pipe = (isapipe(fd) == 1);
-#endif
     }
     else {
         self->closefd = 1;
@@ -445,8 +435,15 @@ _io_FileIO___init___impl(fileio *self, PyObject *nameobj, const char *mode,
         }
 
 #ifndef MS_WINDOWS
-        if (_Py_set_inheritable(self->fd, 0, atomic_flag_works) < 0)
+        if (_Py_set_inheritable(self->fd, 0, atomic_flag_works) < 0) {
+    #ifdef __VMS
+            if (errno == EBUSY) {
+                PyErr_Clear();
+                errno = 0;
+            } else
+    #endif
             goto error;
+        }
 #endif
     }
 
@@ -514,6 +511,10 @@ _io_FileIO___init___impl(fileio *self, PyObject *nameobj, const char *mode,
 
  done:
     Py_CLEAR(stringobj);
+#if defined(__VMS)
+    #include "vms/vms_spawn_helper.h"
+    vms_spawn_clear_fd(self->fd);
+#endif
     return ret;
 }
 
@@ -652,15 +653,7 @@ _io_FileIO_readinto_impl(fileio *self, Py_buffer *buffer)
     if (!self->readable)
         return err_mode("reading");
 
-#ifdef __VMS
-    if (self->is_a_pipe) {
-        n = _Py_read_pid(self->fd, buffer->buf, buffer->len, self->pid);
-    } else {
-        n = _Py_read(self->fd, buffer->buf, buffer->len);
-    }
-#else
     n = _Py_read(self->fd, buffer->buf, buffer->len);
-#endif
     /* copy errno because PyBuffer_Release() can indirectly modify it */
     err = errno;
 
@@ -765,22 +758,9 @@ _io_FileIO_readall_impl(fileio *self)
             }
         }
 
-#ifdef __VMS
-    if (self->is_a_pipe) {
-        n = _Py_read_pid(self->fd,
-                     PyBytes_AS_STRING(result) + bytes_read,
-                     bufsize - bytes_read,
-                     self->pid);
-    } else {
         n = _Py_read(self->fd,
                      PyBytes_AS_STRING(result) + bytes_read,
                      bufsize - bytes_read);
-    }
-#else
-        n = _Py_read(self->fd,
-                     PyBytes_AS_STRING(result) + bytes_read,
-                     bufsize - bytes_read);
-#endif
         if (n == 0)
             break;
         if (n == -1) {
@@ -842,15 +822,7 @@ _io_FileIO_read_impl(fileio *self, Py_ssize_t size)
         return NULL;
     ptr = PyBytes_AS_STRING(bytes);
 
-#ifdef __VMS
-    if (self->is_a_pipe) {
-        n = _Py_read_pid(self->fd, ptr, size, self->pid);
-    } else {
-        n = _Py_read(self->fd, ptr, size);
-    }
-#else
     n = _Py_read(self->fd, ptr, size);
-#endif
     if (n == -1) {
         /* copy errno because Py_DECREF() can indirectly modify it */
         int err = errno;
@@ -1229,10 +1201,6 @@ static PyGetSetDef fileio_getsetlist[] = {
 static PyMemberDef fileio_members[] = {
     {"_blksize", T_UINT, offsetof(fileio, blksize), 0},
     {"_finalizing", T_BOOL, offsetof(fileio, finalizing), 0},
-#ifdef __VMS
-    {"_is_a_pipe", T_BOOL, offsetof(fileio, is_a_pipe), READONLY},
-    {"_pid", T_INT, offsetof(fileio, pid), 0},
-#endif
     {NULL}
 };
 

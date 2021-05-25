@@ -121,6 +121,7 @@
 %rename(sleep) _sleep;
 %rename(dlopen_test) _dlopen_test;
 %rename(get_symbol) _get_symbol;
+%rename(decc_write_eof_to_mbx) _decc_write_eof_to_mbx;
 
 %newobject _from_vms;
 %newobject _to_vms;
@@ -135,5 +136,4 @@ extern long _sysconf(int);
 extern int _sleep(unsigned int);
 extern int _dlopen_test(char *name);
 extern int _get_symbol(char *name, char** OUTPUT);
-
-
+extern int _decc_write_eof_to_mbx(int fd);

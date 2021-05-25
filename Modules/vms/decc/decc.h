@@ -15,6 +15,7 @@ extern long _sysconf(int);
 extern int _sleep(unsigned int);
 extern int _dlopen_test(char *name);
 extern int _get_symbol(char *name, char** value);
+extern int _decc_write_eof_to_mbx(int fd);
 
 #ifdef __cplusplus
         }
