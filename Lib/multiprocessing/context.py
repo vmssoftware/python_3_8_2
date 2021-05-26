@@ -145,7 +145,7 @@ class BaseContext(object):
         '''Check whether this is a fake forked process in a frozen executable.
         If so then run code specified by commandline and exit.
         '''
-        if sys.platform == 'win32' and getattr(sys, 'frozen', False):
+        if (sys.platform == 'win32' or sys.platform == 'OpenVMS') and getattr(sys, 'frozen', False):
             from .spawn import freeze_support
             freeze_support()
 
@@ -257,7 +257,7 @@ class DefaultContext(BaseContext):
         if sys.platform == 'win32':
             return ['spawn']
         elif sys.platform == 'OpenVMS':
-            return ['fork']
+            return ['spawn']
         else:
             if reduction.HAVE_SEND_HANDLE:
                 return ['fork', 'spawn', 'forkserver']
@@ -268,7 +268,42 @@ class DefaultContext(BaseContext):
 # Context types for fixed start method
 #
 
-if sys.platform != 'win32':
+if sys.platform == 'win32':
+    class SpawnProcess(process.BaseProcess):
+        _start_method = 'spawn'
+        @staticmethod
+        def _Popen(process_obj):
+            from .popen_spawn_win32 import Popen
+            return Popen(process_obj)
+
+    class SpawnContext(BaseContext):
+        _name = 'spawn'
+        Process = SpawnProcess
+
+    _concrete_contexts = {
+        'spawn': SpawnContext(),
+    }
+    _default_context = DefaultContext(_concrete_contexts['spawn'])
+
+elif sys.platform == 'OpenVMS':
+
+    class SpawnProcess(process.BaseProcess):
+        _start_method = 'spawn'
+        @staticmethod
+        def _Popen(process_obj):
+            from .popen_spawn_posix import Popen
+            return Popen(process_obj)
+
+    class SpawnContext(BaseContext):
+        _name = 'spawn'
+        Process = SpawnProcess
+
+    _concrete_contexts = {
+        'spawn': SpawnContext(),
+    }
+    _default_context = DefaultContext(_concrete_contexts['spawn'])
+
+else:
 
     class ForkProcess(process.BaseProcess):
         _start_method = 'fork'
@@ -315,28 +350,8 @@ if sys.platform != 'win32':
         # bpo-33725: running arbitrary code after fork() is no longer reliable
         # on macOS since macOS 10.14 (Mojave). Use spawn by default instead.
         _default_context = DefaultContext(_concrete_contexts['spawn'])
-    elif sys.platform == 'OpenVMS':
-        _default_context = DefaultContext(_concrete_contexts['fork'])
     else:
         _default_context = DefaultContext(_concrete_contexts['fork'])
-
-else:
-
-    class SpawnProcess(process.BaseProcess):
-        _start_method = 'spawn'
-        @staticmethod
-        def _Popen(process_obj):
-            from .popen_spawn_win32 import Popen
-            return Popen(process_obj)
-
-    class SpawnContext(BaseContext):
-        _name = 'spawn'
-        Process = SpawnProcess
-
-    _concrete_contexts = {
-        'spawn': SpawnContext(),
-    }
-    _default_context = DefaultContext(_concrete_contexts['spawn'])
 
 #
 # Force the start method

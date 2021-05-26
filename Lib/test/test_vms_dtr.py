@@ -4,9 +4,12 @@ import unittest
 if sys.platform != 'OpenVMS':
     raise unittest.SkipTest('OpenVMS required')
 
-import vms.rec as rec
-import vms.dtr as dtr
-import vms.ssdef as SS
+try:
+    import vms.rec as rec
+    import vms.dtr as dtr
+    import vms.ssdef as SS
+except:
+    raise unittest.SkipTest('DTR is not built')
 
 class BaseTestCase(unittest.TestCase):
 
@@ -41,7 +44,8 @@ class BaseTestCase(unittest.TestCase):
 
         sts, cond, state = dtr.command(dab, "declare port yport using yacht;")
 
-        self.assertEqual(sts, SS.SS__NORMAL, "Command 'declare port' failed")
+        if sts != SS.SS__NORMAL:
+            raise unittest.SkipTest("Command 'declare port' failed")
 
         while state == dtr._K_STL_MSG:
             errorMsg = dtr.msg_buf(dab)

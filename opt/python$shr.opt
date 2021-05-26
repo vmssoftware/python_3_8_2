@@ -1981,6 +1981,8 @@ vms_select=PROCEDURE,-
 vms_spawn_status=PROCEDURE,-
 vms_spawn_finish=PROCEDURE,-
 vms_spawn_alloc=PROCEDURE,-
-round_imp=PROCEDURE,-
-read_mbx=PROCEDURE-
+vms_sleep=PROCEDURE,-
+vms_spawn_check_fd=PROCEDURE,-
+vms_spawn_clear_fd=PROCEDURE,-
+round_imp=PROCEDURE-
 )

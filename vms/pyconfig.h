@@ -228,7 +228,7 @@
 
 /* Define to 1 if you have the declaration of `RTLD_LAZY', and to 0 if you
    don't. */
-#undef HAVE_DECL_RTLD_LAZY
+#define HAVE_DECL_RTLD_LAZY 1
 
 /* Define to 1 if you have the declaration of `RTLD_LOCAL', and to 0 if you
    don't. */
@@ -248,7 +248,7 @@
 
 /* Define to 1 if you have the declaration of `RTLD_NOW', and to 0 if you
    don't. */
-#undef HAVE_DECL_RTLD_NOW
+#define HAVE_DECL_RTLD_NOW 1
 
 /* Define to 1 if you have the declaration of `tzname', and to 0 if you don't.
    */
@@ -759,10 +759,10 @@
 #undef HAVE_PLOCK
 
 /* Define to 1 if you have the `poll' function. */
-#define HAVE_POLL 1
+#undef HAVE_POLL
 
 /* Define to 1 if you have the <poll.h> header file. */
-#define HAVE_POLL_H 1
+#undef HAVE_POLL_H
 
 /* Define to 1 if you have the `posix_fadvise' function. */
 #undef HAVE_POSIX_FADVISE
@@ -912,10 +912,10 @@
 #define HAVE_SEM_OPEN 1
 
 /* Define to 1 if you have the `sem_timedwait' function. */
-#define HAVE_SEM_TIMEDWAIT 1
+#undef HAVE_SEM_TIMEDWAIT
 
 /* Define to 1 if you have the `sem_unlink' function. */
-#define HAVE_SEM_UNLINK 1
+#undef HAVE_SEM_UNLINK
 
 /* Define to 1 if you have the `sendfile' function. */
 #undef HAVE_SENDFILE
@@ -1183,7 +1183,7 @@
 #undef HAVE_SYS_PARAM_H
 
 /* Define to 1 if you have the <sys/poll.h> header file. */
-#define HAVE_SYS_POLL_H 1
+#undef HAVE_SYS_POLL_H
 
 /* Define to 1 if you have the <sys/random.h> header file. */
 #undef HAVE_SYS_RANDOM_H
@@ -1716,6 +1716,7 @@
 #endif
 
 /* VMS specific */
+#ifdef __VMS
 
 #ifndef INT32_MIN
 #define INT32_MIN __INT32_MIN
@@ -1777,6 +1778,8 @@
 # else
 #  define NSIG 64               /* Use a reasonable default value */
 # endif
+#endif
+
 #endif
 
 #endif /*Py_PYCONFIG_H*/

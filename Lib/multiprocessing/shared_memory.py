@@ -30,7 +30,7 @@ _SHM_SAFE_NAME_LENGTH = 14
 
 # Shared memory block name prefix
 if _USE_POSIX:
-    _SHM_NAME_PREFIX = '/psm_'
+    _SHM_NAME_PREFIX = '/psm_' if os.sys.platform != 'OpenVMS' else 'psm_'
 else:
     _SHM_NAME_PREFIX = 'wnsm_'
 
@@ -68,7 +68,7 @@ class SharedMemory:
     _buf = None
     _flags = os.O_RDWR
     _mode = 0o600
-    _prepend_leading_slash = True if _USE_POSIX else False
+    _prepend_leading_slash = True if _USE_POSIX and os.sys.platform != 'OpenVMS' else False
 
     def __init__(self, name=None, create=False, size=0):
         if not size >= 0:

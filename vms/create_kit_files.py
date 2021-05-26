@@ -27,10 +27,10 @@ def create_content(type, major, minor, level, edit):
                 '" source "' + \
                 kit_dir + file_name + file_ext + \
                 '";')
-        try:
-            dirs.remove('__pycache__')
-        except:
-            pass
+        # try:
+        #     dirs.remove('__pycache__')
+        # except:
+        #     pass
 
     kit_template = '''--
 -- (C) Copyright 2021 VMS Software Inc.
@@ -112,7 +112,7 @@ end product;
 
     text_template = '''=product VSI I64VMS PYTHON {type}{major}.{minor}-{level}{edit} full
 1 'PRODUCT
-=prompt Python for OpenVMS is based on Python Version 3.8.2 ({edit})
+=prompt Python for OpenVMS is based on Python Version 3.8.2
 
 1 'PRODUCER
 =prompt VSI Software Inc.
@@ -162,7 +162,7 @@ if __name__ == "__main__":
 
     opts, args = getopt.getopt(sys.argv[1:], '', ['type=', 'major=', 'minor=', 'level=', 'edit='])
 
-    type = 'D'
+    type = 'E'
     major = '3'
     minor = '8'
     level = '2'

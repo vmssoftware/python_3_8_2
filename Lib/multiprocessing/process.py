@@ -407,6 +407,8 @@ class _MainProcess(BaseProcess):
         #
         # Everything in self._config will be inherited by descendant
         # processes.
+        if sys.platform == 'OpenVMS':
+            self._config['semprefix'] = 'sem'
 
     def close(self):
         pass

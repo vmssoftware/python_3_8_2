@@ -26,6 +26,7 @@
 
 #include "vms/vms_spawn_helper.h"
 #include "vms/vms_select.h"
+#include "vms/vms_sleep.h"
 
 int vms_channel_lookup(int fd, unsigned short *channel) {
     int status;
@@ -54,6 +55,10 @@ int vms_channel_lookup(int fd, unsigned short *channel) {
         }
     }
     return status;
+}
+
+int vms_channel_free(unsigned short channel) {
+    return sys$dassgn(channel);
 }
 
 struct vms_pollfd_st {
@@ -300,7 +305,7 @@ int vms_select(int nfds, fd_set *readfds, fd_set *writefds, fd_set *exceptfds,
                         item_list[0].ile3$ps_retlen_addr = (void *)&mbx_len;
                         memset(item_list + 1, 0, sizeof(item_list[1]));
 
-                        status = SYS$GETDVIW(0, pipe_array[pi].channel, 0, &item_list, 0, 0, 0, 0);
+                        status = SYS$GETDVIW(EFN$C_ENF, pipe_array[pi].channel, 0, &item_list, 0, 0, 0, 0);
                         if ($VMS_STATUS_SUCCESS(status)) {
                             if ((mbx_char & DC$_MAILBOX) != 0) {
                                 pi++;
@@ -356,7 +361,7 @@ int vms_select(int nfds, fd_set *readfds, fd_set *writefds, fd_set *exceptfds,
             /* Terminals and or pipes (and or MBXs) and or sockets  */
             /* Now we have to periodically poll everything with timeout */
             while (ret_stat == 0) {
-                int sleeptime;
+                int sleeptime;  // microseconds 1/1000000
                 if (ti != 0) {
                     ti_stat = select_terminal(term_array, ti);
                 }
@@ -369,15 +374,15 @@ int vms_select(int nfds, fd_set *readfds, fd_set *writefds, fd_set *exceptfds,
                 if (ti_stat != 0 || pi_stat != 0 || xi_stat != 0) {
                     sleeptime = 0;
                 } else {
-                    sleeptime = 100 * 1000;
+                    sleeptime = 100;
                     if (utimeleft < sleeptime) {
                         sleeptime = utimeleft;
                     }
                 }
                 if (si == 0) {
-                    /* sleep for shorter of 100 Ms or timeout and retry */
+                    /* sleep for shorter of 100 microseconds or timeout and retry */
                     if (sleeptime > 0) {
-                        usleep(sleeptime);
+                        vms_sleep(sleeptime);
                     }
                 } else {
                     /* let select consume the time*/
@@ -471,66 +476,4 @@ int vms_select(int nfds, fd_set *readfds, fd_set *writefds, fd_set *exceptfds,
     }
 
     return ret_stat;
-}
-
-static unsigned short _get_mbx_size(unsigned short channel) {
-    unsigned short mbx_buffer_size = 0;
-    unsigned short mbx_buffer_size_len = 0;
-    unsigned int   mbx_char;
-    unsigned short mbx_char_len;
-    ILE3 item_list[3];
-    item_list[0].ile3$w_length = 4;
-    item_list[0].ile3$w_code = DVI$_DEVBUFSIZ;
-    item_list[0].ile3$ps_bufaddr = &mbx_buffer_size;
-    item_list[0].ile3$ps_retlen_addr = &mbx_buffer_size_len;
-    item_list[1].ile3$w_length = 4;
-    item_list[1].ile3$w_code = DVI$_DEVCLASS;
-    item_list[1].ile3$ps_bufaddr = &mbx_char;
-    item_list[1].ile3$ps_retlen_addr = &mbx_char_len;
-    memset(item_list + 2, 0, sizeof(ILE3));
-    int status = SYS$GETDVIW(0, channel, 0, &item_list, 0, 0, 0, 0);
-    if ($VMS_STATUS_SUCCESS(status) && (mbx_char & DC$_MAILBOX)) {
-        return mbx_buffer_size;
-    }
-    return 512;
-}
-
-unsigned long read_mbx(int fd, char *buf, int size, int *pid_ptr) {
-    unsigned short channel;
-    int nbytes = 0;
-    if (vms_channel_lookup(fd, &channel) == 0) {
-        unsigned short mbx_size = _get_mbx_size(channel);
-        if (mbx_size < size) {
-            size = mbx_size;
-        }
-        if (size <= 0) {
-            return 0;
-        }
-        IOSB iosb = {0};
-        int status = SYS$QIOW(
-            EFN$C_ENF, channel, IO$_READVBLK,
-            &iosb, NULL, 0,
-            buf, size,
-            0, 0, 0, 0);
-        if ($VMS_STATUS_SUCCESS(status)) {
-            if (iosb.iosb$w_status == SS$_ENDOFFILE) {
-                nbytes = 0;
-            } else {
-                nbytes = iosb.iosb$w_bcnt;
-                if (nbytes == 0 ||
-                    (vms_spawn_status(iosb.iosb$l_pid, NULL, NULL, 0) == 0 &&
-                        nbytes < size))
-                {
-                    // add EOL if spawned or buffer is empty
-                    buf[nbytes] = '\n';
-                    ++nbytes;
-                }
-            }
-        }
-        SYS$DASSGN(channel);
-        if (pid_ptr) {
-            *pid_ptr = iosb.iosb$l_pid;
-        }
-    }
-    return nbytes;
 }

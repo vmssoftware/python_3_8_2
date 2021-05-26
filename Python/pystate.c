@@ -23,6 +23,7 @@ to avoid the expense of doing their own locking).
 #include <dlfcn.h>
 #endif
 #if !HAVE_DECL_RTLD_LAZY
+#undef RTLD_LAZY
 #define RTLD_LAZY 1
 #endif
 #endif

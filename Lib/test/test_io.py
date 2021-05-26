@@ -475,6 +475,10 @@ class IOTest(unittest.TestCase):
         )
         for [test, abilities] in tests:
             with self.subTest(test), test() as obj:
+                if sys.platform == 'OpenVMS' and test in (pipe_reader, pipe_writer):
+                    # Pipes are not a real pipes on OpenVMS
+                    continue
+
                 readable = "r" in abilities
                 self.assertEqual(obj.readable(), readable)
                 writable = "w" in abilities
@@ -504,7 +508,7 @@ class IOTest(unittest.TestCase):
                 else:
                     self.assertRaises(OSError, obj.write, data)
 
-                if sys.platform.startswith(("win", "OpenVMS")) and test in (
+                if sys.platform.startswith("win") and test in (
                         pipe_reader, pipe_writer):
                     # Pipes seem to appear as seekable on Windows ans OpenVMS
                     continue
@@ -600,7 +604,7 @@ class IOTest(unittest.TestCase):
         # On Windows and Mac OSX this test consumes large resources; It takes
         # a long time to build the >2 GiB file and takes >2 GiB of disk space
         # therefore the resource must be enabled to run this test.
-        if sys.platform[:3] == 'win' or sys.platform == 'darwin':
+        if sys.platform[:3] == 'win' or sys.platform == 'darwin' or sys.platform == 'OpenVMS':
             support.requires(
                 'largefile',
                 'test requires %s bytes and a long time to run' % self.LARGE)
@@ -4289,6 +4293,7 @@ class SignalsTest(unittest.TestCase):
         self.check_interrupted_write("xy", b"xy", mode="w", encoding="ascii")
 
     @support.no_tracing
+    @unittest.skipIf(sys.platform in ("OpenVMS"), "-= it hangs =-")
     def check_reentrant_write(self, data, **fdopen_kwargs):
         def on_alarm(*args):
             # Will be called reentrantly from the same thread

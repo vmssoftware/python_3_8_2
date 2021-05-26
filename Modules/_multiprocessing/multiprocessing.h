@@ -24,8 +24,23 @@
 #else
 #  include <fcntl.h>                 /* O_CREAT and O_EXCL */
 #  if defined(HAVE_SEM_OPEN) && !defined(POSIX_SEMAPHORES_NOT_ENABLED)
+#ifdef __VMS
+#    include "vms/sem_mbx.h"
+
+#    define sem_close sem_close_mbx
+#    define sem_getvalue sem_getvalue_mbx
+#    define sem_open sem_open_mbx
+#    define sem_post sem_post_mbx
+#    define sem_trywait sem_trywait_mbx
+#    define sem_wait sem_wait_mbx
+
+#    define sem_t sem_t_mbx
+     typedef sem_t *SEM_HANDLE;
+#    define SEM_FAILED SEM_FAILED_MBX
+#else
 #    include <semaphore.h>
      typedef sem_t *SEM_HANDLE;
+#  endif    // __VMS
 #  endif
 #  define HANDLE int
 #  define SOCKET int
