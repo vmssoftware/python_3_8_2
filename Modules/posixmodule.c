@@ -9599,6 +9599,8 @@ os_isatty_impl(PyObject *module, int fd)
     return return_value;
 }
 
+#ifdef __VMS
+
 PyDoc_STRVAR(os_pipe_socket__doc__,
 "pipe_socket($module, /)\n"
 "--\n"
@@ -9609,7 +9611,6 @@ PyDoc_STRVAR(os_pipe_socket__doc__,
 "Returns a tuple of two file descriptors:\n"
 "  (read_fd, write_fd)");
 
-#ifdef __VMS
 static PyObject *
 os_pipe_socket(PyObject *module, PyObject *Py_UNUSED(ignored))
 {
@@ -9623,16 +9624,16 @@ os_pipe_socket(PyObject *module, PyObject *Py_UNUSED(ignored))
     if (res != 0)
         return PyErr_SetFromErrno(PyExc_OSError);
 
-    if (_Py_set_inheritable(fds[0], 0, NULL) < 0) {
-        close(fds[0]);
-        close(fds[1]);
-        return NULL;
-    }
-    if (_Py_set_inheritable(fds[1], 0, NULL) < 0) {
-        close(fds[0]);
-        close(fds[1]);
-        return NULL;
-    }
+    // if (_Py_set_inheritable(fds[0], 0, NULL) < 0) {
+    //     close(fds[0]);
+    //     close(fds[1]);
+    //     return NULL;
+    // }
+    // if (_Py_set_inheritable(fds[1], 0, NULL) < 0) {
+    //     close(fds[0]);
+    //     close(fds[1]);
+    //     return NULL;
+    // }
 
     return Py_BuildValue("(ii)", fds[0], fds[1]);
 }
