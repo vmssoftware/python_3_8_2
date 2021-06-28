@@ -13,16 +13,17 @@ extern int 			Commit();
 extern char * 			Data(void *, int);
 extern void * 			DeclareCursor(char *, char *);
 extern int 			Detach();
-extern int 			Exec(void *);
+extern int 			Exec(void *, ...);
 extern int 			ExecI(char *);
 extern int 			Fetch(void *);
 extern int 			Free(void *);
-extern int 			OpenCursor(void *);
+extern int 			OpenCursor(void *, ...);
 extern void * 			Prepare(char *);
 extern int 			Rollback();
 extern int 			SetReadonly();
 extern const char *		Error();
 extern int 			Sqlcode();
+extern char ** 			Select(void *, ...);
 
 # ifdef __cplusplus
 	}
