@@ -146,16 +146,16 @@ int simple_read_mbx_w(unsigned short channel, unsigned char *buf, int size) {
 }
 
 unsigned short get_mbx_size(unsigned short channel) {
-    unsigned short mbx_buffer_size = 0;
+    unsigned int   mbx_buffer_size = 0;
     unsigned short mbx_buffer_size_len = 0;
     unsigned int   mbx_char = 0;
     unsigned short mbx_char_len = 0;
     ILE3 item_list[3];
-    item_list[0].ile3$w_length = 4;
+    item_list[0].ile3$w_length = sizeof(mbx_buffer_size);
     item_list[0].ile3$w_code = DVI$_DEVBUFSIZ;
     item_list[0].ile3$ps_bufaddr = &mbx_buffer_size;
     item_list[0].ile3$ps_retlen_addr = &mbx_buffer_size_len;
-    item_list[1].ile3$w_length = 4;
+    item_list[1].ile3$w_length = sizeof(mbx_char);
     item_list[1].ile3$w_code = DVI$_DEVCLASS;
     item_list[1].ile3$ps_bufaddr = &mbx_char;
     item_list[1].ile3$ps_retlen_addr = &mbx_char_len;
