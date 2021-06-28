@@ -30,6 +30,7 @@ class CmdLineTest(unittest.TestCase):
         assert_python_failure('< .')
 
     def verify_valid_flag(self, cmd_line):
+        cmd_line = [cmd_line]
         rc, out, err = assert_python_ok(*cmd_line)
         self.assertTrue(out == b'' or out.endswith(b'\n'))
         self.assertNotIn(b'Traceback', out)
