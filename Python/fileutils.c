@@ -1617,7 +1617,7 @@ _Py_read(int fd, void *buf, size_t count)
             assert(strncmp(_fd_name_, "_MBA", 4) != 0);
 #endif
             n = read(fd, buf, count);
-            if (n < count) {
+            if (0 <= n && n < count) {
                 // test if we have record-oriented file
                 struct stat stst;
                 if (0 == fstat(fd, &stst)) {
