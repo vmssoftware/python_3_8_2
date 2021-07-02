@@ -2,6 +2,7 @@
 #include <tcp.h>
 #include <unistd.h>
 #include <unixio.h>
+#include <sys/stat.h>
 
 #include "vms/vms_spawn_helper.h"
 #include "vms/vms_fd_inherit.h"
@@ -1616,6 +1617,23 @@ _Py_read(int fd, void *buf, size_t count)
             assert(strncmp(_fd_name_, "_MBA", 4) != 0);
 #endif
             n = read(fd, buf, count);
+            if (n < count) {
+                // test if we have record-oriented file
+                struct stat stst;
+                if (0 == fstat(fd, &stst)) {
+                    switch (stst.st_fab_rfm) {
+                        case 1:
+                        case 2:
+                        case 3:
+                            // insert LF at the record boundary
+                            if (lseek(fd, 0, SEEK_CUR) != stst.st_size) {
+                                ((char*)buf)[n] = '\n';
+                                ++n;
+                            }
+                            break;
+                    }
+                }
+            }
         }
 #else
 #ifdef MS_WINDOWS
