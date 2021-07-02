@@ -2014,6 +2014,12 @@ static PyStructSequence_Field stat_result_fields[] = {
 #ifdef HAVE_STRUCT_STAT_ST_REPARSE_TAG
     {"st_reparse_tag", "Windows reparse tag"},
 #endif
+#ifdef __VMS
+    {"st_fab_rfm", "Record format"},
+    {"st_fab_rat", "Record attributes"},
+    {"st_fab_fsz", "Fixed header size"},
+    {"st_fab_mrs", "Record size"},
+#endif
     {0}
 };
 
@@ -2069,6 +2075,18 @@ static PyStructSequence_Field stat_result_fields[] = {
 #define ST_REPARSE_TAG_IDX (ST_FSTYPE_IDX+1)
 #else
 #define ST_REPARSE_TAG_IDX ST_FSTYPE_IDX
+#endif
+
+#ifdef __VMS
+#define ST_FAB_RFM_IDX (ST_REPARSE_TAG_IDX+1)
+#define ST_FAB_RAT_IDX (ST_FAB_RFM_IDX+1)
+#define ST_FAB_FSZ_IDX (ST_FAB_RAT_IDX+1)
+#define ST_FAB_MRS_IDX (ST_FAB_FSZ_IDX+1)
+#else
+#define ST_FAB_RFM_IDX ST_REPARSE_TAG_IDX
+#define ST_FAB_RAT_IDX ST_REPARSE_TAG_IDX
+#define ST_FAB_FSZ_IDX ST_REPARSE_TAG_IDX
+#define ST_FAB_MRS_IDX ST_REPARSE_TAG_IDX
 #endif
 
 static PyStructSequence_Desc stat_result_desc = {
@@ -2301,6 +2319,17 @@ _pystat_fromstructstat(STRUCT_STAT *st)
 #ifdef HAVE_STRUCT_STAT_ST_REPARSE_TAG
     PyStructSequence_SET_ITEM(v, ST_REPARSE_TAG_IDX,
                               PyLong_FromUnsignedLong(st->st_reparse_tag));
+#endif
+
+#ifdef __VMS
+    PyStructSequence_SET_ITEM(v, ST_FAB_RFM_IDX,
+                              PyLong_FromUnsignedLong((unsigned long)st->st_fab_rfm));
+    PyStructSequence_SET_ITEM(v, ST_FAB_RAT_IDX,
+                              PyLong_FromUnsignedLong((unsigned long)st->st_fab_rat));
+    PyStructSequence_SET_ITEM(v, ST_FAB_FSZ_IDX,
+                              PyLong_FromUnsignedLong((unsigned long)st->st_fab_fsz));
+    PyStructSequence_SET_ITEM(v, ST_FAB_MRS_IDX,
+                              PyLong_FromUnsignedLong((unsigned long)st->st_fab_mrs));
 #endif
 
     if (PyErr_Occurred()) {
