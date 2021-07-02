@@ -372,14 +372,14 @@ class Configuration(object):
                     names.add(name)
                     if name not in self._ignore_env_names:
                         yield name, val
-        else:
-            for key, val in os.environ.items():
-                should_be_yielded = (
-                    key.startswith("PIP_") and
-                    key[4:].lower() not in self._ignore_env_names
-                )
-                if should_be_yielded:
-                    yield key[4:].lower(), val
+            return
+        for key, val in os.environ.items():
+            should_be_yielded = (
+                key.startswith("PIP_") and
+                key[4:].lower() not in self._ignore_env_names
+            )
+            if should_be_yielded:
+                yield key[4:].lower(), val
 
     # XXX: This is patched in the tests.
     def _iter_config_files(self):
