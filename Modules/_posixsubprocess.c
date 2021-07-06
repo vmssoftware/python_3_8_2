@@ -387,22 +387,23 @@ _close_open_fds_maybe_unsafe(long start_fd, PyObject* py_fds_to_keep)
  * to set things up and call exec().
  *
  */
-#include <processes.h>
-#include <unixlib.h>
-#include <errno.h>
-#include <unixio.h>
-#include <efndef.h>
-#include <clidef.h>
-#include <stsdef.h>
-#include <descrip.h>
-#include <lib$routines.h>
 #include <builtins.h>
+#include <clidef.h>
+#include <descrip.h>
+#include <efndef.h>
+#include <errno.h>
+#include <lib$routines.h>
+#include <processes.h>
+#include <stsdef.h>
+#include <unixio.h>
+#include <unixlib.h>
 
 #include <ffi.h>
 #include "ctypes/ctypes.h"
 
 #include "vms/vms_spawn_helper.h"
 #include "vms/vms_select.h"
+#include "vms/vms_sleep.h"
 
 PyDoc_STRVAR(subprocess_proc_status_doc,
 "proc_status(pid: int, remove = True)\n\
@@ -442,7 +443,7 @@ subprocess_proc_status(
     unsigned int pid = PyLong_AsUnsignedLong(args[0]);
     int status = -1;
     unsigned int finished = 0;
-    int found = (0 == vms_spawn_status(pid, &status, &finished, remove));
+    int found = (-1 != vms_spawn_status(pid, &status, &finished, NULL, remove));
     return Py_BuildValue("(NNi)", PyBool_FromLong(found), PyBool_FromLong(finished), status);
 }
 
@@ -452,7 +453,7 @@ static void child_complete(int arg) {
 }
 
 static int
-exec_dcl(char *const argv[], int p2cread, int c2pwrite) {
+exec_dcl(char *const argv[], int p2cread, int c2pwrite, int c2pread) {
     int status = -1;
     int pid = -1;
     unsigned char efn = EFN$C_ENF;
@@ -504,9 +505,11 @@ exec_dcl(char *const argv[], int p2cread, int c2pwrite) {
     execute.dsc$a_pointer = (char *)execute_str;
 
     unsigned int *ppid, *pfinished;
+    int *pfd;
     int *pstatus;
 
-    if (vms_spawn_alloc(&ppid, &pstatus, &pfinished) == 0) {
+    if (vms_spawn_alloc(&ppid, &pstatus, &pfinished, &pfd) != -1) {
+        *pfd = c2pread;
         status = lib$spawn(
             &execute,
             input_ptr,
@@ -527,18 +530,14 @@ exec_dcl(char *const argv[], int p2cread, int c2pwrite) {
     return pid;
 }
 
-static int
-safe_make_inherit(int fd) {
-    if (fd != -1) {
-        int _dup_ = dup(fd);
-        if (_dup_ != -1) {
-            int retcode = dup2(_dup_, fd);
-            close(_dup_);
-            return retcode;
-        }
+#undef  _VMS_MAKE_INHERITABLE_
+#define _VMS_MAKE_INHERITABLE_(x, flag)                                         \
+    if ((x) != -1) {                                                            \
+        if (_Py_set_inheritable_async_safe((int)(x), flag, NULL) < 0) {         \
+            PyErr_Clear();                                                      \
+            errno = 0;                                                          \
+        }                                                                       \
     }
-    return -1;
-}
 
 static int
 child_exec_vfork(char *const exec_array[],
@@ -555,6 +554,18 @@ child_exec_vfork(char *const exec_array[],
            PyObject *preexec_fn,
            PyObject *preexec_fn_args_tuple)
 {
+    static pthread_mutex_t _child_exec_vfork_mutex = PTHREAD_MUTEX_INITIALIZER;
+
+    pthread_mutex_lock(&_child_exec_vfork_mutex);
+
+    // we should always set CWD, even if it is NULL - to restore default value
+    decc$set_child_default_dir(cwd);
+
+    if (argv && *argv && strcmp(*argv, "DCL") == 0) {
+        pthread_mutex_unlock(&_child_exec_vfork_mutex);
+        return exec_dcl(argv, p2cread, c2pwrite, c2pread);
+    }
+
     int pid = -1;
     int exec_error = 0;
 
@@ -562,68 +573,44 @@ child_exec_vfork(char *const exec_array[],
         goto egress;
     }
 
-    if (p2cwrite != -1)
-        fcntl(p2cwrite, F_SETFD, FD_CLOEXEC);
-    if (c2pread != -1)
-        fcntl(c2pread, F_SETFD, FD_CLOEXEC);
-    if (errread != -1)
-        fcntl(errread, F_SETFD, FD_CLOEXEC);
-    if (errpipe_read != -1)
-        fcntl(errpipe_read, F_SETFD, FD_CLOEXEC);
-    if (errpipe_write != -1)
-        fcntl(errpipe_write, F_SETFD, FD_CLOEXEC);
-
-    // make them inherited safely
-    safe_make_inherit(p2cread);
-    safe_make_inherit(c2pwrite);
-    safe_make_inherit(errwrite);
-
-    // Do not restore signals - we are in the parent process so far
-    // if (restore_signals)
-    //     _Py_RestoreSignals();
-
-#ifdef HAVE_SETSID
-    // Do not create a new session - we are in the parent process so far
-    // if (call_setsid)
-    //     POSIX_CALL(setsid());
-#endif
-
-    // we should always set CWD, even if it is NULL - to restore default value
-    decc$set_child_default_dir(cwd);
+    // make the parent ends non-inheritable
+    _VMS_MAKE_INHERITABLE_(p2cwrite, 0);
+    _VMS_MAKE_INHERITABLE_(c2pread, 0);
+    _VMS_MAKE_INHERITABLE_(errread, 0);
+    _VMS_MAKE_INHERITABLE_(errpipe_read, 0);
+    _VMS_MAKE_INHERITABLE_(errpipe_write, 0);
 
     if (close_fds) {
-        /* TODO do not close but do set them non-inheritable */
-        // _close_open_fds(3, py_fds_to_keep);
+        // TODO: see RTLS-187
     }
 
-    if (argv && *argv && strcmp(*argv, "DCL") == 0) {
-        pid = exec_dcl(argv, p2cread, c2pwrite);
-    } else {
-        decc$set_child_standard_streams(p2cread, c2pwrite, errwrite);
-        pid = vfork();
-        if (pid == 0) {
-            for (int i = 0; exec_array[i] != NULL; ++i) {
-                const char *executable = exec_array[i];
-                if (envp) {
-                    execve(executable, argv, envp);
-                } else {
-                    execv(executable, argv);
-                }
-                if (errno != ENOENT && errno != ENOTDIR) {
-                    break;
-                }
+    // make inherited
+    _VMS_MAKE_INHERITABLE_(p2cread, 1);
+    _VMS_MAKE_INHERITABLE_(c2pwrite, 1);
+    _VMS_MAKE_INHERITABLE_(errwrite, 1);
+
+    decc$set_child_standard_streams(p2cread, c2pwrite, errwrite);
+    pid = vfork();
+    if (pid == 0) {
+        for (int i = 0; exec_array[i] != NULL; ++i) {
+            const char *executable = exec_array[i];
+            if (envp) {
+                execve(executable, argv, envp);
+            } else {
+                execv(executable, argv);
             }
-            exec_error = errno;
-            if (!exec_error) {
-                exec_error = -1;
+            if (errno != ENOENT && errno != ENOTDIR) {
+                break;
             }
-            exit(EXIT_FAILURE);
         }
+        exec_error = errno;
+        if (!exec_error) {
+            exec_error = -1;
+        }
+        exit(EXIT_FAILURE);
     }
 
 egress:
-    // No report, we are at parent process
-
     // Test if exec() is failed
     if (exec_error) {
         if (pid > 0) {
@@ -633,6 +620,7 @@ egress:
         errno = exec_error;
     }
 
+    pthread_mutex_unlock(&_child_exec_vfork_mutex);
     return pid;
 }
 #else

@@ -6,13 +6,57 @@
 
 %include "typemaps.i"
 %include <cstring.i>
-%cstring_output_allocate(char **OUTPUT, free(*$1));
+
+%begin %{
+#define PY_SSIZE_T_CLEAN
+%}
 
 %exception {
     Py_BEGIN_ALLOW_THREADS
     $action
     Py_END_ALLOW_THREADS
 }
+
+%cstring_output_allocate(char **OUTPUT, free(*$1));
+
+%typemap(in) (...) {
+   PyObject *rep, *str, *obj;
+   char **argv;
+   int argc;
+   int i;
+
+   argc = PyTuple_Size(varargs);
+   argv = (char **) malloc(sizeof(char *) * (argc + 1));
+   for (i = 0; i < argc; i++) {
+      obj = PyTuple_GetItem(varargs, i);
+      if (!PyUnicode_Check(obj)) {
+          rep = PyObject_Repr(obj);
+          str = PyUnicode_AsEncodedString(rep, "utf-8", "~E~");
+          argv[i] = strdup(PyBytes_AS_STRING(str));
+          Py_XDECREF(rep);
+          Py_XDECREF(str);
+      } else {
+    	  str = PyUnicode_AsUTF8String(obj);
+          argv[i] = strdup(PyString_AsString(str));
+	  Py_XDECREF(str);
+      }
+   }
+   argv[i] = NULL;
+   $1 = (void *) argv;
+}
+%typemap(freearg) (...)
+{
+    char **arr = $1;
+    int i = 0;
+    if (arr != NULL) {
+        while (arr[i]) {
+            free(arr[i]);
+            i++;
+        }
+        free(arr);
+    }
+}
+
 
 %typemap(out) char *
 {
@@ -50,6 +94,16 @@
       }
       free($1);
   }
+}
+
+%typemap(in) (const char *wbuf, int wlen) (int w_len){
+   if (!PyBytes_Check($input)) {
+       PyErr_SetString(PyExc_ValueError, "Expecting bytes");
+       return NULL;
+   }
+   w_len = PyBytes_Size($input);
+   $1 = (void *) PyBytes_AsString($input);
+   $2 = w_len;
 }
 
 %constant int _SC_ARG_MAX = 100;
@@ -121,6 +175,13 @@
 %rename(sleep) _sleep;
 %rename(dlopen_test) _dlopen_test;
 %rename(get_symbol) _get_symbol;
+%rename(fopen) _fopen;
+%rename(fclose) _fclose;
+%rename(fileno) _fileno;
+%rename(write) _write;
+%rename(fgets) _fgets;
+%rename(feof) _feof;
+%rename(ferror) _ferror;
 
 %newobject _from_vms;
 %newobject _to_vms;
@@ -135,5 +196,11 @@ extern long _sysconf(int);
 extern int _sleep(unsigned int);
 extern int _dlopen_test(char *name);
 extern int _get_symbol(char *name, char** OUTPUT);
-
-
+extern void *_fopen(char *, char *, ...);
+extern int _fclose(void *);
+extern int _fileno(void *);
+// extern int _write(int, char *, int);
+extern int _write(int fd, const char *wbuf, int wlen);
+extern char *_fgets(void *, int);
+extern int _feof(void *);
+extern int _ferror(void *);

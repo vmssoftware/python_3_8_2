@@ -127,14 +127,6 @@ PyAPI_FUNC(Py_ssize_t) _Py_read(
     void *buf,
     size_t count);
 
-#ifdef __VMS
-PyAPI_FUNC(Py_ssize_t) _Py_read_pid(
-    int fd,
-    void *buf,
-    size_t count,
-    int pid);
-#endif
-
 PyAPI_FUNC(Py_ssize_t) _Py_write(
     int fd,
     const void *buf,

@@ -1,7 +1,15 @@
 #ifdef __VMS
 #include <tcp.h>
 #include <unistd.h>
+#include <unixio.h>
+#include <sys/stat.h>
+
+#include "vms/vms_spawn_helper.h"
+#include "vms/vms_fd_inherit.h"
+#include "vms/vms_mbx_util.h"
+
 #endif
+
 #include "Python.h"
 #include "pycore_fileutils.h"
 #include "osdefs.h"
@@ -11,10 +19,6 @@
 #  include <malloc.h>
 #  include <windows.h>
 extern int winerror_to_errno(int);
-#endif
-
-#ifdef __VMS
-#include "vms/vms_select.h"
 #endif
 
 #ifdef HAVE_LANGINFO_H
@@ -40,7 +44,6 @@ extern int winerror_to_errno(int);
    and os.open(). */
 int _Py_open_cloexec_works = -1;
 #endif
-
 
 static int
 get_surrogateescape(_Py_error_handler errors, int *surrogateescape)
@@ -1076,6 +1079,29 @@ get_inheritable(int fd, int raise)
     }
 
     return (flags & HANDLE_FLAG_INHERIT);
+#elif defined(__VMS)
+#ifdef _DEBUG
+    char _fd_name_[256];
+    getname(fd, _fd_name_, 1);
+#endif
+    _inherit_query    q;
+    q.fd = fd;
+    q.cmd = _INHERIT_QUERY_GET_INHERITABLE;
+    switch (safe_fd_inherit(&q)) {
+        case 0:     // OK
+            if (q.res == -1) {
+                if (raise)
+                    PyErr_SetFromErrno(PyExc_OSError);
+                return -1;
+            }
+            return !(q.res & FD_CLOEXEC);
+        case -5:    // TimeOut
+        default:
+            errno = EVMSERR;
+            if (raise)
+                PyErr_SetFromErrno(PyExc_OSError);
+            return -1;
+    }
 #else
     int flags;
 
@@ -1199,21 +1225,34 @@ set_inheritable(int fd, int inheritable, int raise, int *atomic_flag_works)
 #endif
 
 #ifdef __VMS
+#ifdef _DEBUG
+    char _fd_name_[256];
+    getname(fd, _fd_name_, 1);
+#endif
+    _inherit_query    q;
+    q.fd = fd;
     if (inheritable) {
-        // the only way to set inheritable safely
-        int _dup_ = dup(fd);
-        fd = dup2(_dup_, fd);
-        close(_dup_);
+        q.cmd = _INHERIT_QUERY_SET_INHERITABLE;
+    } else {
+        q.cmd = _INHERIT_QUERY_SET_NON_INHERITABLE;
     }
-    else {
-        res = fcntl(fd, F_SETFD, FD_CLOEXEC);
-        if (res < 0) {
+    switch (safe_fd_inherit(&q)) {
+        case 0:     // OK
+            if (q.res == -1) {
+                if (raise)
+                    PyErr_SetFromErrno(PyExc_OSError);
+                return -1;
+            }
+            return 0;
+        case -5:    // TimeOut
+        default:
+            errno = EVMSERR;
             if (raise)
                 PyErr_SetFromErrno(PyExc_OSError);
             return -1;
-        }
     }
-#else
+#endif
+
     /* slow-path: fcntl() requires two syscalls */
     flags = fcntl(fd, F_GETFD);
     if (flags < 0) {
@@ -1240,7 +1279,6 @@ set_inheritable(int fd, int inheritable, int raise, int *atomic_flag_works)
             PyErr_SetFromErrno(PyExc_OSError);
         return -1;
     }
-#endif
     return 0;
 #endif
 }
@@ -1311,13 +1349,10 @@ _Py_open_impl(const char *pathname, int flags, int gil_held)
             Py_BEGIN_ALLOW_THREADS
 #if defined(__VMS)
             if (flags & O_BINARY) {
-                fd = open(pathname, flags & ~O_BINARY, 0777, "ctx=bin");
-            } else {
-                fd = open(pathname, flags);
-            }
-#else
-            fd = open(pathname, flags);
+                fd = open(pathname, flags & ~O_BINARY, 0, "ctx=bin");
+            } else 
 #endif
+            fd = open(pathname, flags);
             Py_END_ALLOW_THREADS
         } while (fd < 0
                  && errno == EINTR && !(async_err = PyErr_CheckSignals()));
@@ -1329,6 +1364,11 @@ _Py_open_impl(const char *pathname, int flags, int gil_held)
         }
     }
     else {
+#if defined(__VMS)
+            if (flags & O_BINARY) {
+                fd = open(pathname, flags & ~O_BINARY, 0, "ctx=bin");
+            } else 
+#endif
         fd = open(pathname, flags);
         if (fd < 0)
             return -1;
@@ -1340,7 +1380,6 @@ _Py_open_impl(const char *pathname, int flags, int gil_held)
         return -1;
     }
 #endif
-
     return fd;
 }
 
@@ -1538,17 +1577,8 @@ _Py_fopen_obj(PyObject *path, const char *mode)
    (the syscall is not retried).
 
    Release the GIL to call read(). The caller must hold the GIL. */
-#ifdef __VMS
-Py_ssize_t
-_Py_read(int fd, void *buf, size_t count) {
-    return _Py_read_pid(fd, buf, count, 0);
-}
-Py_ssize_t
-_Py_read_pid(int fd, void *buf, size_t count, int pid)
-#else
 Py_ssize_t
 _Py_read(int fd, void *buf, size_t count)
-#endif
 {
     Py_ssize_t n;
     int err;
@@ -1570,18 +1600,47 @@ _Py_read(int fd, void *buf, size_t count)
         Py_BEGIN_ALLOW_THREADS
         errno = 0;
 #ifdef __VMS
-        if (pid) {
-            int writer_pid = 0;
-            n = read_mbx(fd, buf, count, &writer_pid);
-            while (n == 0 && pid != writer_pid) {
-                n = read_mbx(fd, buf, count, &writer_pid);
-            }
-        } else
+#ifdef _DEBUG
+        char _fd_name_[256];
+        getname(fd, _fd_name_, 1);
 #endif
+        if (isapipe(fd) == 1) {
+            do {
+                n = read_mbx(fd, buf, count, vms_spawn_check_fd(fd));
+            } while(n == -1 && errno == EAGAIN);
+            if (!n) {
+                vms_spawn_clear_fd(fd);
+            }
+        } else {
+#ifdef _DEBUG
+            // "_MBA99999:[].;"
+            assert(strncmp(_fd_name_, "_MBA", 4) != 0);
+#endif
+            n = read(fd, buf, count);
+            if (0 <= n && n < count) {
+                // test if we have record-oriented file
+                struct stat stst;
+                if (0 == fstat(fd, &stst)) {
+                    switch (stst.st_fab_rfm) {
+                        case 1:
+                        case 2:
+                        case 3:
+                            // insert LF at the record boundary
+                            if (lseek(fd, 0, SEEK_CUR) != stst.st_size) {
+                                ((char*)buf)[n] = '\n';
+                                ++n;
+                            }
+                            break;
+                    }
+                }
+            }
+        }
+#else
 #ifdef MS_WINDOWS
         n = read(fd, buf, (int)count);
 #else
         n = read(fd, buf, count);
+#endif
 #endif
         /* save/restore errno because PyErr_CheckSignals()
          * and PyErr_SetFromErrno() can modify it */

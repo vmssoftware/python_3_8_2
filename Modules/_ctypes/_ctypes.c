@@ -5845,6 +5845,7 @@ PyInit__ctypes(void)
 
 /* If RTLD_LOCAL is not defined (Windows!), set it to zero. */
 #if !HAVE_DECL_RTLD_LOCAL
+#undef RTLD_LOCAL
 #define RTLD_LOCAL 0
 #endif
 
@@ -5852,6 +5853,7 @@ PyInit__ctypes(void)
    RTLD_LOCAL.
 */
 #if !HAVE_DECL_RTLD_GLOBAL
+#undef RTLD_GLOBAL
 #define RTLD_GLOBAL RTLD_LOCAL
 #endif
 

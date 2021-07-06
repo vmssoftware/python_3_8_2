@@ -213,13 +213,10 @@ else:
     # poll/select have the advantage of not requiring any extra file
     # descriptor, contrarily to epoll/kqueue (also, they require a single
     # syscall).
-    if _openvms:
-        _PopenSelector = selectors.SelectSelector
+    if hasattr(selectors, 'PollSelector'):
+        _PopenSelector = selectors.PollSelector
     else:
-        if hasattr(selectors, 'PollSelector'):
-            _PopenSelector = selectors.PollSelector
-        else:
-            _PopenSelector = selectors.SelectSelector
+        _PopenSelector = selectors.SelectSelector
 
 
 if _mswindows:
@@ -1022,42 +1019,10 @@ class Popen(object):
             if self.stdin:
                 self._stdin_write(input)
             elif self.stdout:
-                if _openvms:
-                    stdout = []
-                    while True:
-                        data, pid = os.read_pipe(self.stdout.fileno())
-                        if not data:
-                            if self.pid != pid:
-                                continue
-                            else:
-                                break
-                        stdout.append(data)
-                    stdout = b''.join(stdout)
-                    if self.text_mode:
-                        stdout = self._translate_newlines(stdout,
-                                    self.stdout.encoding,
-                                    self.stdout.errors)
-                else:
-                    stdout = self.stdout.read()
+                stdout = self.stdout.read()
                 self.stdout.close()
             elif self.stderr:
-                if _openvms:
-                    stderr = []
-                    while True:
-                        data, pid = os.read_pipe(self.stderr.fileno())
-                        if not data:
-                            if self.pid != pid:
-                                continue
-                            else:
-                                break
-                        stderr.append(data)
-                    stderr = b''.join(stderr)
-                    if self.text_mode:
-                        stderr = self._translate_newlines(stderr,
-                                    self.stderr.encoding,
-                                    self.stderr.errors)
-                else:
-                    stderr = self.stderr.read()
+                stderr = self.stderr.read()
                 self.stderr.close()
             self.wait()
         else:
@@ -1526,10 +1491,7 @@ class Popen(object):
             if stdout is None:
                 pass
             elif stdout == PIPE:
-                if _openvms:
-                    c2pread, c2pwrite = os.pipe_mbx()
-                else:
-                    c2pread, c2pwrite = os.pipe()
+                c2pread, c2pwrite = os.pipe()
             elif stdout == DEVNULL:
                 c2pwrite = self._get_devnull()
             elif isinstance(stdout, int):
@@ -1541,10 +1503,7 @@ class Popen(object):
             if stderr is None:
                 pass
             elif stderr == PIPE:
-                if _openvms:
-                    errread, errwrite = os.pipe_mbx()
-                else:
-                    errread, errwrite = os.pipe()
+                errread, errwrite = os.pipe()
             elif stderr == STDOUT:
                 if c2pwrite != -1:
                     errwrite = c2pwrite
@@ -1705,15 +1664,6 @@ class Popen(object):
                             errpipe_read, errpipe_write,
                             restore_signals, start_new_session, preexec_fn)
                     self._child_created = True
-                    if _openvms:
-                        for pipe in [self.stdout, self.stderr]:
-                            while pipe:
-                                if hasattr(pipe, "_pid"):
-                                    pipe._pid = self.pid
-                                if hasattr(pipe, "raw"):
-                                    pipe = pipe.raw
-                                else:
-                                    break
                 finally:
                     # be sure the FD is closed no matter what
                     os.close(errpipe_write)
@@ -1725,7 +1675,7 @@ class Popen(object):
                 # Wait for exec to fail or succeed; possibly raising an
                 # exception (limited in size)
                 errpipe_data = bytearray()
-                while True:
+                while True and not _openvms:    # errpipe is not usable on OpenVMS
                     part = os.read(errpipe_read, 50000)
                     errpipe_data += part
                     if not part or len(errpipe_data) > 50000:
@@ -1973,17 +1923,10 @@ class Popen(object):
                                     selector.unregister(key.fileobj)
                                     key.fileobj.close()
                         elif key.fileobj in (self.stdout, self.stderr):
-                            if _openvms:
-                                data, pid = os.read_pipe(key.fd)
-                            else:
-                                data = os.read(key.fd, 32768)
-                                pid = self.pid
+                            data = os.read(key.fd, 32768)
                             if not data:
-                                if self.pid != pid:
-                                    continue
-                                else:
-                                    selector.unregister(key.fileobj)
-                                    key.fileobj.close()
+                                selector.unregister(key.fileobj)
+                                key.fileobj.close()
                             self._fileobj2output[key.fileobj].append(data)
 
             self.wait(timeout=self._remaining_time(endtime))

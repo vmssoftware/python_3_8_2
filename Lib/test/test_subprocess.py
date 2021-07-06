@@ -1605,7 +1605,8 @@ class RunFuncTestCase(BaseTestCase):
                         f"{stacks}```")
 
 
-@unittest.skipIf(mswindows or sys.platform == "OpenVMS", "POSIX specific tests")
+@unittest.skipIf(mswindows, "POSIX specific tests")
+@unittest.skipIf(sys.platform == "OpenVMS", "POSIX specific tests")
 class POSIXProcessTestCase(BaseTestCase):
 
     def setUp(self):

@@ -139,6 +139,31 @@ $exit
         rdb.Free(ch)                # Free cursor handle
         rdb.Rollback()
         rdb.Detach()
+    
+    def test_sql_exec(self):
+        self.assertIsNot(rdb.Attach(self.dbname_vms), -1, rdb.Error())
+        stmt = "insert into customer (name, address, city) values (?,?,?)"
+        s = rdb.Prepare(stmt)
+        self.assertIsNot(s, None, rdb.Error())
+        rv = rdb.Exec(s, 'Bill Smith', '20 Seagul St', 'Berlin')
+        rv = rdb.Exec(s, 'Joe Smith', '26 Free St', 'Toronto')
+        rv = rdb.Exec(s, 'Bill Murrey', '13 Elm St', 'Washingtown')
+        rdb.Commit()
+        rdb.Free(s)
+        rdb.Rollback()
+        rdb.Detach()
+
+    def test_sql_select(self):
+        self.assertIsNot(rdb.Attach(self.dbname_vms), -1, rdb.Error())
+        stmt = "select name, address from customer where city = ?"
+        s = rdb.Prepare(stmt)
+        self.assertIsNot(s, None, rdb.Error())
+        rdb.SetReadonly()
+        row = rdb.Select(s, 'Toronto')
+        self.assertIsNot(row, None, rdb.Error())
+        rdb.Free(s)
+        rdb.Rollback()
+        rdb.Detach()
 
 
 if __name__ == "__main__":

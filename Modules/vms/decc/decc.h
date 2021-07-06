@@ -15,6 +15,13 @@ extern long _sysconf(int);
 extern int _sleep(unsigned int);
 extern int _dlopen_test(char *name);
 extern int _get_symbol(char *name, char** value);
+extern void *_fopen(char *, char *, ...);
+extern int _fclose(void *);
+extern int _fileno(void *);
+extern int _write(int, const char *, int);
+extern char *_fgets(void *, int);
+extern int _feof(void *);
+extern int _ferror(void *);
 
 #ifdef __cplusplus
         }

@@ -162,7 +162,7 @@ if __name__ == "__main__":
 
     opts, args = getopt.getopt(sys.argv[1:], '', ['type=', 'major=', 'minor=', 'level=', 'edit='])
 
-    type = 'E'
+    type = 'F'
     major = '3'
     minor = '8'
     level = '2'

@@ -5,7 +5,7 @@
 extern "C" {
 #endif
 
-int vms_sleep(int millisecs);
+int vms_sleep(int microsecs);
 
 #ifdef __cplusplus
 }

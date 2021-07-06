@@ -10,8 +10,19 @@
 #include <time.h>
 #include <assert.h>
 #include <dlfcn.h>
+#include <stdarg.h>
 
 #include "decc.h"
+
+#ifndef adc_Assert
+#define adc_Assert(x) \
+    do { \
+        if ((!(x))) { \
+            fprintf (stderr, "Assertion failed: %s (%s: %d)\n", #x, __FILE__, __LINE__); \
+            abort(); \
+        } \
+    } while (0)
+#endif
 
 extern unsigned int decc$fix_time(long long *);
 
@@ -157,7 +168,7 @@ char *_getenv(char *name, char *def)
 {
     char *tmp, *val = NULL;
 
-    assert(name);
+    adc_Assert(name);
     val = getenv(name);
 
     if (val == NULL && def != NULL) {
@@ -165,10 +176,9 @@ char *_getenv(char *name, char *def)
     }
 
     if (val) {
-        tmp = strdup(val);
-	    assert(tmp);
+        adc_Assert((tmp = strdup(val)));
     } else {
-	    tmp = NULL;
+        tmp = NULL;
     }
 
     return (tmp);
@@ -215,4 +225,123 @@ int _get_symbol(char *name, char** value) {
     buffer[result_len] = 0;
     *value = strdup(buffer);
     return status;
+}
+
+void *_fopen(char *path, char *mode, ...)
+{
+    va_list ap;
+    int n;
+    char **arr;
+    unsigned int *argv;
+    int argc;
+    FILE *fp = NULL;
+
+    if (!path) {
+        return NULL;
+    }
+    if (!mode) {
+        return NULL;
+    }
+
+    va_count(argc);
+    n = 0;
+
+    if (argc == 3) {
+        va_start(ap, mode);
+        arr = (char **) va_arg(ap, char **);
+        va_end(ap);
+        while (arr[n]) {
+            n++;
+        }
+    }
+
+    argc = n + 2;
+    argv = malloc(argc * sizeof(unsigned int));
+    adc_Assert(argv);
+
+    argv[0] = argc;
+    argv[1] = (unsigned int) path;
+    argv[2] = (unsigned int) mode;
+
+    if (argc == 3) {
+        n = 0;
+        while (arr[n]) {
+            argv[n + 3] = (unsigned int) arr[n];
+            n++;
+        }
+    }
+
+    fp = (FILE *) lib$callg(argv, (int (*)(void)) fopen);
+    free(argv);
+    return (fp);
+}
+
+
+int _fclose(void *fp)
+{
+    if (!fp) {
+        return -1;
+    }
+    return (fclose(fp));
+}
+
+
+int _fileno(void *fp)
+{
+    if (!fp) {
+        return -1;
+    }
+    return (fileno(fp));
+}
+
+
+int _write(int fd, const char *buf, int len)
+{
+    return (write(fd, buf, len));
+}
+
+
+#ifndef MAX_REC_LEN
+#define MAX_REC_LEN 32000
+#endif
+
+char *_fgets(void *fp, int len)
+{
+    char *tmp;
+
+    if (!fp) {
+        return NULL;
+    }
+
+    if (len < 1 || len > MAX_REC_LEN) {
+        len = MAX_REC_LEN;
+    }
+
+    tmp = malloc(len);
+    adc_Assert(tmp);
+
+    if (fgets(tmp, len, fp) == NULL) {
+        free(tmp);
+        tmp = NULL;
+    }
+
+    return (tmp);
+}
+
+
+int _feof(void *fp)
+{
+    if (!fp) {
+        return -1;
+    }
+    return (feof(fp));
+}
+
+
+int _ferror(void *fp)
+{
+    if (!fp) {
+        return -1;
+    }
+    return (ferror(fp));
 }
