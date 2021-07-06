@@ -1,6 +1,9 @@
 import sys
 import unittest
 import time
+import os
+
+from test.support import TESTFN
 
 if sys.platform != 'OpenVMS':
     raise unittest.SkipTest('OpenVMS required')
@@ -8,6 +11,7 @@ if sys.platform != 'OpenVMS':
 import vms.decc as DECC
 import vms.lib as LIB
 import vms.syidef as SYIDEF
+import vms.fabdef as FABDEF
 
 class BaseTestCase(unittest.TestCase):
 
@@ -16,6 +20,43 @@ class BaseTestCase(unittest.TestCase):
 
     def tearDown(self):
         pass
+
+    def test_record_file(self):
+        """ tests write-read record file"""
+
+        lines = [
+            b"Line #1\n",
+            b"\n",
+            b"Line #3\n",
+        ]
+        
+        fp = DECC.fopen(TESTFN, "w", "rfm=var")
+        self.assertIsNotNone(fp)
+
+        fd = DECC.fileno(fp)
+        self.assertGreater(fd, 0)
+
+        for line in lines:
+            n = DECC.write(fd, line)
+            self.assertEqual(n, len(line))
+        DECC.fclose(fp)
+
+        st = os.stat(TESTFN)
+        self.assertEqual(st.st_fab_rfm, FABDEF.FAB_C_VAR)
+
+        fp = DECC.fopen(TESTFN, "r")
+        self.assertIsNotNone(fp)
+
+        for line in lines:
+            line_read = DECC.fgets(fp, 256)
+            self.assertEqual(line.decode(), line_read)
+        self.assertEqual(DECC.fgets(fp, 256), None)
+        self.assertEqual(DECC.feof(fp), True)
+
+        DECC.fclose(fp)
+
+        os.remove(TESTFN)
+
 
     def test_dlopen_test(self):
         """ tests if shared image is accessible """
