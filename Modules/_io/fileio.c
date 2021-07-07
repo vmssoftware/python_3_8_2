@@ -382,11 +382,7 @@ _io_FileIO___init___impl(fileio *self, PyObject *nameobj, const char *mode,
 #ifdef MS_WINDOWS
                 self->fd = _wopen(widename, flags, 0666);
 #elif defined(__VMS)
-                if (flags & O_BINARY) {
-                    self->fd = open(name, flags & ~O_BINARY, 0666, "ctx=bin");
-                } else {
-                    self->fd = open(name, flags, 0666);
-                }
+                self->fd = open(name, flags, 0666);
 #else
                 self->fd = open(name, flags, 0666);
 #endif

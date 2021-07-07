@@ -1347,11 +1347,6 @@ _Py_open_impl(const char *pathname, int flags, int gil_held)
 
         do {
             Py_BEGIN_ALLOW_THREADS
-#if defined(__VMS)
-            if (flags & O_BINARY) {
-                fd = open(pathname, flags & ~O_BINARY, 0, "ctx=bin");
-            } else 
-#endif
             fd = open(pathname, flags);
             Py_END_ALLOW_THREADS
         } while (fd < 0
@@ -1364,11 +1359,6 @@ _Py_open_impl(const char *pathname, int flags, int gil_held)
         }
     }
     else {
-#if defined(__VMS)
-            if (flags & O_BINARY) {
-                fd = open(pathname, flags & ~O_BINARY, 0, "ctx=bin");
-            } else 
-#endif
         fd = open(pathname, flags);
         if (fd < 0)
             return -1;
@@ -1439,6 +1429,18 @@ _Py_wfopen(const wchar_t *path, const wchar_t *mode)
     if (cpath == NULL) {
         return NULL;
     }
+#ifdef __VMS
+    // remove 'b' symbol
+    char *src=cmode, *dst=cmode;
+    while(*src) {
+        if (*src != 'b') {
+            *dst = *src;
+            ++dst;
+        }
+        ++src;
+    }
+    *dst = *src;    // store null symbol
+#endif
     f = fopen(cpath, cmode);
     PyMem_RawFree(cpath);
 #else
@@ -1465,6 +1467,21 @@ _Py_fopen(const char *pathname, const char *mode)
         return NULL;
     }
 
+#ifdef __VMS
+    // remove 'b' symbol
+    const char *src=mode;
+    char dst[10];
+    int i = 0;
+    while(*src && i < sizeof(dst)) {
+        if (*src != 'b') {
+            dst[i] = *src;
+            ++i;
+        }
+        ++src;
+    }
+    dst[i] = *src;    // store null symbol
+    mode = dst;
+#endif
     FILE *f = fopen(pathname, mode);
     if (f == NULL)
         return NULL;
@@ -1540,6 +1557,21 @@ _Py_fopen_obj(PyObject *path, const char *mode)
         return NULL;
     }
 
+#ifdef __VMS
+    // remove 'b' symbol
+    const char *src=mode;
+    char dst[10];
+    int i = 0;
+    while(*src && i < sizeof(dst)) {
+        if (*src != 'b') {
+            dst[i] = *src;
+            ++i;
+        }
+        ++src;
+    }
+    dst[i] = *src;    // store null symbol
+    mode = dst;
+#endif
     do {
         Py_BEGIN_ALLOW_THREADS
         f = fopen(path_bytes, mode);
@@ -1617,23 +1649,25 @@ _Py_read(int fd, void *buf, size_t count)
             assert(strncmp(_fd_name_, "_MBA", 4) != 0);
 #endif
             n = read(fd, buf, count);
-            if (0 <= n && n < count) {
-                // test if we have record-oriented file
-                struct stat stst;
-                if (0 == fstat(fd, &stst)) {
-                    switch (stst.st_fab_rfm) {
-                        case 1:
-                        case 2:
-                        case 3:
-                            // insert LF at the record boundary
-                            if (lseek(fd, 0, SEEK_CUR) != stst.st_size) {
-                                ((char*)buf)[n] = '\n';
-                                ++n;
-                            }
-                            break;
-                    }
-                }
-            }
+            // Now we open file without "ctx=bin", so we do not need to add LF
+            // Also we never get n == 0 on empty records
+            // if (0 <= n && n < count) {
+            //     // test if we have record-oriented file
+            //     struct stat stst;
+            //     if (0 == fstat(fd, &stst)) {
+            //         switch (stst.st_fab_rfm) {
+            //             case 1:
+            //             case 2:
+            //             case 3:
+            //                 // insert LF at the record boundary
+            //                 if (lseek(fd, 0, SEEK_CUR) != stst.st_size) {
+            //                     ((char*)buf)[n] = '\n';
+            //                     ++n;
+            //                 }
+            //                 break;
+            //         }
+            //     }
+            // }
         }
 #else
 #ifdef MS_WINDOWS

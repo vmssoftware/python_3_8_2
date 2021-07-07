@@ -33,5 +33,3 @@
 #define _POSIX_EXIT 1
 
 #define SIGBUS     10
-
-#define O_BINARY 0100
