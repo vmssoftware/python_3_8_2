@@ -335,6 +335,11 @@ static unsigned int _delete(rms_file_t * self, char *key, int len)
     return (sys$delete((void *) &self->rab));
 }
 
+static unsigned int _setrop(rms_file_t * self, int rop)
+{
+    self->rab.rab$l_rop = rop;
+    return (RMS$_NORMAL);
+}
 
 
 #define PyFileObject PyObject
@@ -780,6 +785,23 @@ static PyObject *RMS_delete(rms_file_t * self, PyObject * args,
     return (PyLong_FromLong(status));
 }
 
+static PyObject *RMS_setrop(rms_file_t * self, PyObject * args,
+			    PyObject * kwargs)
+{
+    unsigned int status;
+    int rop = 0;
+    char *kwnames[] = {
+        "rop", NULL
+    };
+
+    if (!PyArg_ParseTupleAndKeywords(args, kwargs, (char *) "i:setrop", kwnames, &rop)) {
+        return (NULL);
+    }
+
+    status = _setrop((rms_file_t *) self, rop); // does not produce an error
+
+    return (PyLong_FromLong(status));
+}
 
 
 static PyMethodDef tp_methods[] = {
@@ -805,6 +827,8 @@ static PyMethodDef tp_methods[] = {
      PyDoc_STR("update(record) -> status")},
     {"usekey", (PyCFunction) RMS_usekey, METH_VARARGS | METH_KEYWORDS,
      PyDoc_STR("use_key([keynum]) -> status")},
+    {"setrop", (PyCFunction) RMS_setrop, METH_VARARGS | METH_KEYWORDS,
+     PyDoc_STR("setrop(rop) -> status")},
     {NULL, NULL}
 };
 
@@ -1408,7 +1432,6 @@ static rms_file_t *_new(char *fn, int access, int share, unsigned int fop)
 }
 
 
-
 static PyMethodDef m_methods[] = {
     {"file", (PyCFunction) RMS_new, METH_VARARGS | METH_KEYWORDS,
      PyDoc_STR("file(name [,fac] [,shr], [fop]) -> new RMS file object")},
@@ -1481,3 +1504,4 @@ PyMODINIT_FUNC PyInit__rms(void)
 
     return (m);
 }
+

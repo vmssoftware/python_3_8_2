@@ -61,6 +61,9 @@ class IndexedFile:
     def usekey(self, keynum):
         self._file.usekey(keynum)
 
+    def setrop(self, rop):
+        self._file.setrop(rop)
+
     def rewind(self):
         self._file.rewind()
 
