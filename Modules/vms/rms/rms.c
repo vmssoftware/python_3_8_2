@@ -337,8 +337,9 @@ static unsigned int _delete(rms_file_t * self, char *key, int len)
 
 static unsigned int _setrop(rms_file_t * self, int rop)
 {
+    unsigned int prev_l_rop = self->rab.rab$l_rop;
     self->rab.rab$l_rop = rop;
-    return (RMS$_NORMAL);
+    return prev_l_rop;
 }
 
 
@@ -800,7 +801,7 @@ static PyObject *RMS_setrop(rms_file_t * self, PyObject * args,
 
     status = _setrop((rms_file_t *) self, rop); // does not produce an error
 
-    return (PyLong_FromLong(status));
+    return (PyLong_FromUnsignedLong(status));
 }
 
 
