@@ -31,7 +31,7 @@
 #include "descrip.h"
 #include "lib$routines.h"
 #include "vms/vms_sleep.h"
-#include "vms/vms_fd_inherit.h"
+#include "vms/vms_fcntl.h"
 #endif
 
 #include "Python.h"
@@ -7529,6 +7529,13 @@ os_kill_impl(PyObject *module, pid_t pid, Py_ssize_t signal)
         return NULL;
     }
 #ifndef MS_WINDOWS
+#ifdef __VMS
+    if (pid == getpid()) {
+        if (raise((int)signal) == -1) {
+            return posix_error();
+        }
+    } else
+#endif
     if (kill(pid, (int)signal) == -1)
         return posix_error();
     Py_RETURN_NONE;
@@ -8026,7 +8033,7 @@ os_waitpid_impl(PyObject *module, pid_t pid, int options)
 
 #ifdef __VMS
     unsigned int finished = 0;
-    if (pid > 0 && (-1 != vms_spawn_status(pid, &status, &finished, NULL, 0))) {
+    if (pid > 0 && (-1 != vms_spawn_status(pid, &status, &finished, 0))) {
         // the child is spawned by lib$spawn
         if (finished) {
             if (status == -1) {
@@ -8043,7 +8050,7 @@ os_waitpid_impl(PyObject *module, pid_t pid, int options)
             Py_BEGIN_ALLOW_THREADS
             vms_sleep(100); // 100 microseconds
             Py_END_ALLOW_THREADS
-            vms_spawn_status(pid, &status, &finished, NULL, 0);
+            vms_spawn_status(pid, &status, &finished, 0);
         }
         if (status == -1) {
             return NULL;

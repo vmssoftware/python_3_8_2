@@ -16,9 +16,11 @@
 #include <starlet.h>
 #include <string.h>
 #include <stsdef.h>
+#include <unixio.h>
 
 #include "vms_mbx_util.h"
 int vms_channel_lookup(int fd, unsigned short *channel);
+int vms_channel_lookup_by_name(char* name, unsigned short *channel);
 
 unsigned short simple_create_mbx(const char *name, int mbx_size) {
     unsigned short channel = 0;
@@ -34,18 +36,8 @@ unsigned short simple_create_mbx(const char *name, int mbx_size) {
     return channel;
 }
 
-int simple_write_mbx(unsigned short channel, unsigned char *buf, int size) {
-    IOSB iosb = {0};
-    return sys$qiow(EFN$C_ENF, channel, IO$_WRITEVBLK | IO$M_NOW, &iosb, 0, 0, buf, size, 0, 0, 0, 0);
-}
-
-int simple_read_mbx(unsigned short channel, unsigned char *buf, int size) {
-    IOSB iosb = {0};
-    int status = sys$qiow(EFN$C_ENF, channel, IO$_READVBLK | IO$M_NOW, &iosb, 0, 0, buf, size, 0, 0, 0, 0);
-    if ($VMS_STATUS_SUCCESS(status) && $VMS_STATUS_SUCCESS(iosb.iosb$w_status)) {
-        return iosb.iosb$w_bcnt;
-    }
-    return -1;
+int simple_free_mbx(unsigned short channel) {
+    return sys$dassgn(channel);
 }
 
 int simple_check_mbx(unsigned short channel) {
@@ -57,7 +49,61 @@ int simple_check_mbx(unsigned short channel) {
     return -1;
 }
 
-static unsigned __int64 global_timer_reqidt = 1;
+int simple_write_mbx(unsigned short channel, unsigned char *buf, int size) {
+    IOSB iosb = {0};
+    return sys$qiow(EFN$C_ENF, channel, IO$_WRITEVBLK | IO$M_NOW, &iosb, 0, 0, buf, size, 0, 0, 0, 0);
+}
+
+int simple_write_mbx_w(unsigned short channel, unsigned char *buf, int size) {
+    IOSB iosb = {0};
+    return sys$qiow(EFN$C_ENF, channel, IO$_WRITEVBLK, &iosb, 0, 0, buf, size, 0, 0, 0, 0);
+}
+
+int simple_write_mbx_eof(unsigned short channel) {
+    IOSB iosb = {0};
+    return sys$qiow(EFN$C_ENF, channel, IO$_WRITEOF | IO$M_NOW, &iosb, 0, 0, 0, 0, 0, 0, 0, 0);
+}
+
+int write_mbx_eof(int fd) {
+    if (fd >= 0 && isapipe(fd) == 1) {
+        unsigned short channel;
+        if (vms_channel_lookup(fd, &channel) == 0) {
+            simple_write_mbx_eof(channel);
+            simple_free_mbx(channel);
+            return 0;
+        }
+    }
+    return -1;
+}
+
+int simple_read_mbx(unsigned short channel, unsigned char *buf, int size) {
+    IOSB iosb = {0};
+    int status = sys$qiow(EFN$C_ENF, channel, IO$_READVBLK | IO$M_NOW, &iosb, 0, 0, buf, size, 0, 0, 0, 0);
+    if ($VMS_STATUS_SUCCESS(status) && $VMS_STATUS_SUCCESS(iosb.iosb$w_status)) {
+        return iosb.iosb$w_bcnt;
+    }
+    return -1;
+}
+
+int simple_read_mbx_w(unsigned short channel, unsigned char *buf, int size) {
+    IOSB iosb = {0};
+    int status = SYS$QIOW(EFN$C_ENF, channel, IO$_READVBLK, &iosb, 0, 0, buf, size, 0, 0, 0, 0);
+    if ($VMS_STATUS_SUCCESS(status) && $VMS_STATUS_SUCCESS(iosb.iosb$w_status)) {
+        return iosb.iosb$w_bcnt;
+    }
+    return -1;
+}
+
+int simple_read_mbx_w_stream(unsigned short channel, unsigned char *buf, int size) {
+    IOSB iosb = {0};
+    int status = SYS$QIOW(EFN$C_ENF, channel, IO$_READVBLK | IO$M_STREAM, &iosb, 0, 0, buf, size, 0, 0, 0, 0);
+    if ($VMS_STATUS_SUCCESS(status) && $VMS_STATUS_SUCCESS(iosb.iosb$w_status)) {
+        return iosb.iosb$w_bcnt;
+    }
+    return -1;
+}
+
+unsigned __int64 global_timer_reqidt = 1;
 
 int simple_read_mbx_timeout(unsigned short channel, unsigned char *buf, int size, int timeout_microseconds) {
     int status;
@@ -95,7 +141,9 @@ int simple_read_mbx_timeout(unsigned short channel, unsigned char *buf, int size
         goto egress;
     }
 
-    timer_reqidt = __ATOMIC_INCREMENT_QUAD(&global_timer_reqidt);
+    while (!timer_reqidt) {
+        timer_reqidt = __ATOMIC_INCREMENT_QUAD(&global_timer_reqidt);
+    }
     status = sys$setimr(timerEfn, &timerOffset, 0, timer_reqidt, 0);
     if (!$VMS_STATUS_SUCCESS(status)) {
         retCode = -5;
@@ -136,16 +184,7 @@ egress:
     return retCode;
 }
 
-int simple_read_mbx_w(unsigned short channel, unsigned char *buf, int size) {
-    IOSB iosb = {0};
-    int status = SYS$QIOW(EFN$C_ENF, channel, IO$_READVBLK, &iosb, 0, 0, buf, size, 0, 0, 0, 0);
-    if ($VMS_STATUS_SUCCESS(status) && $VMS_STATUS_SUCCESS(iosb.iosb$w_status)) {
-        return iosb.iosb$w_bcnt;
-    }
-    return -1;
-}
-
-unsigned short get_mbx_size(unsigned short channel) {
+unsigned int get_mbx_size(unsigned short channel) {
     unsigned int   mbx_buffer_size = 0;
     unsigned short mbx_buffer_size_len = 0;
     unsigned int   mbx_char = 0;
@@ -167,61 +206,157 @@ unsigned short get_mbx_size(unsigned short channel) {
     return 0;
 }
 
-#undef _PID_IS_PROVIDED_
-#define _PID_IS_PROVIDED_(x) ((x) != 0 && (x) != -1)
+#undef _DO_TRACE_MBX_EOF_
+#ifndef _DO_TRACE_MBX_EOF_
+#define _TRACE_LINE_(line)
+#define _TRACE_LINE_V_(line, ...)
+#else
+#include <fcntl.h>
+#include <unixlib.h>
+#define _TRACE_LINE_(line) \
+    do {    \
+        char name[64];  \
+        sprintf(name, "mbx_eof_%x.txt", getpid());   \
+        int fd = open(name, O_CREAT | O_APPEND | O_RDWR, 0600); \
+        if (fd) {   \
+            write(fd, line, strlen(line));  \
+            close(fd);  \
+        }   \
+    } while(0)
 
-int read_mbx(int fd, char *buf, int size, int pid) {
+#define _TRACE_LINE_V_(line, ...) \
+    do {    \
+        char buf[256];  \
+        sprintf(buf, line, __VA_ARGS__); \
+        _TRACE_LINE_(buf);  \
+    } while(0)
+#endif
+
+#define _MAX_FD_TO_REGISTER_ 256
+
+static int fd_map[_MAX_FD_TO_REGISTER_] = {0};
+
+/*  pid == 0, no child (unmap)
+    pid >  0, child is created by exec()
+    pid <  0, child is created by lib$spawn()
+*/
+int map_fd_to_child(int fd, int pid) {
+    if ((unsigned int)fd < (unsigned int)_MAX_FD_TO_REGISTER_) {
+        fd_map[fd] = pid;
+        return 0;
+    }
+    return -1;
+}
+
+int read_mbx(int fd, char *buf, int size) {
+    if (fd < 0 || isapipe(fd) != 1) {
+        return -1;
+    }
+    int fd_pid = 0;
+    if ((unsigned int)fd < (unsigned int)_MAX_FD_TO_REGISTER_) {
+        fd_pid = fd_map[fd];
+    }
     unsigned short channel;
     IOSB iosb = {0};
     unsigned int op = IO$_READVBLK;
-    int nbytes = 0;
-    // set result is ok
-    errno = 0;
-    if (vms_channel_lookup(fd, &channel) == 0) {
+    // set result is not ok
+    int nbytes = -1;
+    errno = EVMSERR;
+    char devicename[256];
+    if (vms_channel_lookup_by_name(getname(fd, devicename, 1), &channel) == 0) {
         unsigned short mbx_size = get_mbx_size(channel);
         if (mbx_size < size) {
             size = mbx_size;
         }
-        if (size <= 0) {
-            errno = EVMSERR;
-            sys$dassgn(channel);
-            return -1;
-        }
-        if (!_PID_IS_PROVIDED_(pid)) {
-            // no PID -> regular stream
-            op |= IO$M_STREAM;
-        }
-        int status = sys$qiow(EFN$C_ENF, channel, op, &iosb, NULL, 0, buf, size, 0, 0, 0, 0);
-        if ($VMS_STATUS_SUCCESS(status)) {
-            if (iosb.iosb$w_status == SS$_ENDOFFILE) {
-                if (_PID_IS_PROVIDED_(pid)) {
-                    // PID is provided -> accept EOF only from provided PID
-                    if (iosb.iosb$l_pid == pid) {
-                        nbytes = 0;
-                    } else {
+        if (size > 0) {
+            if (fd_pid >= -1) {
+                // no lib$spawn(), use channel as regular stream
+                op |= IO$M_STREAM;
+            }
+            int status = sys$qiow(EFN$C_ENF, channel, op, &iosb, NULL, 0, buf, size, 0, 0, 0, 0);
+            if ($VMS_STATUS_SUCCESS(status)) {
+                if (iosb.iosb$w_status == SS$_ENDOFFILE) {
+                    errno = 0;
+                    nbytes = 0;
+                    _TRACE_LINE_V_("%i: \"%s\" eof from 0x%x", fd, devicename, iosb.iosb$l_pid);
+                    if ((fd_pid < -1 && iosb.iosb$l_pid != -fd_pid) ||
+                        (fd_pid > 0 && iosb.iosb$l_pid != fd_pid)) {
+                        // accept EOF only given pid
                         nbytes = -1;
                         errno = EAGAIN;
+                        _TRACE_LINE_(" again\n");
                     }
-                } else {
-                    // no PID -> accept EOF from any process
-                    nbytes = 0;
-                }
-            } else {
-                nbytes = iosb.iosb$w_bcnt;
-                if (_PID_IS_PROVIDED_(pid)) {
-                    // PID is provided -> add LF to the end of RECORD
-                    buf[nbytes] = '\n';
-                    ++nbytes;
-                }
-                if (!nbytes) {
-                    // somebody writes zero length buffer into the stream...
-                    // assume it is just emply line
-                    buf[nbytes] = '\n';
-                    ++nbytes;
+                    if (!nbytes) {
+                        //we should prevent future reading/waiting already closed pipe
+                        _TRACE_LINE_(" sentinel\n");
+                        simple_write_mbx_eof(channel);
+                        //free fd
+                        map_fd_to_child(fd, 0);
+                    }
+                } else if (iosb.iosb$w_status == SS$_NORMAL) {
+                    errno = 0;
+                    nbytes = iosb.iosb$w_bcnt;
+                    _TRACE_LINE_V_("%i: \"%s\" data[%i] from 0x%x", fd, devicename, nbytes, iosb.iosb$l_pid);
+                    if (fd_pid < -1) {
+                        // add LF to the end of each RECORD
+                        buf[nbytes] = '\n';
+                        ++nbytes;
+                        _TRACE_LINE_(" EOL added\n");
+                    } else if (!nbytes) {
+                        // somebody writes zero length buffer into the stream...
+                        // assume it is just emply line
+                        buf[nbytes] = '\n';
+                        ++nbytes;
+                        _TRACE_LINE_(" EOL added to stream\n");
+                    } else {
+                        _TRACE_LINE_("\n");
+                    }
                 }
             }
         }
         sys$dassgn(channel);
     }
     return nbytes;
+}
+
+/*  test if name is like _MBA9999(9):
+    returns:
+        -1 error
+        0  not a pipe
+        1  is read end
+        2  is write end
+*/
+int vms_isapipe_by_name(char *name) {
+    if (!name || !*name) {
+        // error
+        return -1;
+    }
+    if (strncmp(name, "_MBA", 4) != 0) {
+        // does not start with _MBA - not a pipe
+        return 0;
+    }
+    char *ptr = name + 4;
+    while(*(ptr++)) {
+        if (*ptr == ':') {
+            // found a semicolon
+            break;
+        }
+        if (*ptr < '0' || *ptr > '9') {
+            // not a number or semicolon - not a pipe
+            return 0;
+        }
+    }
+    if (ptr - name < 8 || ptr - name > 9) {
+        // amount of number must be 4 or 5
+        return 0;
+    }
+    if (strcmp(ptr, ":[].") == 0) {
+        return 1;
+    }
+    return 2;
+}
+
+int vms_isapipe(int fd) {
+    char name[256];
+    return vms_isapipe_by_name(getname(fd, name, 1));
 }

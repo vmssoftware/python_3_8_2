@@ -5,7 +5,7 @@
 #include <sys/stat.h>
 
 #include "vms/vms_spawn_helper.h"
-#include "vms/vms_fd_inherit.h"
+#include "vms/vms_fcntl.h"
 #include "vms/vms_mbx_util.h"
 
 #endif
@@ -1081,27 +1081,18 @@ get_inheritable(int fd, int raise)
     return (flags & HANDLE_FLAG_INHERIT);
 #elif defined(__VMS)
 #ifdef _DEBUG
-    char _fd_name_[256];
-    getname(fd, _fd_name_, 1);
+    char fd_name[256];
+    getname(fd, fd_name, 1);
 #endif
-    _inherit_query    q;
-    q.fd = fd;
-    q.cmd = _INHERIT_QUERY_GET_INHERITABLE;
-    switch (safe_fd_inherit(&q)) {
-        case 0:     // OK
-            if (q.res == -1) {
-                if (raise)
-                    PyErr_SetFromErrno(PyExc_OSError);
-                return -1;
-            }
-            return !(q.res & FD_CLOEXEC);
-        case -5:    // TimeOut
-        default:
-            errno = EVMSERR;
-            if (raise)
-                PyErr_SetFromErrno(PyExc_OSError);
-            return -1;
+    int flags;
+
+    flags = vms_fcntl(fd, F_GETFD, 0);
+    if (flags == -1) {
+        if (raise)
+            PyErr_SetFromErrno(PyExc_OSError);
+        return -1;
     }
+    return !(flags & FD_CLOEXEC);
 #else
     int flags;
 
@@ -1226,31 +1217,37 @@ set_inheritable(int fd, int inheritable, int raise, int *atomic_flag_works)
 
 #ifdef __VMS
 #ifdef _DEBUG
-    char _fd_name_[256];
-    getname(fd, _fd_name_, 1);
+    char fd_name[256];
+    getname(fd, fd_name, 1);
 #endif
-    _inherit_query    q;
-    q.fd = fd;
+    /* slow-path: fcntl() requires two syscalls */
+    flags = vms_fcntl(fd, F_GETFD, 0);
+    if (flags < 0) {
+        if (raise)
+            PyErr_SetFromErrno(PyExc_OSError);
+        return -1;
+    }
+
     if (inheritable) {
-        q.cmd = _INHERIT_QUERY_SET_INHERITABLE;
-    } else {
-        q.cmd = _INHERIT_QUERY_SET_NON_INHERITABLE;
+        new_flags = flags & ~FD_CLOEXEC;
     }
-    switch (safe_fd_inherit(&q)) {
-        case 0:     // OK
-            if (q.res == -1) {
-                if (raise)
-                    PyErr_SetFromErrno(PyExc_OSError);
-                return -1;
-            }
-            return 0;
-        case -5:    // TimeOut
-        default:
-            errno = EVMSERR;
-            if (raise)
-                PyErr_SetFromErrno(PyExc_OSError);
-            return -1;
+    else {
+        new_flags = flags | FD_CLOEXEC;
     }
+
+    if (new_flags == flags) {
+        /* FD_CLOEXEC flag already set/cleared: nothing to do */
+        return 0;
+    }
+
+    res = vms_fcntl(fd, F_SETFD, new_flags);
+    if (res < 0) {
+        if (raise)
+            PyErr_SetFromErrno(PyExc_OSError);
+        return -1;
+    }
+
+    return 0;
 #endif
 
     /* slow-path: fcntl() requires two syscalls */
@@ -1638,43 +1635,14 @@ _Py_read(int fd, void *buf, size_t count)
 #endif
         if (isapipe(fd) == 1) {
             do {
-                n = read_mbx(fd, buf, count, vms_spawn_check_fd(fd));
+                n = read_mbx(fd, buf, count);
             } while(n == -1 && errno == EAGAIN);
-            if (!n) {
-                vms_spawn_clear_fd(fd);
-            }
-        } else {
-#ifdef _DEBUG
-            // "_MBA99999:[].;"
-            assert(strncmp(_fd_name_, "_MBA", 4) != 0);
+        } else
 #endif
-            n = read(fd, buf, count);
-            // Now we open file without "ctx=bin", so we do not need to add LF
-            // Also we never get n == 0 on empty records
-            // if (0 <= n && n < count) {
-            //     // test if we have record-oriented file
-            //     struct stat stst;
-            //     if (0 == fstat(fd, &stst)) {
-            //         switch (stst.st_fab_rfm) {
-            //             case 1:
-            //             case 2:
-            //             case 3:
-            //                 // insert LF at the record boundary
-            //                 if (lseek(fd, 0, SEEK_CUR) != stst.st_size) {
-            //                     ((char*)buf)[n] = '\n';
-            //                     ++n;
-            //                 }
-            //                 break;
-            //         }
-            //     }
-            // }
-        }
-#else
 #ifdef MS_WINDOWS
         n = read(fd, buf, (int)count);
 #else
         n = read(fd, buf, count);
-#endif
 #endif
         /* save/restore errno because PyErr_CheckSignals()
          * and PyErr_SetFromErrno() can modify it */

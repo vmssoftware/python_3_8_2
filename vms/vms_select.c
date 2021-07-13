@@ -28,24 +28,19 @@
 #include "vms/vms_select.h"
 #include "vms/vms_sleep.h"
 
-int vms_channel_lookup(int fd, unsigned short *channel) {
+int vms_channel_lookup_by_name(char* name, unsigned short *channel) {
     int status;
-    char devicename[256];
-    char *retname;
     struct dsc$descriptor_s dev_desc;
     int call_stat;
     unsigned short chan;
 
     status = -1;
 
-    /* get the name */
-    /*--------------*/
-    retname = getname(fd, devicename, 1);
-    if (retname != NULL) {
+    if (name != NULL) {
         /* Assign the channel */
         /*--------------------*/
-        dev_desc.dsc$a_pointer = devicename;
-        dev_desc.dsc$w_length = strlen(devicename);
+        dev_desc.dsc$a_pointer = name;
+        dev_desc.dsc$w_length = strlen(name);
         dev_desc.dsc$b_dtype = DSC$K_DTYPE_T;
         dev_desc.dsc$b_class = DSC$K_CLASS_S;
         call_stat = SYS$ASSIGN(&dev_desc, &chan, 0, 0, 0);
@@ -55,6 +50,11 @@ int vms_channel_lookup(int fd, unsigned short *channel) {
         }
     }
     return status;
+}
+
+int vms_channel_lookup(int fd, unsigned short *channel) {
+    char devicename[256];
+    return vms_channel_lookup_by_name(getname(fd, devicename, 1), channel);
 }
 
 int vms_channel_free(unsigned short channel) {

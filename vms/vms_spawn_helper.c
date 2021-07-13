@@ -7,30 +7,26 @@
 unsigned int    _pid[MAX_SPAWN];
 int             _status[MAX_SPAWN];
 unsigned int    _finished[MAX_SPAWN];
-int             _fd_stdout[MAX_SPAWN];
 
 static unsigned long _finished_counter = 1;
 static unsigned long _initialized = 0;   // 0 - uninitialized, 1 - initialization, 2 - initializes
 
-static int _init_pos(int pos, unsigned int **pppid, int **ppstatus, unsigned int **ppfinished, int **ppfd) {
+static int _init_pos(int pos, unsigned int **pppid, int **ppstatus, unsigned int **ppfinished) {
     _pid[pos] = -1;
     _status[pos] = -1;
     _finished[pos] = 0;
-    _fd_stdout[pos] = -1;
     *pppid = _pid + pos;
     *ppstatus = _status + pos;
     *ppfinished = _finished + pos;
-    *ppfd = _fd_stdout + pos;
     return pos;
 }
 
-int vms_spawn_alloc(unsigned int **pppid, int **ppstatus, unsigned int **ppfinished, int **ppfd) {
+int vms_spawn_alloc(unsigned int **pppid, int **ppstatus, unsigned int **ppfinished) {
     // init table
     if (__CMP_SWAP_LONG(&_initialized, 0, 1)) {
         memset(_pid, 0, sizeof(_pid));
         memset(_status, -1, sizeof(_status));
         memset(_finished, 0, sizeof(_finished));
-        memset(_fd_stdout, -1, sizeof(_fd_stdout));
         ++_initialized;
     } else {
         while(_initialized == 1) {
@@ -45,7 +41,7 @@ int vms_spawn_alloc(unsigned int **pppid, int **ppstatus, unsigned int **ppfinis
         for(int i = 0; i < MAX_SPAWN; ++i) {
             if (__CMP_SWAP_LONG(_pid + i, 0, -1)) {
                 // found an empty position
-                return _init_pos(i, pppid, ppstatus, ppfinished, ppfd);
+                return _init_pos(i, pppid, ppstatus, ppfinished);
             }
             if (_finished[i] == 0) {
                 // pid is set, process is not finished
@@ -64,7 +60,7 @@ int vms_spawn_alloc(unsigned int **pppid, int **ppstatus, unsigned int **ppfinis
         }
         // found the oldest finished process, which retcode is not poped, so overwrite it
         if (__CMP_SWAP_LONG(_pid + pos, oldest_pid, -1)) {
-            return _init_pos(pos, pppid, ppstatus, ppfinished, ppfd);
+            return _init_pos(pos, pppid, ppstatus, ppfinished);
         }
         // someone beat us here, do another try
     }
@@ -90,7 +86,7 @@ int vms_spawn_finish(unsigned int *pfinished) {
     return -1;
 }
 
-int vms_spawn_status(unsigned int pid, int *pstatus, unsigned int *pfinished, int *pfd, int free) {
+int vms_spawn_status(unsigned int pid, int *pstatus, unsigned int *pfinished, int free) {
     for(int i = 0; i < MAX_SPAWN; ++i) {
         if (_pid[i] == pid) {
             if (pstatus) {
@@ -98,9 +94,6 @@ int vms_spawn_status(unsigned int pid, int *pstatus, unsigned int *pfinished, in
             }
             if (pfinished) {
                 *pfinished = _finished[i];
-            }
-            if (pfd) {
-                *pfd = _fd_stdout[i];
             }
             if (free) {
                 _finished[i] = 0;
@@ -110,37 +103,4 @@ int vms_spawn_status(unsigned int pid, int *pstatus, unsigned int *pfinished, in
         }
     }
     return -1;
-}
-
-unsigned int vms_spawn_check_fd(int fd) {
-    if (fd < 0) {
-        return 0;
-    }
-    for(int i = 0; i < MAX_SPAWN; ++i) {
-        if (_fd_stdout[i] == fd) {
-            return _pid[i];
-        }
-    }
-    return 0;
-}
-
-int vms_spawn_clear_fd(int fd) {
-    if (fd < 0) {
-        return -1;
-    }
-    int pos = -1;
-    int i;
-    for(i = 0; i < MAX_SPAWN; ++i) {
-        if (_fd_stdout[i] == fd) {
-            _fd_stdout[i] = -1;
-            pos = i;
-            break;
-        }
-    }
-    for(; i < MAX_SPAWN; ++i) {
-        if (_fd_stdout[i] == fd) {
-            _fd_stdout[i] = -1;
-        }
-    }
-    return pos;
 }

@@ -1,6 +1,6 @@
 ! MMS/EXT/DESCR=Python3.mms/MACRO=("OUTDIR=OUT","CONFIG=DEBUG")
 PY_CFLAGS_Q = /NAMES=(AS_IS,SHORTENED)/WARNINGS=WARNINGS=ALL/ACCEPT=NOVAXC_KEYWORDS
-PY_CFLAGS_DEF = _USE_STD_STAT,__STDC_FORMAT_MACROS,_LARGEFILE,_USE_DUP_INHERIT_
+PY_CFLAGS_DEF = _USE_STD_STAT,__STDC_FORMAT_MACROS,_LARGEFILE
 
 ! define output folder
 .IF OUTDIR
@@ -515,9 +515,9 @@ POBJS = -
 
 PARSER_OBJS = $(POBJS) -
 [.$(OBJ_DIR).Parser]myreadline.obj -
-[.$(OBJ_DIR).vms]stdioreadline.obj -
 [.$(OBJ_DIR).Parser]parsetok.obj -
-[.$(OBJ_DIR).Parser]tokenizer.obj
+[.$(OBJ_DIR).Parser]tokenizer.obj -
+[.$(OBJ_DIR).vms]vms_smg_readline.obj
 
 PYTHON_OBJS = -
 [.$(OBJ_DIR).Python]_warnings.obj -
@@ -653,11 +653,12 @@ MODOBJS = -
 
 LIBRARY_OBJS_OMIT_FROZEN = -
 [.$(OBJ_DIR).Modules]getbuildinfo.obj -
-[.$(OBJ_DIR).vms]vms_sleep.obj -
+[.$(OBJ_DIR).vms]vms_crtl_values.obj -
 [.$(OBJ_DIR).vms]vms_select.obj -
 [.$(OBJ_DIR).vms]vms_spawn_helper.obj -
+[.$(OBJ_DIR).vms]vms_sleep.obj -
 [.$(OBJ_DIR).vms]vms_mbx_util.obj -
-[.$(OBJ_DIR).vms]vms_fd_inherit.obj -
+[.$(OBJ_DIR).vms]vms_fcntl.obj -
 $(PARSER_OBJS) -
 $(OBJECT_OBJS) -
 $(PYTHON_OBJS) -
@@ -784,13 +785,15 @@ DTRACE_DEPS = -
 [.$(OBJ_DIR).Python]symtable.obj : [.Python]symtable.c [.Include]graminit.h [.Include]Python-ast.h $(PYTHON_HEADERS)
 [.$(OBJ_DIR).Python]thread.obj : [.Python]thread.c [.Python]thread_nt.h [.Python]thread_pthread.h [.Python]condvar.h $(PYTHON_HEADERS)
 [.$(OBJ_DIR).Python]traceback.obj : [.Python]traceback.c $(PYTHON_HEADERS)
+
+[.$(OBJ_DIR).vms]vms_smg_readline.obj : [.vms]vms_smg_readline.c $(PYTHON_HEADERS)
+[.$(OBJ_DIR).vms]vms_crtl_values.obj : [.vms]vms_crtl_values.c  $(PYTHON_HEADERS)
+[.$(OBJ_DIR).vms]vms_select.obj : [.vms]vms_select.c [.vms]vms_select.h [.vms]vms_spawn_helper.h [.vms]vms_sleep.h  $(PYTHON_HEADERS)
+[.$(OBJ_DIR).vms]vms_spawn_helper.obj : [.vms]vms_spawn_helper.c [.vms]vms_spawn_helper.h  $(PYTHON_HEADERS)
+[.$(OBJ_DIR).vms]vms_sleep.obj : [.vms]vms_sleep.c [.vms]vms_sleep.h  $(PYTHON_HEADERS)
+[.$(OBJ_DIR).vms]vms_mbx_util.obj : [.vms]vms_mbx_util.c [.vms]vms_mbx_util.h  $(PYTHON_HEADERS)
+[.$(OBJ_DIR).vms]vms_fcntl.obj : [.vms]vms_fcntl.c [.vms]vms_fcntl.h [.vms]vms_mbx_util.h  $(PYTHON_HEADERS)
 [.$(OBJ_DIR).vms]vms_crtl_init.obj : [.vms]vms_crtl_init.c
-[.$(OBJ_DIR).vms]stdioreadline.obj : [.vms]stdioreadline.c
-[.$(OBJ_DIR).vms]vms_select.obj : [.vms]vms_select.c [.vms]vms_select.h [.vms]vms_spawn_helper.h [.vms]vms_sleep.h
-[.$(OBJ_DIR).vms]vms_spawn_helper.obj : [.vms]vms_spawn_helper.c [.vms]vms_spawn_helper.h
-[.$(OBJ_DIR).vms]vms_sleep.obj : [.vms]vms_sleep.c [.vms]vms_sleep.h
-[.$(OBJ_DIR).vms]vms_mbx_util.obj : [.vms]vms_mbx_util.c [.vms]vms_mbx_util.h
-[.$(OBJ_DIR).vms]vms_fd_inherit.obj : [.vms]vms_fd_inherit.c [.vms]vms_fd_inherit.h [.vms]vms_mbx_util.h
 
 [.$(OBJ_DIR).Objects]interpreteridobject.obj : [.Objects]interpreteridobject.c $(PYTHON_HEADERS)
   @ pipe create/dir $(DIR $(MMS$TARGET)) | copy SYS$INPUT nl:
@@ -959,18 +962,18 @@ DTRACE_DEPS = -
     ! [.$(OUT_DIR)]python3.exe is built => python$build_out:[000000]$(NOTDIR $(MMS$TARGET_NAME)).EXE
 
 ! _testembed.exe
-[.$(OUT_DIR)]_testembed.exe : [.$(OBJ_DIR).Programs]_testembed.obj,[.$(OUT_DIR)]python$shr.exe
+[.$(OUT_DIR)]_testembed.exe : [.$(OBJ_DIR).Programs]_testembed.obj,[.$(OBJ_DIR).vms]vms_crtl_init.obj,[.$(OUT_DIR)]python$shr.exe
    @ pipe create/dir $(DIR $(MMS$TARGET)) | copy SYS$INPUT nl:
-    $(LINK)$(LINKFLAGS)/EXECUTABLE=python$build_out:[000000]$(NOTDIR $(MMS$TARGET_NAME)).EXE $(MMS$SOURCE),[.opt]$(NOTDIR $(MMS$TARGET_NAME)).opt/OPT
+    $(LINK)$(LINKFLAGS)/EXECUTABLE=python$build_out:[000000]$(NOTDIR $(MMS$TARGET_NAME)).EXE [.$(OBJ_DIR).vms]vms_crtl_init.obj,$(MMS$SOURCE),[.opt]$(NOTDIR $(MMS$TARGET_NAME)).opt/OPT
 
 ! libpython3^.8.olb
 [.$(OUT_DIR)]libpython3^.8.olb : [.$(OUT_DIR)]libpython3^.8.olb($(LIBRARY_OBJS))
     continue
 
 ! _freeze_importlib
-[.$(OUT_DIR).Programs]_freeze_importlib.exe : [.$(OBJ_DIR).Programs]_freeze_importlib.obj $(LIBRARY_OBJS_OMIT_FROZEN)
+[.$(OUT_DIR).Programs]_freeze_importlib.exe : [.$(OBJ_DIR).Programs]_freeze_importlib.obj [.$(OBJ_DIR).vms]vms_crtl_init.obj $(LIBRARY_OBJS_OMIT_FROZEN)
   @ pipe create/dir $(DIR $(MMS$TARGET)) | copy SYS$INPUT nl:
-    $(LINK)/NODEBUG/NOMAP/EXECUTABLE=python$build_out:[Programs]$(NOTDIR $(MMS$TARGET_NAME)).EXE [.opt]$(NOTDIR $(MMS$TARGET_NAME)).opt/OPT
+    $(LINK)/NODEBUG/NOMAP/EXECUTABLE=python$build_out:[Programs]$(NOTDIR $(MMS$TARGET_NAME)).EXE [.$(OBJ_DIR).vms]vms_crtl_init.obj,$(MMS$SOURCE),[.opt]$(NOTDIR $(MMS$TARGET_NAME)).opt/OPT
 
 [.Python]importlib_external.h : [.Lib.importlib]_bootstrap_external.py [.$(OUT_DIR).Programs]_freeze_importlib.exe
     mcr [.$(OUT_DIR).Programs]_freeze_importlib.exe importlib._bootstrap_external Lib/importlib/_bootstrap_external.py Python/importlib_external.h
@@ -1343,11 +1346,11 @@ EXPAT_HEADERS = -
     @ pipe create/dir $(DIR $(MMS$TARGET)) | copy SYS$INPUT nl:
     $(CC) $(PY_CFLAGS_MULT) /OBJECT=$(MMS$TARGET) $(MMS$SOURCE)
 
-[.$(OBJ_DIR).vms]sem_mbx.obm : [.vms]sem_mbx.c [.vms]sem_mbx.h
+[.$(OBJ_DIR).vms]vms_sem_mbx.obm : [.vms]vms_sem_mbx.c [.vms]vms_sem_mbx.h
     @ pipe create/dir $(DIR $(MMS$TARGET)) | copy SYS$INPUT nl:
     $(CC) $(PY_CFLAGS_MULT) /OBJECT=$(MMS$TARGET) $(MMS$SOURCE)
 
-[.$(OUT_DIR).$(DYNLOAD_DIR)]_multiprocessing.exe : [.$(OBJ_DIR).Modules._multiprocessing]multiprocessing.obm,[.$(OBJ_DIR).Modules._multiprocessing]semaphore.obm,[.$(OBJ_DIR).vms]sem_mbx.obm
+[.$(OUT_DIR).$(DYNLOAD_DIR)]_multiprocessing.exe : [.$(OBJ_DIR).Modules._multiprocessing]multiprocessing.obm,[.$(OBJ_DIR).vms]vms_sem_mbx.obm,[.$(OBJ_DIR).Modules._multiprocessing]semaphore.obm
     @ pipe create/dir $(DIR $(MMS$TARGET)) | copy SYS$INPUT nl:
     $(LINK)$(LINKFLAGS)/SHARE=python$build_out:[$(DYNLOAD_DIR)]$(NOTDIR $(MMS$TARGET_NAME)).EXE $(MMS$SOURCE_LIST),[.opt]$(NOTDIR $(MMS$TARGET_NAME)).opt/OPT
 

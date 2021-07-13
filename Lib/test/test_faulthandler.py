@@ -75,6 +75,10 @@ class FaultHandlerTests(unittest.TestCase):
                 exitcode = process.wait()
         output = support.strip_python_stderr(stdout)
         output = output.decode('ascii', 'backslashreplace')
+        if sys.platform == 'OpenVMS':
+            skip_lines = ['%CMA-F-EXIT_THREAD, current thread has been requested to exit']
+            for line in skip_lines:
+                output = output.replace(line, '')
         if filename:
             self.assertEqual(output, '')
             with open(filename, "rb") as fp:
@@ -698,7 +702,8 @@ class FaultHandlerTests(unittest.TestCase):
             regex = expected_traceback(14, 32, regex)
             self.assertRegex(trace, regex)
         else:
-            self.assertEqual(trace, '')
+            if sys.platform != 'OpenVMS': # OpenVMS might print error like "%C-F-SIGUSR1 ..."
+                self.assertEqual(trace, '')
         if unregister:
             self.assertNotEqual(exitcode, 0)
         else:

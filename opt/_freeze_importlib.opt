@@ -1,4 +1,3 @@
-python$build_obj:[Programs]_freeze_importlib.obj
 python$build_obj:[Modules._io]_iomodule.obj
 python$build_obj:[Modules._io]bufferedio.obj
 python$build_obj:[Modules._io]bytesio.obj
@@ -139,9 +138,10 @@ python$build_obj:[Python]symtable.obj
 python$build_obj:[Python]sysmodule.obj
 python$build_obj:[Python]thread.obj
 python$build_obj:[Python]traceback.obj
-python$build_obj:[vms]stdioreadline.obj
-python$build_obj:[vms]vms_sleep.obj
+python$build_obj:[vms]vms_smg_readline.obj
+python$build_obj:[vms]vms_crtl_values.obj
 python$build_obj:[vms]vms_select.obj
 python$build_obj:[vms]vms_spawn_helper.obj
+python$build_obj:[vms]vms_sleep.obj
 python$build_obj:[vms]vms_mbx_util.obj
-python$build_obj:[vms]vms_fd_inherit.obj
+python$build_obj:[vms]vms_fcntl.obj
