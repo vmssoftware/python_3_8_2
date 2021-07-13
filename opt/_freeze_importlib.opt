@@ -143,6 +143,5 @@ python$build_obj:[vms]stdioreadline.obj
 python$build_obj:[vms]vms_sleep.obj
 python$build_obj:[vms]vms_select.obj
 python$build_obj:[vms]vms_spawn_helper.obj
-python$build_obj:[vms]vms_sleep.obj
 python$build_obj:[vms]vms_mbx_util.obj
 python$build_obj:[vms]vms_fd_inherit.obj
