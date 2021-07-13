@@ -653,6 +653,7 @@ MODOBJS = -
 
 LIBRARY_OBJS_OMIT_FROZEN = -
 [.$(OBJ_DIR).Modules]getbuildinfo.obj -
+[.$(OBJ_DIR).vms]vms_sleep.obj -
 [.$(OBJ_DIR).vms]vms_select.obj -
 [.$(OBJ_DIR).vms]vms_spawn_helper.obj -
 [.$(OBJ_DIR).vms]vms_sleep.obj -

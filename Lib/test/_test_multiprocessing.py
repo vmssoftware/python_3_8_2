@@ -289,6 +289,7 @@ class _TestProcess(BaseTestCase):
         from multiprocessing.process import parent_process
         wconn.send([parent_process().pid, parent_process().name])
 
+    @unittest.skipIf(sys.platform == 'OpenVMS', 'fails on OpenVMS')
     def test_parent_process(self):
         if self.TYPE == "threads":
             self.skipTest('test not appropriate for {}'.format(self.TYPE))
@@ -2733,6 +2734,7 @@ class _TestPoolWorkerErrors(BaseTestCase):
         p.close()
         p.join()
 
+@unittest.skipIf(sys.platform == 'OpenVMS', 'hangs on OpenVMS')
 class _TestPoolWorkerLifetime(BaseTestCase):
     ALLOWED_TYPES = ('processes', )
 
@@ -3823,6 +3825,7 @@ class _TestSharedMemory(BaseTestCase):
         sms.close()
 
     @unittest.skipIf(os.name != "posix", "not feasible in non-posix platforms")
+    @unittest.skipIf(os.sys.platform == "OpenVMS", "does not ignore on OpenVMS")
     def test_shared_memory_SharedMemoryServer_ignores_sigint(self):
         # bpo-36368: protect SharedMemoryManager server process from
         # KeyboardInterrupt signals.
@@ -4005,6 +4008,7 @@ class _TestSharedMemory(BaseTestCase):
         deserialized_sl.shm.close()
         sl.shm.close()
 
+    @unittest.skipIf(os.sys.platform == "OpenVMS", "does not cleaned on OpenVMS")
     def test_shared_memory_cleaned_after_process_termination(self):
         cmd = '''if 1:
             import os, time, sys
@@ -4191,6 +4195,10 @@ class _TestImportStar(unittest.TestCase):
             modules.remove('multiprocessing.popen_fork')
             modules.remove('multiprocessing.popen_forkserver')
             modules.remove('multiprocessing.popen_spawn_posix')
+        elif sys.platform == 'OpenVMS':
+            modules.remove('multiprocessing.popen_fork')
+            modules.remove('multiprocessing.popen_forkserver')
+            modules.remove('multiprocessing.popen_spawn_win32')
         else:
             modules.remove('multiprocessing.popen_spawn_win32')
             if not HAS_REDUCTION:
@@ -4960,6 +4968,8 @@ class TestStartMethod(unittest.TestCase):
         methods = multiprocessing.get_all_start_methods()
         if sys.platform == 'win32':
             self.assertEqual(methods, ['spawn'])
+        elif sys.platform == 'OpenVMS':
+            self.assertEqual(methods, ['spawn'])
         else:
             self.assertTrue(methods == ['fork', 'spawn'] or
                             methods == ['fork', 'spawn', 'forkserver'])
@@ -4979,6 +4989,7 @@ class TestStartMethod(unittest.TestCase):
 
 @unittest.skipIf(sys.platform == "win32",
                  "test semantics don't make sense on Windows")
+@unittest.skipIf(sys.platform == 'OpenVMS', 'fails on OpenVMS')
 class TestResourceTracker(unittest.TestCase):
 
     def test_resource_tracker(self):

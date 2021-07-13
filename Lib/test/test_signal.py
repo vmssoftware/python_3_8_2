@@ -224,6 +224,7 @@ class WakeupFDTests(unittest.TestCase):
 
 
 @unittest.skipIf(sys.platform == "win32", "Not valid on Windows")
+@unittest.skipIf(sys.platform == "OpenVMS", "Not valid on OpenVMS")
 class WakeupSignalTests(unittest.TestCase):
     @unittest.skipIf(_testcapi is None, 'need _testcapi')
     def check_wakeup(self, test_body, *signals, ordered=True):

@@ -457,7 +457,8 @@ class _UnixReadPipeTransport(transports.ReadTransport):
             self._protocol = None
             raise ValueError("Pipe transport is for pipes/sockets only.")
 
-        os.set_blocking(self._fileno, False)
+        if sys.platform != 'OpenVMS':   # OpenVMS set_blocking works only with sockets
+            os.set_blocking(self._fileno, False)
 
         self._loop.call_soon(self._protocol.connection_made, self)
         # only start reading when connection_made() has been called
@@ -594,7 +595,8 @@ class _UnixWritePipeTransport(transports._FlowControlMixin,
             raise ValueError("Pipe transport is only for "
                              "pipes, sockets and character devices")
 
-        os.set_blocking(self._fileno, False)
+        if sys.platform != 'OpenVMS':   # OpenVMS set_blocking works only with sockets
+            os.set_blocking(self._fileno, False)
         self._loop.call_soon(self._protocol.connection_made, self)
 
         # On AIX, the reader trick (to be notified when the read end of the
