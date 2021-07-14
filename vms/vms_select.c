@@ -207,6 +207,7 @@ int vms_select(int nfds, fd_set *readfds, fd_set *writefds, fd_set *exceptfds,
         int pi;
         int xi;
         int status;
+        unsigned short channel;
 
         /* Need structures to separate terminals and pipes */
         select_array = __ALLOCA(sizeof(struct pollfd) * nfds);
@@ -228,99 +229,77 @@ int vms_select(int nfds, fd_set *readfds, fd_set *writefds, fd_set *exceptfds,
 
         /* Find all of the terminals and pipe fds  for polling */
         pi = 0, ti = 0, xi = 0, si = 0;
-        for (int fd = 0; fd < nfds; ++fd) {
+        for (int fd_check = 0; fd_check < nfds; ++fd_check) {
+
             /* Copy file descriptor arrays into a poll structure */
-            select_array[fd].fd = fd;
-            select_array[fd].events = 0;
-            select_array[fd].revents = 0;
+            select_array[fd_check].fd = fd_check;
+            select_array[fd_check].events = 0;
+            select_array[fd_check].revents = 0;
+
+            if (readfds && FD_ISSET(fd_check, readfds)) {
+                select_array[fd_check].events |= POLL_IN;
+            }
+            if (writefds && FD_ISSET(fd_check, writefds)) {
+                select_array[fd_check].events |= POLL_OUT;
+            }
+            if (!select_array[fd_check].events) {
+                continue;
+            }
 
             /* Now separate out the pipes */
-            if (isapipe(fd) == 1) {
-                pipe_array[pi].fd_desc_ptr = &select_array[fd];
-                if (readfds != NULL) {
-                    if (FD_ISSET(fd, readfds)) {
-                        select_array[fd].events |= POLL_IN;
-                    }
+            if (isapipe(fd_check) == 1) {
+                if (!vms_channel_lookup(fd_check, &channel)) {
+                    pipe_array[pi].fd_desc_ptr = &select_array[fd_check];
+                    pipe_array[pi].channel = channel;
+                    pi++;
                 }
-                if (writefds != NULL) {
-                    if (FD_ISSET(fd, writefds)) {
-                        select_array[fd].events |= POLL_OUT;
-                    }
-                }
-                /* Only care about something with read/write events */
-                if (select_array[fd].events != 0) {
-                    status = vms_channel_lookup(fd, &pipe_array[pi].channel);
-                    if (status == 0) {
-                        pi++;
-                    }
-                }
+                continue;
             }
             /* Not a pipe, see if a terminal */
-            else if (isatty(fd) == 1) {
-                term_array[ti].fd_desc_ptr = &select_array[fd];
-                if (readfds != NULL) {
-                    if (FD_ISSET(fd, readfds)) {
-                        select_array[fd].events |= POLL_IN;
-                    }
+            if (isatty(fd_check) == 1) {
+                if (!vms_channel_lookup(fd_check, &channel)) {
+                    term_array[ti].fd_desc_ptr = &select_array[fd_check];
+                    term_array[ti].channel = channel;
+                    ti++;
                 }
-                if (writefds != NULL) {
-                    if (FD_ISSET(fd, writefds)) {
-                        select_array[fd].events |= POLL_OUT;
-                    }
-                }
-                /* Only care about something with read/write events */
-                if (select_array[fd].events != 0) {
-                    status = vms_channel_lookup(fd, &term_array[ti].channel);
-                    if (status == 0) {
-                        ti++;
-                    }
-                }
-            } else if (decc$get_sdc(fd) != 0) {
-                /* Not pipe or terminal, use built in select on this */
+                continue;
+            }
+            if ((status = decc$get_sdc(fd_check)) != 0) {
+                /* It is a socket, use built in select on this */
                 si++;
-            } else {
-                /* see if it is a mailbox and then treat as a pipe or X11 event if not
-                * mailbox */
-                pipe_array[pi].fd_desc_ptr = &select_array[fd];
-                if (readfds != NULL) {
-                    if (FD_ISSET(fd, readfds)) {
-                        select_array[fd].events |= POLL_IN;
-                    }
-                }
-                if (writefds != NULL) {
-                    if (FD_ISSET(fd, writefds)) {
-                        select_array[fd].events |= POLL_OUT;
-                    }
-                }
-                /* Only care about something with read/write events */
-                if (select_array[fd].events != 0) {
-                    status = vms_channel_lookup(fd, &pipe_array[pi].channel);
-                    if (status == 0) {
-                        int mbx_len;
-                        unsigned int mbx_char;
-                        ILE3 item_list[2];
-                        item_list[0].ile3$w_length = 4;
-                        item_list[0].ile3$w_code = DVI$_DEVCLASS;
-                        item_list[0].ile3$ps_bufaddr = (void *)&mbx_char;
-                        item_list[0].ile3$ps_retlen_addr = (void *)&mbx_len;
-                        memset(item_list + 1, 0, sizeof(item_list[1]));
+                continue;
+            }
+            /* see if it is a mailbox and then treat as a pipe or X11 event if not
+            * mailbox */
+            if (!vms_channel_lookup(fd_check, &channel)) {
+                int mbx_len;
+                unsigned int mbx_char;
+                ILE3 item_list[2];
+                item_list[0].ile3$w_length = 4;
+                item_list[0].ile3$w_code = DVI$_DEVCLASS;
+                item_list[0].ile3$ps_bufaddr = (void *)&mbx_char;
+                item_list[0].ile3$ps_retlen_addr = (void *)&mbx_len;
+                memset(item_list + 1, 0, sizeof(item_list[1]));
 
-                        status = SYS$GETDVIW(EFN$C_ENF, pipe_array[pi].channel, 0, &item_list, 0, 0, 0, 0);
-                        if ($VMS_STATUS_SUCCESS(status)) {
-                            if ((mbx_char & DC$_MAILBOX) != 0) {
-                                pi++;
-                            } else {
-                                xi++;
-                            }
-                        } else {
-                            select_array[fd].events = 0;
-                            SYS$DASSGN(pipe_array[pi].channel);
-                        }
+                status = SYS$GETDVIW(EFN$C_ENF, channel, 0, &item_list, 0, 0, 0, 0);
+                if ($VMS_STATUS_SUCCESS(status)) {
+                    if ((mbx_char & DC$_MAILBOX) != 0) {
+                        pipe_array[pi].fd_desc_ptr = &select_array[fd_check];
+                        pipe_array[pi].channel = channel;
+                        pi++;
+                        continue;
                     } else {
-                        select_array[fd].events = 0;
+                        xefn_array[xi].fd_desc_ptr = &select_array[fd_check];
+                        xefn_array[xi].channel = channel;
+                        xi++;
+                        continue;
                     }
+                } else {
+                    SYS$DASSGN(channel);
                 }
             }
+            // does not match anything
+            select_array[fd_check].events = 0;
         }
         /* All fd is arranged ============================================*/
         if ((pi == 0) && (ti == 0) && (xi == 0)) {
@@ -438,20 +417,20 @@ int vms_select(int nfds, fd_set *readfds, fd_set *writefds, fd_set *exceptfds,
             }
         }
         /* Copy the pipe and terminal information */
-        for (int fd = 0; fd < nfds; ++fd) {
-            if (select_array[fd].events != 0) {
+        for (int fd_store = 0; fd_store < nfds; ++fd_store) {
+            if (select_array[fd_store].events != 0) {
                 if (readfds != NULL) {
-                    if (select_array[fd].revents & POLL_IN) {
-                        FD_SET(fd, readfds);
+                    if (select_array[fd_store].revents & POLL_IN) {
+                        FD_SET(fd_store, readfds);
                     } else {
-                        FD_CLR(fd, readfds);
+                        FD_CLR(fd_store, readfds);
                     }
                 }
                 if (writefds != NULL) {
-                    if (select_array[fd].revents & POLL_OUT) {
-                        FD_SET(fd, writefds);
+                    if (select_array[fd_store].revents & POLL_OUT) {
+                        FD_SET(fd_store, writefds);
                     } else {
-                        FD_CLR(fd, writefds);
+                        FD_CLR(fd_store, writefds);
                     }
                 }
             }
@@ -464,6 +443,10 @@ int vms_select(int nfds, fd_set *readfds, fd_set *writefds, fd_set *exceptfds,
         while (ti > 0) {
             --ti;
             SYS$DASSGN(term_array[ti].channel);
+        }
+        while (xi > 0) {
+            --xi;
+            SYS$DASSGN(xefn_array[xi].channel);
         }
     } else {
         /* when nfds == 0 */

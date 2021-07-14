@@ -234,15 +234,16 @@ unsigned int get_mbx_size(unsigned short channel) {
 
 #define _MAX_FD_TO_REGISTER_ 256
 
-static int fd_map[_MAX_FD_TO_REGISTER_] = {0};
+static int  fd_map_pid[_MAX_FD_TO_REGISTER_] = {0};
+static int  fd_spawned[_MAX_FD_TO_REGISTER_] = {0};
 
-/*  pid == 0, no child (unmap)
-    pid >  0, child is created by exec()
-    pid <  0, child is created by lib$spawn()
+/*  pid == 0 (or -1), no child (unmap)
+    spn == 1, using lib$spawn()
 */
-int map_fd_to_child(int fd, int pid) {
+int map_fd_to_child(int fd, int pid, int spawned) {
     if ((unsigned int)fd < (unsigned int)_MAX_FD_TO_REGISTER_) {
-        fd_map[fd] = pid;
+        fd_map_pid[fd] = pid;
+        fd_spawned[fd] = spawned;
         return 0;
     }
     return -1;
@@ -253,8 +254,12 @@ int read_mbx(int fd, char *buf, int size) {
         return -1;
     }
     int fd_pid = 0;
+    int is_spawned = 0;
+    int is_pid_present = 0;
     if ((unsigned int)fd < (unsigned int)_MAX_FD_TO_REGISTER_) {
-        fd_pid = fd_map[fd];
+        fd_pid = fd_map_pid[fd];
+        is_pid_present = fd_pid && (fd_pid != -1);
+        is_spawned = is_pid_present && fd_spawned[fd];
     }
     unsigned short channel;
     IOSB iosb = {0};
@@ -269,7 +274,7 @@ int read_mbx(int fd, char *buf, int size) {
             size = mbx_size;
         }
         if (size > 0) {
-            if (fd_pid >= -1) {
+            if (!is_spawned) {
                 // no lib$spawn(), use channel as regular stream
                 op |= IO$M_STREAM;
             }
@@ -279,9 +284,8 @@ int read_mbx(int fd, char *buf, int size) {
                     errno = 0;
                     nbytes = 0;
                     _TRACE_LINE_V_("%i: \"%s\" eof from 0x%x", fd, devicename, iosb.iosb$l_pid);
-                    if ((fd_pid < -1 && iosb.iosb$l_pid != -fd_pid) ||
-                        (fd_pid > 0 && iosb.iosb$l_pid != fd_pid)) {
-                        // accept EOF only given pid
+                    if (is_pid_present && iosb.iosb$l_pid != fd_pid) {
+                        // accept EOF only from given pid
                         nbytes = -1;
                         errno = EAGAIN;
                         _TRACE_LINE_(" again\n");
@@ -291,13 +295,13 @@ int read_mbx(int fd, char *buf, int size) {
                         _TRACE_LINE_(" sentinel\n");
                         simple_write_mbx_eof(channel);
                         //free fd
-                        map_fd_to_child(fd, 0);
+                        map_fd_to_child(fd, 0, 0);
                     }
                 } else if (iosb.iosb$w_status == SS$_NORMAL) {
                     errno = 0;
                     nbytes = iosb.iosb$w_bcnt;
                     _TRACE_LINE_V_("%i: \"%s\" data[%i] from 0x%x", fd, devicename, nbytes, iosb.iosb$l_pid);
-                    if (fd_pid < -1) {
+                    if (is_spawned) {
                         // add LF to the end of each RECORD
                         buf[nbytes] = '\n';
                         ++nbytes;

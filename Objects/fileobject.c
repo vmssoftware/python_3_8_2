@@ -15,6 +15,10 @@
 #define FUNLOCKFILE(f)
 #endif
 
+#ifdef __VMS
+#include "vms/vms_mbx_util.h"
+#endif
+
 /* Newline flags */
 #define NEWLINE_UNKNOWN 0       /* No newline seen, yet */
 #define NEWLINE_CR 1            /* \r newline seen */
@@ -282,6 +286,12 @@ Py_UniversalNewlineFgets(char *buf, int n, FILE *stream, PyObject *fobj)
         *p++ = c;
         if (c == '\n') break;
     }
+    #ifdef __VMS
+        // We should prevent future reading from pipe after EOF is reached
+        if (c == EOF) {
+            write_mbx_eof(fileno(stream));
+        }
+    #endif
     /* if ( c == EOF && skipnextlf )
         newlinetypes |= NEWLINE_CR; */
     FUNLOCKFILE(stream);

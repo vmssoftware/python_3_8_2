@@ -212,6 +212,9 @@ class TestAsynchat(unittest.TestCase):
                          [b"hello world", b"", b"I'm not dead yet!"])
 
     def test_close_when_done(self):
+
+        breakpoint()
+
         s, event = start_echo_server()
         s.start_resend_event = threading.Event()
         c = echo_client(b'\n', s.port)

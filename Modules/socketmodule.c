@@ -103,15 +103,6 @@ Local naming conventions:
 #include "Python.h"
 #include "structmember.h"
 
-#ifdef __VMS
-#include <tcp.h>
-#include <socket.h>
-#include <ioctl.h>
-#ifndef socklen_t
-#define socklen_t unsigned
-#endif
-#endif
-
 #ifdef _Py_MEMORY_SANITIZER
 # include <sanitizer/msan_interface.h>
 #endif
@@ -705,21 +696,16 @@ internal_setblocking(PySocketSockObject *s, int block)
     u_long arg;
 #endif
 #if !defined(MS_WINDOWS) \
-    && !((defined(HAVE_SYS_IOCTL_H) && defined(FIONBIO) || defined(__VMS)))
+    && !(defined(HAVE_SYS_IOCTL_H) && defined(FIONBIO))
     int delay_flag, new_delay_flag;
 #endif
 
     Py_BEGIN_ALLOW_THREADS
 #ifndef MS_WINDOWS
-#if (defined(HAVE_SYS_IOCTL_H) && defined(FIONBIO)) || defined(__VMS)
+#if (defined(HAVE_SYS_IOCTL_H) && defined(FIONBIO))
     block = !block;
-#ifdef __VMS
-    if (ioctl(s->sock_fd, FIONBIO, (char *)&block) == -1)
-        goto done;
-#else
     if (ioctl(s->sock_fd, FIONBIO, (unsigned int *)&block) == -1)
         goto done;
-#endif
 #else
     delay_flag = fcntl(s->sock_fd, F_GETFL, 0);
     if (delay_flag == -1)
@@ -1095,6 +1081,10 @@ setipaddr(const char *name, struct sockaddr *addr_ret, size_t addr_ret_size, int
         hints.ai_family = af;
         hints.ai_socktype = SOCK_DGRAM;         /*dummy*/
         hints.ai_flags = AI_PASSIVE;
+    #ifdef __VMS
+        hints.ai_socktype = SOCK_STREAM;
+        hints.ai_protocol = IPPROTO_TCP;
+    #endif
         Py_BEGIN_ALLOW_THREADS
         ACQUIRE_GETADDRINFO_LOCK
         error = getaddrinfo(NULL, "0", &hints, &res);
@@ -3358,6 +3348,15 @@ sock_getpeername(PySocketSockObject *s, PyObject *Py_UNUSED(ignored))
     Py_BEGIN_ALLOW_THREADS
     res = getpeername(s->sock_fd, SAS2SA(&addrbuf), &addrlen);
     Py_END_ALLOW_THREADS
+#ifdef __VMS
+    // produce an exception when addr is IP4 0.0.0.0
+    if (SAS2SA(&addrbuf)->sa_family == AF_INET &&
+        *(int32_t*)(SAS2SA(&addrbuf)->sa_data + 2) == 0)
+    {
+        errno = 0; // ENOTCONN;
+        res = -1;
+    }
+#endif
     if (res < 0)
         return s->errorhandler();
     return makesockaddr(s->sock_fd, SAS2SA(&addrbuf), addrlen,

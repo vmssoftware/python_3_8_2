@@ -15,7 +15,7 @@ int simple_read_mbx_w(unsigned short channel, unsigned char *buf, int size);
 int simple_read_mbx_w_stream(unsigned short channel, unsigned char *buf, int size);
 int simple_read_mbx_timeout(unsigned short channel, unsigned char *buf, int size, int timeout_microseconds);
 int simple_check_mbx(unsigned short channel);
-int map_fd_to_child(int fd, int pid);
+int map_fd_to_child(int fd, int pid, int spawned);
 int read_mbx(int fd, char *buf, int size);
 int write_mbx_eof(int fd);
 unsigned int get_mbx_size(unsigned short channel);

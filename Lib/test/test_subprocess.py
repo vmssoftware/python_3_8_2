@@ -1359,6 +1359,9 @@ class ProcessTestCase(BaseTestCase):
                              stdin=subprocess.PIPE,
                              stdout=subprocess.PIPE,
                              stderr=subprocess.PIPE)
+        if sys.platform == 'OpenVMS':
+            # let child process initialize its context
+            time.sleep(1)
         self.addCleanup(p.stdout.close)
         self.addCleanup(p.stderr.close)
         self.addCleanup(p.stdin.close)
@@ -3394,6 +3397,9 @@ class ContextManagerTests(BaseTestCase):
                                 stdin=subprocess.PIPE,
                                 bufsize=support.PIPE_MAX_SIZE*2)
         proc = proc.__enter__()
+        if sys.platform == 'OpenVMS':
+            # let child process initialize its context
+            time.sleep(1)
         # Prepare to send enough data to overflow any OS pipe buffering and
         # guarantee a broken pipe error. Data is held in BufferedWriter
         # buffer until closed.

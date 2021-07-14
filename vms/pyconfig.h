@@ -1704,7 +1704,7 @@
 #undef size_t
 
 /* Define to `int' if <sys/socket.h> does not define. */
-/* #undef socklen_t */
+#define socklen_t size_t
 
 /* Define to `int' if <sys/types.h> doesn't define. */
 #undef uid_t

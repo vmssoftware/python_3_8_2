@@ -30,6 +30,7 @@
 #include <unistd.h>
 #include "descrip.h"
 #include "lib$routines.h"
+#include "vms/vms_spawn_helper.h"
 #include "vms/vms_sleep.h"
 #include "vms/vms_fcntl.h"
 #endif
@@ -9714,6 +9715,10 @@ os_pipe_impl(PyObject *module)
 
     if (!ok)
         return PyErr_SetFromWindowsErr(0);
+#elif defined(__VMS)
+        Py_BEGIN_ALLOW_THREADS
+        res = vms_pipe_noinherit(fds);
+        Py_END_ALLOW_THREADS
 #else
 
 #ifdef HAVE_PIPE2

@@ -16,6 +16,10 @@
 #include "codecs.h"
 #include "abstract.h"
 
+#ifdef __VMS
+#include "vms_mbx_util.h"
+#endif
+
 /* Alternate tab spacing */
 #define ALTTABSIZE 1
 
@@ -271,6 +275,12 @@ check_bom(int get_char(struct tok_state *),
     ch1 = get_char(tok);
     tok->decoding_state = STATE_RAW;
     if (ch1 == EOF) {
+    #ifdef __VMS
+        if (tok->fp) {
+            // We should prevent future reading from pipe after EOF is reached
+            write_mbx_eof(fileno(tok->fp));
+        }
+    #endif
         return 1;
     } else if (ch1 == 0xEF) {
         ch2 = get_char(tok);

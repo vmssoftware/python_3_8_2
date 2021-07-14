@@ -1476,10 +1476,7 @@ class Popen(object):
             if stdin is None:
                 pass
             elif stdin == PIPE:
-                if _openvms:
-                    p2cread, p2cwrite = os.pipe_socket()
-                else:
-                    p2cread, p2cwrite = os.pipe()
+                p2cread, p2cwrite = os.pipe()
             elif stdin == DEVNULL:
                 p2cread = self._get_devnull()
             elif isinstance(stdin, int):

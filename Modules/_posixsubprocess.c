@@ -639,8 +639,8 @@ child_exec_vfork(char *const exec_array[],
     if (argv && *argv && strcmp(*argv, "DCL") == 0) {
         pid = exec_dcl(argv, p2cread, c2pwrite);
         if (pid > 0) {
-            map_fd_to_child(c2pread, -pid);
-            map_fd_to_child(errread, -pid);
+            map_fd_to_child(c2pread, pid, 1);
+            map_fd_to_child(errread, pid, 1);
         }
         return pid;
     }
@@ -717,8 +717,8 @@ egress:
     }
 
     if (pid > 0) {
-        map_fd_to_child(c2pread, pid);
-        map_fd_to_child(errread, pid);
+        map_fd_to_child(c2pread, pid, 0);
+        map_fd_to_child(errread, pid, 0);
     }
 
     pthread_mutex_unlock(&_child_exec_vfork_mutex);

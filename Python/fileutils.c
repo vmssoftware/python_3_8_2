@@ -1937,6 +1937,16 @@ _Py_dup(int fd)
         _Py_END_SUPPRESS_IPH
         return -1;
     }
+#elif defined (__VMS)
+    Py_BEGIN_ALLOW_THREADS
+    _Py_BEGIN_SUPPRESS_IPH
+    fd = vms_fcntl(fd, F_DUPFD_CLOEXEC_VMS, 0);
+    _Py_END_SUPPRESS_IPH
+    Py_END_ALLOW_THREADS
+    if (fd < 0) {
+        PyErr_SetFromErrno(PyExc_OSError);
+        return -1;
+    }
 #elif defined(HAVE_FCNTL_H) && defined(F_DUPFD_CLOEXEC)
     Py_BEGIN_ALLOW_THREADS
     _Py_BEGIN_SUPPRESS_IPH
